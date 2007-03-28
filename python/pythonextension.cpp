@@ -123,7 +123,6 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
         { // initialize methods.
             const int count = metaobject->methodCount();
             for(int i = 0; i < count; ++i) {
-//krossdebug( QString("1 REFCOUNT: %1").arg(this->ob_refcnt) );
                 QMetaMethod member = metaobject->method(i);
                 const QString signature = member.signature();
                 const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
@@ -131,7 +130,6 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
                     d->methods.insert(name, Py::Int(i));
                     d->methodnames.append(Py::String(name));
                 }
-//krossdebug( QString("2 REFCOUNT: %1").arg(this->ob_refcnt) );
             }
         }
 
