@@ -44,7 +44,7 @@ namespace Kross {
             #endif
 
             /// The cached list of methods.
-            QHash<QByteArray, Py::Object> methods;
+            QHash<QByteArray, Py::Int> methods;
             /// The cached list of properties.
             QHash<QByteArray, QMetaProperty> properties;
             /// The cached list of enumerations.
@@ -123,17 +123,15 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
         { // initialize methods.
             const int count = metaobject->methodCount();
             for(int i = 0; i < count; ++i) {
+//krossdebug( QString("1 REFCOUNT: %1").arg(this->ob_refcnt) );
                 QMetaMethod member = metaobject->method(i);
                 const QString signature = member.signature();
                 const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
                 if(! d->methods.contains(name)) {
-                    Py::Tuple self(3);
-                    self[0] = Py::Object(this); // reference to this instance
-                    self[1] = Py::Int(i); // the first index used for faster access
-                    self[2] = Py::String(name); // the name of the method
-                    d->methods.insert(name, Py::Object(PyCFunction_New( &d->proxymethod->ext_meth_def, self.ptr() ), true));
-                    d->methodnames.append(self[2]);
+                    d->methods.insert(name, Py::Int(i));
+                    d->methodnames.append(Py::String(name));
                 }
+//krossdebug( QString("2 REFCOUNT: %1").arg(this->ob_refcnt) );
             }
         }
 
@@ -199,7 +197,14 @@ Py::Object PythonExtension::getattr(const char* n)
         #ifdef KROSS_PYTHON_EXTENSION_GETATTR_DEBUG
             krossdebug( QString("PythonExtension::getattr name='%1' is a method.").arg(n) );
         #endif
-        return d->methods[n];
+
+        //FIXME use callcache here to improve the performance by some factors!
+        Py::Tuple t(3);
+        t[0] = Py::Object(this); // reference to this instance, set at getattr()
+        t[1] = d->methods[n]; // the first index used for faster access
+        t[2] = Py::String(n); // the name of the method
+        t.increment_reference_count(); // the PyCFunction_New shoukd take care of removing our ref...
+        return Py::Object(PyCFunction_New( &d->proxymethod->ext_meth_def, t.ptr() ), true);
     }
 
     // look if the attribute is a property
@@ -502,6 +507,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
     try {
         Py::Tuple selftuple(_self_and_name_tuple);
         PythonExtension *self = static_cast<PythonExtension*>( selftuple[0].ptr() );
+        Q_ASSERT(self->d->object);
 
         int methodindex = Py::Int(selftuple[1]);
 

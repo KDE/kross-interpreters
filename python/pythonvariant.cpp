@@ -130,7 +130,11 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                     #endif
                     return Py::None();
                 }
-                return Py::asObject(new PythonExtension(obj));
+
+                PythonExtension* extension = new PythonExtension(obj);
+                Py::Object pyobj = Py::asObject(extension);
+krossdebug( QString("REFCOUNT: %1").arg(pyobj.reference_count()) );
+                return pyobj;
             }
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));

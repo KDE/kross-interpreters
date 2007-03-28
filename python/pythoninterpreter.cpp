@@ -20,7 +20,6 @@
 #include "pythoninterpreter.h"
 #include "pythonscript.h"
 #include "pythonmodule.h"
-//#include "pythonextension.h"
 
 //#include <kglobal.h>
 //#include <kstandarddirs.h>
