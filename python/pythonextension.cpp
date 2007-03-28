@@ -196,6 +196,12 @@ Py::Object PythonExtension::getattr(const char* n)
             krossdebug( QString("PythonExtension::getattr name='%1' is a method.").arg(n) );
         #endif
 
+        // Python is more dynamic then someone thinks of what provides us bigger problems
+        // here since we are not able to cache the whole lookup and need to create and return
+        // a new function object at each request since 1) they may used internaly by python
+        // to redirect this method/attr to somebody else and 2) those returned function object
+        // may prevent this object instance from beeing removed by the garbage collector.
+
         //FIXME use callcache here to improve the performance by some factors!
         Py::Tuple t(3);
         t[0] = Py::Object(this); // reference to this instance, set at getattr()
