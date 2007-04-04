@@ -105,7 +105,8 @@ bool PythonScript::initialize()
             //pymod = PyImport_AddModule(name);
             //pymod = PyImport_Import( Py::String(name).ptr() );
 //pymod = PyImport_ImportModule(name);
-PyObject* m = PyImport_ImportModule(name);
+//PyObject* m = PyImport_ImportModule(name); //also executes the file :-/
+PyObject* m = PyImport_AddModule(name);
             //PyImport_ImportModuleEx(  char *name, PyObject *globals, PyObject *locals, PyObject *fromlist)
 
             d->m_module = new Py::Module(pymod, true);
