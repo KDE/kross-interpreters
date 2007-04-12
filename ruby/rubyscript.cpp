@@ -93,7 +93,7 @@ static VALUE callWrappedExecute(VALUE args)
     return rb_funcall(script, id, 2, src, fileName);
 }
 
-static VALUE handleExecuteExecption(VALUE args, VALUE error)
+static VALUE handleExecuteException(VALUE args, VALUE error)
 {
     Q_UNUSED(args);
     Q_UNUSED(error);
@@ -129,11 +129,12 @@ void RubyScript::execute()
     rb_ary_store(args, 1, rb_intern("module_eval"));
     rb_ary_store(args, 2, src);
     rb_ary_store(args, 3, fileName);
-    rb_rescue2((VALUE(*)(...))callWrappedExecute, args, (VALUE(*)(...))handleExecuteExecption, Qnil, rb_eException, 0);
+    rb_rescue2((VALUE(*)(...))callWrappedExecute, args, (VALUE(*)(...))handleExecuteException, Qnil, rb_eException, 0);
 
     ruby_in_eval--;
     rb_thread_critical = critical;
 
+    //TODO seems ruby_nerrs isn't set any longer. So, use the handleExecuteException
     if (ruby_nerrs != 0) {
         #ifdef KROSS_RUBY_SCRIPT_DEBUG
             krossdebug("Compilation has failed");
