@@ -70,8 +70,8 @@ namespace Kross {
                             // convert the arguments
                             QMetaMethod method = metaObject()->method( metaObject()->indexOfMethod(m_signature) );
                             QList<QByteArray> params = method.parameterTypes();
-                            VALUE args = rb_ary_new2( params.size() );
-//Py::Tuple args( params.size() );
+                            const int argsize = params.size();
+                            VALUE* args = new VALUE[argsize];
                             int idx = 1;
                             foreach(QByteArray param, params) {
                                 int tp = QVariant::nameToType( param.constData() );
@@ -85,14 +85,14 @@ namespace Kross {
                                         switch( tp ) {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx-1, RubyExtension::toVALUE( new RubyExtension(obj) ));
+                                                args[idx-1] = RubyExtension::toVALUE( new RubyExtension(obj) );
                                             } break;
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx-1, RubyExtension::toVALUE( new RubyExtension(obj) ));
+                                                args[idx-1] = RubyExtension::toVALUE( new RubyExtension(obj) );
                                             } break;
                                             default: {
-                                                rb_ary_store(args, idx-1, Qnil);
+                                                args[idx-1] = Qnil;
                                             } break;
                                         }
                                     } break;
@@ -101,31 +101,15 @@ namespace Kross {
                                         #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                             krossdebug( QString("RubyFunction::qt_metacall argument param=%1 typeId=%2").arg(param.constData()).arg(tp) );
                                         #endif
-                                        rb_ary_store(args, idx-1, RubyType<QVariant>::toVALUE(v));
+                                        args[idx-1] = RubyType<QVariant>::toVALUE(v);
                                     } break;
                                 }
                                 ++idx;
                             }
 
                             // call the ruby function
-//TODO
-/*
-                            //use rb_rescue2 to catch exceptions?
-
-                            //grrrr, there exist no rb_method_call in 1.8 and method_call isn't public too :-(
-                            //VALUE result = rb_method_call(RARRAY(args)->len, RARRAY(args)->ptr, m_method);
-
-                            struct METHOD *data;
-                            int safe;
-                            Data_Get_Struct(m_method, struct METHOD, data);
-                            if( data->recv == Qundef ) {
-                                rb_raise(rb_eTypeError, "can't call unbound method; bind first");
-                                return -1;
-                            }
-                            int safe = OBJ_TAINTED(m_method) ? NOEX_WITH(data->safe_level, 4) : data->safe_level;
-                            VALUE result = rb_call0(data->klass, data->recv, data->id, data->oid, RARRAY(args)->len, RARRAY(args)->ptr, ruby_frame->block, data->body, safe);
-*/
-VALUE result = Qnil;
+                            //TODO use rb_rescue2 to catch exceptions?
+                            VALUE result = rb_funcall2(m_method, rb_intern("call"), argsize, args);
 
                             // finally set the returnvalue
                             m_tmpResult = RubyType<QVariant>::toVariant(result);
@@ -135,6 +119,8 @@ VALUE result = Qnil;
                             #endif
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
+
+                            delete[] args;
                         } break;
                     }
                     _id -= 1;
