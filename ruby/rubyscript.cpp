@@ -79,13 +79,40 @@ RubyScript::~RubyScript()
 {
 }
 
+static VALUE callWrappedExecute(VALUE args)
+{
+    Check_Type(args, T_ARRAY);
+    VALUE script = rb_ary_entry(args, 0);
+    VALUE id = rb_ary_entry(args, 1);
+    VALUE src = rb_ary_entry(args, 2);
+    VALUE fileName = rb_ary_entry(args, 3);
+    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(script) )));
+    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(id) )));
+    //krossdebug(QString("3: %1").arg(STR2CSTR( rb_inspect(fileName) )));
+    //krossdebug(QString("4: %1").arg(STR2CSTR( rb_inspect(src) )));
+    return rb_funcall(script, id, 2, src, fileName);
+}
+
+static VALUE handleExecuteExecption(VALUE args, VALUE error)
+{
+    Q_UNUSED(args);
+    Q_UNUSED(error);
+    VALUE info = rb_gv_get("$!");
+    VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
+    VALUE message = RARRAY(bt)->ptr[0];
+    fprintf(stderr,"%s: %s (%s)\n", STR2CSTR(message), STR2CSTR(rb_obj_as_string(info)), rb_class2name(CLASS_OF(info)));
+    for(int i = 1; i < RARRAY(bt)->len; ++i)
+        if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
+            fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
+    return Qnil;
+}
+
 void RubyScript::execute()
 {
     #ifdef KROSS_RUBY_SCRIPT_DEBUG
         krossdebug("RubyScript::execute()");
     #endif
 
-    // TODO: catch ruby exception
     ruby_nerrs = 0;
     ruby_errinfo = Qnil;
     VALUE src = RubyType<QString>::toVALUE( action()->code() );
@@ -97,9 +124,13 @@ void RubyScript::execute()
     rb_thread_critical = Qtrue;
     ruby_in_eval++;
 
-    rb_funcall(d->m_script, rb_intern("module_eval"), 2, src, fileName);
+    VALUE args = rb_ary_new2 (4);
+    rb_ary_store(args, 0, d->m_script);
+    rb_ary_store(args, 1, rb_intern("module_eval"));
+    rb_ary_store(args, 2, src);
+    rb_ary_store(args, 3, fileName);
+    rb_rescue2((VALUE(*)(...))callWrappedExecute, args, (VALUE(*)(...))handleExecuteExecption, Qnil, rb_eException, 0);
 
-    
     ruby_in_eval--;
     rb_thread_critical = critical;
 
@@ -112,7 +143,7 @@ void RubyScript::execute()
     } else {
         d->m_hasBeenSuccessFullyExecuted = true;
     }
-    
+
 #if 0
     if (result != 0) {
         #ifdef KROSS_RUBY_SCRIPT_DEBUG
