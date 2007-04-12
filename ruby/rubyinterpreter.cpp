@@ -88,6 +88,10 @@ Kross::Script* RubyInterpreter::createScript(Kross::Action* action)
 
 void RubyInterpreter::initRuby()
 {
+    #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+        krossdebug( QString("RubyInterpreter::initRuby()") );
+    #endif
+
     d = new RubyInterpreterPrivate();
     ruby_init();
     ruby_init_loadpath();
@@ -106,12 +110,15 @@ VALUE RubyInterpreter::krossModule()
 
 void RubyInterpreter::finalizeRuby()
 {
+    #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+        krossdebug( QString("RubyInterpreter::finalizeRuby()") );
+    #endif
+
     if(d) {
         for(QHash<QString, RubyModule* >::Iterator it = d->modules.begin(); it != d->modules.end(); ++it)
             delete it.value();
         d->modules.clear();
     }
-
     delete d;
     d = 0;
     ruby_finalize();

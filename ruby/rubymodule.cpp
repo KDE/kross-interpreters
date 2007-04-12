@@ -78,6 +78,7 @@ VALUE RubyModule::method_missing(int argc, VALUE *argv, VALUE self)
         krossdebug(QString("RubyModule::method_missing \"%1\" missing, redirect to RubyExtension").arg(funcname));
     #endif
 
+    //old kde3/kross1 code
     /*
     VALUE rubyObjectModule = rb_funcall( self, rb_intern("const_get"), 1, ID2SYM(rb_intern("MODULEOBJ")) );
     RubyModule* objectModule;
@@ -89,9 +90,17 @@ VALUE RubyModule::method_missing(int argc, VALUE *argv, VALUE self)
     return RubyExtension::call_method(extension, argc, argv);
     */
 
+    //the following solution works quit well, but does not take e.g. the connect() call into account
+    /*
     VALUE extensionvalue = rb_funcall( self, rb_intern("const_get"), 1, ID2SYM(rb_intern("MODULEOBJ")) );
     RubyExtension* extension;
-    Data_Get_Struct(extensionvalue, RubyExtension /*RubyModule*/, extension);
+    Data_Get_Struct(extensionvalue, RubyExtension, extension);
     Q_ASSERT(extension);
     return RubyExtension::call_method_missing(extension, argc, argv, self);
+    */
+
+    //fetch the RubyExtension instance this module uses
+    VALUE extensionvalue = rb_funcall( self, rb_intern("const_get"), 1, ID2SYM(rb_intern("MODULEOBJ")) );
+    //redirect the call to our RubyExtension instance
+    return rb_funcall2(extensionvalue, SYM2ID(argv[0]), argc-1, argc > 0 ? &argv[1] : 0);
 }

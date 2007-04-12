@@ -23,6 +23,7 @@
 #include "rubycallcache.h"
 #include "rubyvariant.h"
 #include "rubyinterpreter.h"
+#include "rubyfunction.h"
 #include <kross/core/metatype.h>
 
 //#include <st.h>
@@ -56,6 +57,9 @@ namespace Kross {
         QHash<QByteArray, int> m_properties;
         /// The cached list of enumerations.
         QHash<QByteArray, int> m_enumerations;
+
+        /// The \a RubyFunction instances.
+        QHash<QByteArray, RubyFunction*> functions;
     };
 
 }
@@ -115,12 +119,20 @@ RubyExtension::~RubyExtension()
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
         krossdebug("RubyExtension Dtor");
     #endif
+    qDeleteAll(d->functions);
     delete d;
 }
 
 QObject* RubyExtension::object() const
 {
     return d->m_object;
+}
+
+RubyFunction* RubyExtension::createFunction(QObject* sender, const QByteArray& signal, const VALUE& method)
+{
+    RubyFunction* function = new RubyFunction(sender, signal, method);
+    d->functions.insertMulti(signal, function);
+    return function;
 }
 
 VALUE RubyExtension::method_missing(int argc, VALUE *argv, VALUE self)
@@ -152,20 +164,103 @@ VALUE RubyExtension::clone(VALUE self)
     return Qnil; // TODO: is it useful to call the ruby clone function if no clone function is available ?
 }
 
-#if 0
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 {
-    //TODO
-    //connect(d->m_object, ...
+    krossdebug(QString("RubyExtension::callConnect"));
+    /*
+    http://www.ruby-doc.org/doxygen/1.8.4/eval_8c-source.html#l08914
+    http://renaud.waldura.com/doc/ruby/idioms.shtml
+    http://www.ruby-doc.org/doxygen/1.8.4/struct_m_e_t_h_o_d.html
+    http://www.rubycentral.com/book/ext_ruby.html
+    */
+
+    if( argc < 2 ) {
+        rb_raise(rb_eTypeError, "Expected at least 2 arguments.");
+        return Qfalse;
+    }
+
+    RubyExtension* selfextension;
+    Data_Get_Struct(self, RubyExtension, selfextension);
+    Q_ASSERT(selfextension);
+
+    int idx; // next argument to check
+    QObject* sender; // the sender object
+    QByteArray sendersignal; // the sender signal
+    switch( TYPE(argv[0]) ) {
+        case T_STRING: { // connect(signal, ...)
+            sender = selfextension->object();
+            sendersignal = RubyType<QByteArray>::toVariant(argv[0]);
+            idx = 1;
+        } break;
+        case T_DATA: { // connect(sender, signal, ...)
+            if( ! RubyExtension::isRubyExtension(argv[0]) ) {
+                rb_raise(rb_eTypeError, "First argument needs to be a signalname or a sender-object.");
+                return Qfalse;
+            }
+            if( ! TYPE(argv[1]) != T_STRING ) {
+                rb_raise(rb_eTypeError, "Second argument needs to be a signalname.");
+                return Qfalse;
+            }
+            RubyExtension* senderextension;
+            Data_Get_Struct(argv[0], RubyExtension, senderextension);
+            Q_ASSERT(senderextension);
+            sender = senderextension->object();
+            sendersignal = RubyType<QByteArray>::toVariant(argv[1]);
+            idx = 2;
+            if( argc <= idx ) {
+                rb_raise(rb_eTypeError, ::QString("Expected at least %1 arguments.").arg(idx+1).toLatin1().constData());
+                return Qfalse;
+            }
+        } break;
+        default: {
+            rb_raise(rb_eTypeError, "First argument needs to be a signalname or a sender-object.");
+            return Qfalse;
+        } break;
+    }
+
+    QObject* receiver; // the receiver object
+    QByteArray receiverslot; // the receiver slot
+    if( TYPE(argv[idx]) == T_DATA ) {
+        if( rb_obj_is_kind_of(argv[idx], rb_cMethod) ) { // connect with ruby method
+            RubyFunction* function = selfextension->createFunction(sender, sendersignal, argv[idx]);
+            receiver = function;
+            receiverslot = sendersignal;
+        }
+        /*TODO
+        else if( RubyExtension::isRubyExtension(args[idx]) ) { // connect(..., receiver, signal)
+            RubyExtension* receiverextension;
+            Data_Get_Struct(args[idx], RubyExtension, receiverextension);
+            Q_ASSERT(receiverextension);
+            receiver = receiverextension->object();
+        }
+        */
+        else {
+            rb_raise(rb_eTypeError, ::QString("The argument number %1 is invalid.").arg(idx).toLatin1().constData());
+            return Qfalse;
+        }
+    }
+
+    // Dirty hack to replace SIGNAL() and SLOT() macros. If the user doesn't
+    // defined them explicit, we assume it's wanted to connect from a signal to
+    // a slot. This seems to be the most flexible solution so far...
+    if( ! sendersignal.startsWith('1') && ! sendersignal.startsWith('2') )
+        sendersignal.prepend('2'); // prepending 2 means SIGNAL(...)
+    if( ! receiverslot.startsWith('1') && ! receiverslot.startsWith('2') )
+        receiverslot.prepend('1'); // prepending 1 means SLOT(...)
+
+    krossdebug( QString("RubyExtension::doConnect sender=%1 signal=%2 receiver=%3 slot=%4").arg(sender->objectName()).arg(sendersignal.constData()).arg(receiver->objectName()).arg(receiverslot.constData()).toLatin1().constData() );
+    if(! QObject::connect(sender, sendersignal, receiver, receiverslot) ) {
+        krosswarning( QString("RubyExtension::doConnect Failed to connect").toLatin1().constData() );
+        return Qfalse;
+    }
     return Qtrue;
 }
 
-VALUE RubyExtension::callDisconnect(int argc, VALUE *argv, VALUE self);
+VALUE RubyExtension::callDisconnect(int argc, VALUE *argv, VALUE self)
 {
     //TODO
     return Qfalse;
 }
-#endif
 
 VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE *argv, VALUE self)
 {
@@ -377,6 +472,8 @@ VALUE RubyExtension::toVALUE(RubyExtension* extension)
         RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject );
         rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
         rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
+        rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
+        rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
     }
 
     return Data_Wrap_Struct(RubyExtensionPrivate::s_krossObject, 0, RubyExtension::delete_object, extension);

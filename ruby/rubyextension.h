@@ -31,6 +31,7 @@
 
 namespace Kross {
 
+    class RubyFunction;
     class RubyExtensionPrivate;
 
     /**
@@ -63,10 +64,10 @@ namespace Kross {
 
         private:
 
-            /// Connect was called.
-            //VALUE callConnect(int argc, VALUE *argv, VALUE self);
-            /// Disconnect was called.
-            //VALUE callDisconnect(int argc, VALUE *argv, VALUE self);
+            /**
+            * Create and return a new \a RubyFunction instance.
+            */
+            RubyFunction* createFunction(QObject* sender, const QByteArray& signal, const VALUE& method);
 
             /**
             * Handle the function call.
@@ -94,6 +95,16 @@ namespace Kross {
              * This function override the clone function behaviour
              */
             static VALUE clone(VALUE self);
+
+            /**
+             * Connect was called.
+             */
+            static VALUE callConnect(int argc, VALUE *argv, VALUE self);
+
+            /**
+             * Disconnect was called.
+             */
+            static VALUE callDisconnect(int argc, VALUE *argv, VALUE self);
 
 #if 0
             /**
