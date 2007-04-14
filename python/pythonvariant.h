@@ -436,6 +436,7 @@ namespace Kross {
         }
     };
 
+#if 0
     // this is a testcase and not activly used yet cause there seems to be still some
     // open issues. Please see also the unittest.py which contains tests for all cases.
     /// \internal
@@ -446,7 +447,6 @@ namespace Kross {
         static QColor toVariant(const Py::Object& obj);
     };
 
-#if 0
     /// \internal
     template<>
     struct PythonType<QFont>

@@ -20,7 +20,7 @@
 #include "pythonvariant.h"
 #include "pythonextension.h"
 
-#include <kross/core/variant.h>
+//#include <kross/core/variant.h>
 
 #include <QWidget>
 
@@ -72,10 +72,9 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
         case QVariant::RectF:
             return PythonType<QRectF>::toPyObject(v.toRectF());
 
+/*TODO
         case QVariant::Color:
             return PythonType<QColor>::toPyObject( v.value<QColor>() );
-
-/*TODO
         case QVariant::Brush:
         case QVariant::Font:
         case QVariant::Date:
@@ -208,6 +207,7 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
     return QVariant();
 }
 
+#if 0
 Py::Object PythonType<QColor>::toPyObject(const QColor& color)
 {
     #ifdef KROSS_PYTHON_VARIANT_DEBUG
@@ -219,8 +219,6 @@ krossdebug( QString("....2") );
     Py::Object o = Py::asObject( new PythonExtension(c, false /*owner*/) );
 krossdebug( QString("....3") );
     return o;
-
-
 }
 
 QColor PythonType<QColor>::toVariant(const Py::Object& obj)
@@ -263,6 +261,7 @@ QColor PythonType<QColor>::toVariant(const Py::Object& obj)
     #endif
     return QColor();
 }
+#endif
 
 MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& object, bool owner)
 {
@@ -311,17 +310,15 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
             return new PythonMetaTypeVariant<QRect>(object);
         case QVariant::RectF:
             return new PythonMetaTypeVariant<QRectF>(object);
-
         case QVariant::Url:
             return new PythonMetaTypeVariant<QUrl>(object);
 
+/*TODO
         case QVariant::Color:
             //QColor c = PythonType<QColor>::toVariant(object);
-//return new PythonMetaTypeVariant<QColor>(c);
+            //return new PythonMetaTypeVariant<QColor>(c);
             //return new MetaTypeVoidStar(typeId, &c);
             return new PythonMetaTypeVariant<QColor>(object);
-
-/*TODO
         case QVariant::Brush:
             return new PythonMetaTypeVariant<QBrush>(object);
         case QVariant::Font:
