@@ -259,6 +259,9 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 VALUE RubyExtension::callDisconnect(int argc, VALUE *argv, VALUE self)
 {
     //TODO
+    Q_UNUSED(argc);
+    Q_UNUSED(argv);
+    Q_UNUSED(self);
     return Qfalse;
 }
 
