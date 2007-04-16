@@ -24,6 +24,11 @@
 #include "pythonvariant.h"
 #include <kross/core/action.h>
 
+//TODO move that functionality to PythonExtension!
+#include <QMetaObject>
+#include <QMetaMethod>
+#include "pythonfunction.h"
+
 using namespace Kross;
 
 namespace Kross {
@@ -47,6 +52,22 @@ namespace Kross {
             */
             Py::Object* m_code;
 
+            /**
+            * List of QObject instances that should be
+            * auto connected on execution.
+            * \see ChildrenInterface::AutoConnectSignals
+            */
+            QList< QObject* > m_autoconnect;
+
+            /**
+            * The \a PythonFunction instances this \a Script
+            * is the owner of. For example the m_autoconnect
+            * list does produce such \a PythonFunction
+            * instances and we try to take care of removing
+            * them if not needed any longer.
+            */
+            QList< PythonFunction* > m_functions;
+
             PythonScriptPrivate() : m_module(0), m_code(0) {}
     };
 
@@ -66,6 +87,7 @@ PythonScript::~PythonScript()
     #ifdef KROSS_PYTHON_SCRIPT_DTOR_DEBUG
         krossdebug("PythonScript::Destructor.");
     #endif
+    qDeleteAll( d->m_functions );
     delete d->m_module; d->m_module = 0;
     delete d->m_code; d->m_code = 0;
     delete d;
@@ -102,20 +124,14 @@ bool PythonScript::initialize()
             Q_ASSERT(pymod);
             PyModule_AddStringConstant(pymod, "__file__", name);
 
-            //pymod = PyImport_AddModule(name);
-            //pymod = PyImport_Import( Py::String(name).ptr() );
-//pymod = PyImport_ImportModule(name);
-//PyObject* m = PyImport_ImportModule(name); //also executes the file :-/
-PyObject* m = PyImport_AddModule(name);
-            //PyImport_ImportModuleEx(  char *name, PyObject *globals, PyObject *locals, PyObject *fromlist)
-
+            PyObject* m = PyImport_AddModule(name);
             d->m_module = new Py::Module(pymod, true);
             if(! d->m_module) {
                 setError( QString("Failed to initialize local module context for script '%1'").arg(action()->objectName()) );
                 return false;
             }
 
-/*
+            /*
             // Register in module dict to allow such codes like: from whatever import mymodule
             PyObject* importdict = PyImport_GetModuleDict();
             if(! importdict) {
@@ -124,8 +140,7 @@ PyObject* m = PyImport_AddModule(name);
                 return false;
             }
             PyDict_SetItemString(importdict, name, pymod);
-*/
-
+            */
         }
 
         #ifdef KROSS_PYTHON_SCRIPT_INIT_DEBUG
@@ -144,10 +159,15 @@ PyObject* m = PyImport_AddModule(name);
             moduledict[ "self" ] = Py::asObject(new PythonExtension(action()));
 
             // Add the QObject instances to the modules dictonary.
-            QHashIterator< QString, QObject* > objectsit( action()->objects() );
-            while(objectsit.hasNext()) {
-                objectsit.next();
-                moduledict[ objectsit.key().toLatin1().data() ] = Py::asObject(new PythonExtension(objectsit.value()));
+            QHashIterator< QString, QObject* > aoit( action()->objects() );
+            while(aoit.hasNext()) {
+                aoit.next();
+                PythonExtension* extension = new PythonExtension( aoit.value() );
+                moduledict[ aoit.key().toLatin1().data() ] = Py::asObject(extension);
+
+                ChildrenInterface::Options options = action()->objectOption( aoit.key() );
+                if( options & ChildrenInterface::AutoConnectSignals )
+                    d->m_autoconnect.append( aoit.value() );
             }
 
             // Set up the import hook
@@ -163,6 +183,15 @@ PyObject* m = PyImport_AddModule(name);
                 PyObject* pyrunsyspath = PyRun_String(s.toLatin1(), Py_file_input, moduledict.ptr(), moduledict.ptr());
                 if(! pyrunsyspath) throw Py::Exception(); // throw exception
                 Py_XDECREF(pyrunsyspath); // free the reference.
+            }
+
+            // Walk through the global list of published QObject instances.
+            QHashIterator< QString, QObject* > moit( Manager::self().objects() );
+            while(moit.hasNext()) {
+                moit.next();
+                ChildrenInterface::Options options = action()->objectOption( moit.key() );
+                if( options & ChildrenInterface::AutoConnectSignals )
+                    d->m_autoconnect.append( moit.value() );
             }
         }
 
@@ -220,6 +249,9 @@ void PythonScript::finalize()
 
     PyErr_Clear();
     clearError();
+    d->m_autoconnect.clear();
+    qDeleteAll( d->m_functions );
+    d->m_functions.clear();
     delete d->m_module; d->m_module = 0;
     delete d->m_code; d->m_code = 0;
 }
@@ -227,12 +259,12 @@ void PythonScript::finalize()
 void PythonScript::execute()
 {
     #ifdef KROSS_PYTHON_SCRIPT_EXEC_DEBUG
-        krossdebug( QString("PythonScript::execute()") );
+        krossdebug( QString("PythonScript::execute") );
     #endif
 
     if( hadError() ) {
-        #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
-            krosswarning( QString("PythonScript::execute() Abort cause of prev error: %1\n%2").arg(errorMessage()).arg(errorTrace()) );
+        #ifdef KROSS_PYTHON_SCRIPT_EXEC_DEBUG
+            krosswarning( QString("PythonScript::execute Abort cause of prev error: %1\n%2").arg(errorMessage()).arg(errorTrace()) );
         #endif
         Py::AttributeError(errorMessage());
         return;
@@ -300,8 +332,42 @@ void PythonScript::execute()
         Q_ASSERT( d->m_code->reference_count() == 1 );
 
         #ifdef KROSS_PYTHON_SCRIPT_EXEC_DEBUG
-            krossdebug( QString("PythonScript::execute() result=%1").arg(result.as_string().c_str()) );
+            krossdebug( QString("PythonScript::execute result=%1").arg(result.as_string().c_str()) );
         #endif
+
+        // try to autoconnect
+        foreach(QObject* obj, d->m_autoconnect) {
+            const QMetaObject* metaobject = obj->metaObject();
+            const int count = metaobject->methodCount();
+            for(int i = 0; i < count; ++i) {
+                QMetaMethod metamethod = metaobject->method(i);
+                if( metamethod.methodType() == QMetaMethod::Signal ) {
+                    const QString signature = metamethod.signature();
+                    const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+
+                    PyObject* pyfunc = PyDict_GetItemString(moduledict.ptr(), name.constData());
+                    if( pyfunc ) {
+                        Py::Callable callable(pyfunc);
+                        PythonFunction* function = new PythonFunction(obj, metamethod.signature(), callable);
+                        QByteArray sendersignal = QString("2%1").arg(signature).toLatin1();
+                        QByteArray receiverslot = QString("1%1").arg(signature).toLatin1();
+                        if( QObject::connect(obj, sendersignal, function, receiverslot) ) {
+                            #ifdef KROSS_PYTHON_SCRIPT_AUTOCONNECT_DEBUG
+                                krossdebug( QString("PythonScript::execute connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature).arg(name.constData()) );
+                            #endif
+                            d->m_functions.append(function);
+                        }
+                        else {
+                            #ifdef KROSS_PYTHON_SCRIPT_AUTOCONNECT_DEBUG
+                                krossdebug( QString("PythonScript::execute failed to connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature).arg(name.constData()) );
+                            #endif
+                            delete function;
+                        }
+                    }
+                }
+            }
+        }
+
         //return PythonExtension::toObject(result);
     }
     catch(Py::Exception& e) {

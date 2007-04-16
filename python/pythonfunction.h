@@ -128,7 +128,7 @@ namespace Kross {
                             m_tmpResult = PythonType<QVariant>::toVariant(result);
                             #ifdef KROSS_PYTHON_FUNCTION_DEBUG
                                 QObject* sender = QObject::sender();
-                                krossdebug( QString("PythonFunction::qt_metacall sender.objectName=%1 sender.className=%2 pyresult=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(result.as_string().c_str()).arg(d->tmpResult.toString()) );
+                                krossdebug( QString("PythonFunction::qt_metacall sender.objectName=%1 sender.className=%2 pyresult=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(result.as_string().c_str()).arg(m_tmpResult.toString()) );
                             #endif
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
