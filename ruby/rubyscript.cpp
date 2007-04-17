@@ -133,7 +133,6 @@ void RubyScript::execute()
     rb_rescue2((VALUE(*)(...))callWrappedExecute, args, (VALUE(*)(...))handleExecuteException, Qnil, rb_eException, 0);
 
     ruby_in_eval--;
-    rb_thread_critical = critical;
 
     if (ruby_nerrs != 0) {
         #ifdef KROSS_RUBY_SCRIPT_DEBUG
@@ -144,6 +143,8 @@ void RubyScript::execute()
     } else {
         d->m_hasBeenSuccessFullyExecuted = true;
     }
+
+    rb_thread_critical = critical;
 }
 
 QStringList RubyScript::functionNames()
