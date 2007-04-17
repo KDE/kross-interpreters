@@ -239,10 +239,12 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
             receiver = receiverextension->object();
         }
         */
+#if(!(RUBY_VERSION_MAJOR==1 && RUBY_VERSION_MINOR==8 && RUBY_VERSION_TEENY==4))
         else {
             rb_raise(rb_eTypeError, ::QString("The argument number %1 is invalid.").arg(idx).toLatin1().constData());
             return Qfalse;
         }
+#endif
     }
 
     // Dirty hack to replace SIGNAL() and SLOT() macros. If the user doesn't
