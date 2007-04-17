@@ -130,7 +130,7 @@ bool PythonScript::initialize()
             PyModule_AddStringConstant(pymod, "__file__", name);
 
             //PyObject* m = PyImport_AddModule(name);
-            d->m_module = new Py::Module(pymod, true);
+            d->m_module = new Py::Module(pymod, false); //don't take over ownership
             if(! d->m_module) {
                 setError( QString("Failed to initialize local module context for script '%1'").arg(action()->objectName()) );
                 return false;
