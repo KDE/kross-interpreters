@@ -101,6 +101,10 @@ Py::Dict PythonScript::moduleDict() const
 
 bool PythonScript::initialize()
 {
+    #ifdef KROSS_PYTHON_SCRIPT_INIT_DEBUG
+        krossdebug( QString("PythonScript::initialize") );
+    #endif
+
     finalize(); // finalize before initialize
 
     try {
@@ -120,11 +124,12 @@ bool PythonScript::initialize()
         //krossdebug( QString("------------------> %1").arg(name) );
 
         { // Each Action uses an own module as scope.
-            PyObject* pymod = PyModule_New(name);
+            //PyObject* pymod = PyModule_New(name);
+            PyObject* pymod = PyImport_AddModule(name);
             Q_ASSERT(pymod);
             PyModule_AddStringConstant(pymod, "__file__", name);
 
-            PyObject* m = PyImport_AddModule(name);
+            //PyObject* m = PyImport_AddModule(name);
             d->m_module = new Py::Module(pymod, true);
             if(! d->m_module) {
                 setError( QString("Failed to initialize local module context for script '%1'").arg(action()->objectName()) );
@@ -189,7 +194,7 @@ bool PythonScript::initialize()
             QHashIterator< QString, QObject* > moit( Manager::self().objects() );
             while(moit.hasNext()) {
                 moit.next();
-                ChildrenInterface::Options options = action()->objectOption( moit.key() );
+                ChildrenInterface::Options options = Manager::self().objectOption( moit.key() );
                 if( options & ChildrenInterface::AutoConnectSignals )
                     d->m_autoconnect.append( moit.value() );
             }
@@ -238,6 +243,7 @@ bool PythonScript::initialize()
         PyErr_Print(); //e.clear();
         return false;
     }
+
     return true;
 }
 
