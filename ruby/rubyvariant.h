@@ -21,10 +21,6 @@
 #ifndef KROSS_RUBYVARIANT_H
 #define KROSS_RUBYVARIANT_H
 
-#include <ruby.h>
-#include <st.h>
-//#include <typeinfo>
-
 #include "rubyconfig.h"
 #include <kross/core/metatype.h>
 

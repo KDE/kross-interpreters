@@ -21,14 +21,13 @@
 #ifndef KROSS_RUBYRUBYMODULE_H
 #define KROSS_RUBYRUBYMODULE_H
 
-#include <ruby.h>
-
-#include <QString>
-#include <QObject>
-
+#include "rubyconfig.h"
 #include <kross/core/krossconfig.h>
 //#include "../core/object.h"
 //#include "../core/module.h"
+
+#include <QString>
+#include <QObject>
 
 namespace Kross {
 

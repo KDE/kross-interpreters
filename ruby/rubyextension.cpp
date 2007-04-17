@@ -221,7 +221,12 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
     QObject* receiver; // the receiver object
     QByteArray receiverslot; // the receiver slot
     if( TYPE(argv[idx]) == T_DATA ) {
+#if(RUBY_VERSION_MAJOR==1 && RUBY_VERSION_MINOR==8 && RUBY_VERSION_TEENY==4)
+        //Ruby sucks sometimes; http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/201285
+        { // just always assume the user provides a method here for now...
+#else
         if( rb_obj_is_kind_of(argv[idx], rb_cMethod) ) { // connect with ruby method
+#endif
             RubyFunction* function = selfextension->createFunction(sender, sendersignal, argv[idx]);
             receiver = function;
             receiverslot = sendersignal;

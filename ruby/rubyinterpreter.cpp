@@ -17,7 +17,11 @@
  * the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
+
 #include "rubyinterpreter.h"
+#include "rubyextension.h"
+#include "rubymodule.h"
+#include "rubyscript.h"
 
 #include <map>
 
@@ -26,11 +30,6 @@
 //#include "../core/exception.h"
 //#include "../core/module.h"
 #include <kross/core/manager.h>
-
-#include "rubyconfig.h"
-#include "rubyextension.h"
-#include "rubymodule.h"
-#include "rubyscript.h"
 
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::RubyInterpreter instances.

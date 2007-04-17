@@ -19,8 +19,6 @@
  ***************************************************************************/
 
 #include "rubymodule.h"
-
-#include "rubyconfig.h"
 #include "rubyextension.h"
 
 #include <QPointer>

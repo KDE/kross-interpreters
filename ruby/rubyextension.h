@@ -21,8 +21,6 @@
 #ifndef KROSS_RUBYRUBYEXTENSION_H
 #define KROSS_RUBYRUBYEXTENSION_H
 
-#include <ruby.h>
-
 #include "rubyconfig.h"
 
 #include <QStringList>

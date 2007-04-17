@@ -20,7 +20,7 @@
 #ifndef KROSS_RUBYCALLCACHE_H
 #define KROSS_RUBYCALLCACHE_H
 
-#include <ruby.h>
+#include "rubyconfig.h"
 
 #include <QVarLengthArray>
 class QObject;

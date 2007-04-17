@@ -20,6 +20,11 @@
 #ifndef KROSS_RUBY_CONFIG_H
 #define KROSS_RUBY_CONFIG_H
 
+#include <ruby.h>
+#include <st.h>
+//#include <typeinfo>
+#include <version.h>
+
 #include <kross/core/krossconfig.h>
 
 #define KROSS_RUBY_SCRIPT_DEBUG

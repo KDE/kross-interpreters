@@ -21,7 +21,7 @@
 #ifndef KROSS_RUBYRUBYINTERPRETER_H
 #define KROSS_RUBYRUBYINTERPRETER_H
 
-#include <ruby.h>
+#include "rubyconfig.h"
 
 #include <kross/core/krossconfig.h>
 #include <kross/core/interpreter.h>
