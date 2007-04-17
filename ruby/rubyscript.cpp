@@ -104,6 +104,7 @@ static VALUE handleExecuteException(VALUE args, VALUE error)
     for(int i = 1; i < RARRAY(bt)->len; ++i)
         if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
             fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
+    ruby_nerrs++;
     return Qnil;
 }
 
@@ -134,7 +135,6 @@ void RubyScript::execute()
     ruby_in_eval--;
     rb_thread_critical = critical;
 
-    //TODO seems ruby_nerrs isn't set any longer. So, use the handleExecuteException
     if (ruby_nerrs != 0) {
         #ifdef KROSS_RUBY_SCRIPT_DEBUG
             krossdebug("Compilation has failed");
@@ -144,22 +144,6 @@ void RubyScript::execute()
     } else {
         d->m_hasBeenSuccessFullyExecuted = true;
     }
-
-#if 0
-    if (result != 0) {
-        #ifdef KROSS_RUBY_SCRIPT_DEBUG
-            krossdebug("RubyScript::execute failed");
-        #endif
-
-        /*
-        if( TYPE( ruby_errinfo )  == T_DATA && RubyExtension::isOfExceptionType( ruby_errinfo ) )
-        {
-            setError( RubyExtension::convertToException( ruby_errinfo ) );
-        } else
-        */
-        setError( QString("Failed to execute ruby code: %1").arg(STR2CSTR( rb_obj_as_string(ruby_errinfo) )) ); // TODO: get the error
-    }
-#endif
 }
 
 QStringList RubyScript::functionNames()
