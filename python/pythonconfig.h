@@ -20,8 +20,6 @@
 #ifndef KROSS_PYTHON_CONFIG_H
 #define KROSS_PYTHON_CONFIG_H
 
-#include <kross/core/krossconfig.h>
-
 // Prevent warnings
 #if defined(_XOPEN_SOURCE)
   #undef _XOPEN_SOURCE
@@ -36,6 +34,8 @@
 #include <compile.h>
 #include <eval.h>
 #include <frameobject.h>
+
+#include <kross/core/krossconfig.h>
 
 // Include the PyCXX stuff.
 #include "cxx/Config.hxx"
