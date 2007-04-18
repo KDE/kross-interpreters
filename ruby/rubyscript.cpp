@@ -96,22 +96,18 @@ namespace Kross {
                 QPair< QObject* , QString > f = rubyscript->d->m_functions[methodname];
 
                 //TODO destroy if not needed any longer
-                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), unit);
+                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), SYM2ID(unit));
 
+                QObject* sender = f.first;
                 QByteArray sendersignal = QString("2%1").arg(f.second).toLatin1();
                 QByteArray receiverslot = QString("1%1").arg(f.second).toLatin1();
-                if( QObject::connect(f.first, sendersignal, function, receiverslot) ) {
+                if( QObject::connect(sender, sendersignal, function, receiverslot) ) {
                     krossdebug( QString("=> RubyScript::method_added connected object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
                 }
                 else {
                     krossdebug( QString("=> RubyScript::method_added failed to connect object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
                 }
                 //rubyscript->addFunction(methodname)
-
-                //script->action()->
-                //QObject* object = extension->object();
-                //const QMetaObject* metaobject = object->metaObject();
-                //int idx = metaobject->indexOfSignal(methodname);
             }
 
             return module;

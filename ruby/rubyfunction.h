@@ -48,7 +48,7 @@ namespace Kross {
             * \param method The callable ruby methods that should
             * be executed if the QObject emits the signal.
             */
-            RubyFunction(QObject* sender, const QByteArray& signal, const VALUE& method)
+            RubyFunction(QObject* sender, const QByteArray& signal, VALUE method)
                 : MetaFunction(sender, signal), m_method(method) {}
 
             /**
@@ -63,7 +63,9 @@ namespace Kross {
             int qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             {
                 _id = QObject::qt_metacall(_c, _id, _a);
-                //krossdebug(QString("RubyFunction::qt_metacall id=%1").arg(_id));
+                #ifdef KROSS_RUBY_FUNCTION_DEBUG
+                    krossdebug(QString("RubyFunction::qt_metacall id=%1").arg(_id));
+                #endif
                 if(_id >= 0 && _c == QMetaObject::InvokeMetaMethod) {
                     switch(_id) {
                         case 0: {
