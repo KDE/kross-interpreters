@@ -115,7 +115,7 @@ namespace Kross {
                             m_tmpResult = RubyType<QVariant>::toVariant(result);
                             #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                 QObject* sender = QObject::sender();
-                                krossdebug( QString("RubyFunction::qt_metacall sender.objectName=%1 sender.className=%2 result=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(rb_inspect(result)).arg(m_tmpResult.toString()) );
+                                krossdebug( QString("RubyFunction::qt_metacall sender.objectName=%1 sender.className=%2 result=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(STR2CSTR(rb_inspect(result))).arg(m_tmpResult.toString()) );
                             #endif
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);

@@ -32,13 +32,18 @@
 #include "rubyextension.h"
 #include "rubyinterpreter.h"
 
+#include <QObject>
+#include <QMetaObject>
+
 extern NODE *ruby_eval_tree;
 
 using namespace Kross;
 
-static VALUE handleCallException(VALUE args, VALUE error)
+static VALUE callExecuteException(VALUE args, VALUE error)
 {
-    krossdebug("RubyScript::handleCallException");
+    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+        krossdebug("RubyScript::callExecuteException");
+    #endif
     Q_UNUSED(args);
     Q_UNUSED(error);
     VALUE info = rb_gv_get("$!");
@@ -54,29 +59,17 @@ static VALUE handleCallException(VALUE args, VALUE error)
 
 static VALUE callExecute(VALUE args)
 {
-    krossdebug("RubyScript::callExecute");
-    Check_Type(args, T_ARRAY);
-    VALUE script = rb_ary_entry(args, 0);
-    VALUE id = rb_ary_entry(args, 1);
-    VALUE src = rb_ary_entry(args, 2);
-    VALUE fileName = rb_ary_entry(args, 3);
-    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(script) )));
-    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(id) )));
-    //krossdebug(QString("3: %1").arg(STR2CSTR( rb_inspect(fileName) )));
-    //krossdebug(QString("4: %1").arg(STR2CSTR( rb_inspect(src) )));
-    return rb_funcall(script, id, 2, src, fileName);
-}
-
-static VALUE callMethodAdded(VALUE args)
-{
-    krossdebug("RubyScript::callMethodAdded");
+    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+        krossdebug("RubyScript::callExecute");
+    #endif
     Check_Type(args, T_ARRAY);
     VALUE self = rb_ary_entry(args, 0);
-    VALUE unit = rb_ary_entry(args, 1);
-    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(self) )));
-    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(unit) )));
-    rb_funcall(self, rb_intern("module_function"), 1, unit);
-    return self;
+    VALUE src = rb_ary_entry(args, 1);
+    VALUE fileName = rb_ary_entry(args, 2);
+    //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
+    //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
+    //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
+    return rb_funcall(self, rb_intern("module_eval"), 2, src, fileName);
 }
 
 namespace Kross {
@@ -87,10 +80,28 @@ namespace Kross {
 
         static VALUE method_added(VALUE self, VALUE unit)
         {
-            VALUE args = rb_ary_new2(2);
-            rb_ary_store(args, 0, self);
-            rb_ary_store(args, 1, unit);
-            return rb_rescue2((VALUE(*)(...))callMethodAdded, args, (VALUE(*)(...))handleCallException, Qnil, rb_eException, 0);
+            VALUE module = rb_funcall(self, rb_intern("module_function"), 1, unit);
+            Q_ASSERT( TYPE(module) == TYPE(self) );
+
+            char *methodname = rb_id2name(SYM2ID(unit));
+            krossdebug( QString("RubyScriptPrivate::method_added methodname=%1").arg(methodname) );
+            krossdebug(QString("RubyScriptPrivate::method_added self=%1").arg(STR2CSTR( rb_inspect(self) )));
+            krossdebug(QString("RubyScriptPrivate::method_added module=%1").arg(STR2CSTR( rb_inspect(module) )));
+
+            VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
+            krossdebug(QString("RubyScriptPrivate::method_added rubyscriptvalue=%1").arg(STR2CSTR( rb_inspect(rubyscriptvalue) )));
+
+            RubyScript* rubyscript;
+            Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
+            Q_ASSERT(rubyscript);
+            krossdebug(QString("RubyScriptPrivate::method_added rubyscript=%1").arg(rubyscript->action()->objectName()));
+
+            //script->action()->
+            //QObject* object = extension->object();
+            //const QMetaObject* metaobject = object->metaObject();
+            //int idx = metaobject->indexOfSignal(methodname);
+
+            return module;
         }
 
         RubyScriptPrivate() : m_script(0), m_hasBeenSuccessFullyExecuted(false)
@@ -115,6 +126,10 @@ RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* Action)
     : Kross::Script(interpreter, Action), d(new RubyScriptPrivate())
 {
     d->m_script = rb_funcall(RubyScriptPrivate::s_krossScript, rb_intern("new"), 0);
+
+    VALUE rubyscriptvalue = Data_Wrap_Struct(RubyScriptPrivate::s_krossScript, 0, 0, this);
+    rb_define_const(d->m_script, "RUBYSCRIPTOBJ", rubyscriptvalue);
+
     rb_global_variable(&d->m_script);
 }
 
@@ -139,12 +154,11 @@ void RubyScript::execute()
     rb_thread_critical = Qtrue;
     ruby_in_eval++;
 
-    VALUE args = rb_ary_new2 (4);
-    rb_ary_store(args, 0, d->m_script);
-    rb_ary_store(args, 1, rb_intern("module_eval"));
-    rb_ary_store(args, 2, src);
-    rb_ary_store(args, 3, fileName);
-    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))handleCallException, Qnil, rb_eException, 0);
+    VALUE args = rb_ary_new2(3);
+    rb_ary_store(args, 0, d->m_script); //self
+    rb_ary_store(args, 1, src);
+    rb_ary_store(args, 2, fileName);
+    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, Qnil, rb_eException, 0);
 
     ruby_in_eval--;
 
