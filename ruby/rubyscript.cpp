@@ -36,26 +36,69 @@ extern NODE *ruby_eval_tree;
 
 using namespace Kross;
 
+static VALUE handleCallException(VALUE args, VALUE error)
+{
+    krossdebug("RubyScript::handleCallException");
+    Q_UNUSED(args);
+    Q_UNUSED(error);
+    VALUE info = rb_gv_get("$!");
+    VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
+    VALUE message = RARRAY(bt)->ptr[0];
+    fprintf(stderr,"%s: %s (%s)\n", STR2CSTR(message), STR2CSTR(rb_obj_as_string(info)), rb_class2name(CLASS_OF(info)));
+    for(int i = 1; i < RARRAY(bt)->len; ++i)
+        if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
+            fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
+    ruby_nerrs++;
+    return Qnil;
+}
+
+static VALUE callExecute(VALUE args)
+{
+    krossdebug("RubyScript::callExecute");
+    Check_Type(args, T_ARRAY);
+    VALUE script = rb_ary_entry(args, 0);
+    VALUE id = rb_ary_entry(args, 1);
+    VALUE src = rb_ary_entry(args, 2);
+    VALUE fileName = rb_ary_entry(args, 3);
+    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(script) )));
+    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(id) )));
+    //krossdebug(QString("3: %1").arg(STR2CSTR( rb_inspect(fileName) )));
+    //krossdebug(QString("4: %1").arg(STR2CSTR( rb_inspect(src) )));
+    return rb_funcall(script, id, 2, src, fileName);
+}
+
+static VALUE callMethodAdded(VALUE args)
+{
+    krossdebug("RubyScript::callMethodAdded");
+    Check_Type(args, T_ARRAY);
+    VALUE self = rb_ary_entry(args, 0);
+    VALUE unit = rb_ary_entry(args, 1);
+    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(self) )));
+    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(unit) )));
+    rb_funcall(self, rb_intern("module_function"), 1, unit);
+    return self;
+}
+
 namespace Kross {
 
-    namespace Internals {
-        namespace Script {
-            static VALUE method_added(VALUE self, VALUE unit)
-            {
-                rb_funcall(self, rb_intern("module_function"), unit);
-                return self;
-            }
-        }
-    }
     /// \internal
     class RubyScriptPrivate {
         friend class RubyScript;
+
+        static VALUE method_added(VALUE self, VALUE unit)
+        {
+            VALUE args = rb_ary_new2(2);
+            rb_ary_store(args, 0, self);
+            rb_ary_store(args, 1, unit);
+            return rb_rescue2((VALUE(*)(...))callMethodAdded, args, (VALUE(*)(...))handleCallException, Qnil, rb_eException, 0);
+        }
+
         RubyScriptPrivate() : m_script(0), m_hasBeenSuccessFullyExecuted(false)
         {
             if(RubyScriptPrivate::s_krossScript == 0)
             {
                 RubyScriptPrivate::s_krossScript = rb_define_class_under(RubyInterpreter::krossModule(), "Script", rb_cModule);
-                rb_define_method(RubyScriptPrivate::s_krossScript, "method_added", (VALUE (*)(...))Internals::Script::method_added, 1);
+                rb_define_method(RubyScriptPrivate::s_krossScript, "method_added", (VALUE (*)(...))RubyScriptPrivate::method_added, 1);
             }
         }
         VALUE m_script;
@@ -77,35 +120,6 @@ RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* Action)
 
 RubyScript::~RubyScript()
 {
-}
-
-static VALUE callWrappedExecute(VALUE args)
-{
-    Check_Type(args, T_ARRAY);
-    VALUE script = rb_ary_entry(args, 0);
-    VALUE id = rb_ary_entry(args, 1);
-    VALUE src = rb_ary_entry(args, 2);
-    VALUE fileName = rb_ary_entry(args, 3);
-    //krossdebug(QString("1: %1").arg(STR2CSTR( rb_inspect(script) )));
-    //krossdebug(QString("2: %1").arg(STR2CSTR( rb_inspect(id) )));
-    //krossdebug(QString("3: %1").arg(STR2CSTR( rb_inspect(fileName) )));
-    //krossdebug(QString("4: %1").arg(STR2CSTR( rb_inspect(src) )));
-    return rb_funcall(script, id, 2, src, fileName);
-}
-
-static VALUE handleExecuteException(VALUE args, VALUE error)
-{
-    Q_UNUSED(args);
-    Q_UNUSED(error);
-    VALUE info = rb_gv_get("$!");
-    VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
-    VALUE message = RARRAY(bt)->ptr[0];
-    fprintf(stderr,"%s: %s (%s)\n", STR2CSTR(message), STR2CSTR(rb_obj_as_string(info)), rb_class2name(CLASS_OF(info)));
-    for(int i = 1; i < RARRAY(bt)->len; ++i)
-        if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
-            fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
-    ruby_nerrs++;
-    return Qnil;
 }
 
 void RubyScript::execute()
@@ -130,7 +144,7 @@ void RubyScript::execute()
     rb_ary_store(args, 1, rb_intern("module_eval"));
     rb_ary_store(args, 2, src);
     rb_ary_store(args, 3, fileName);
-    rb_rescue2((VALUE(*)(...))callWrappedExecute, args, (VALUE(*)(...))handleExecuteException, Qnil, rb_eException, 0);
+    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))handleCallException, Qnil, rb_eException, 0);
 
     ruby_in_eval--;
 
