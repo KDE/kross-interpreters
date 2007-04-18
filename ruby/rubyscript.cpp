@@ -20,20 +20,16 @@
 
 #include "rubyscript.h"
 #include "rubyvariant.h"
-
-#include <ruby.h>
-#include <env.h>
-#include <rubysig.h>
-#include <node.h>
-
-#include <kross/core/action.h>
-
-#include "rubyconfig.h"
-#include "rubyextension.h"
 #include "rubyinterpreter.h"
+#include "rubyextension.h"
+#include "rubyfunction.h"
+
+#include <kross/core/manager.h>
+#include <kross/core/action.h>
 
 #include <QObject>
 #include <QMetaObject>
+#include <QMetaMethod>
 
 extern NODE *ruby_eval_tree;
 
@@ -96,34 +92,79 @@ namespace Kross {
             Q_ASSERT(rubyscript);
             krossdebug(QString("RubyScriptPrivate::method_added rubyscript=%1").arg(rubyscript->action()->objectName()));
 
-            //script->action()->
-            //QObject* object = extension->object();
-            //const QMetaObject* metaobject = object->metaObject();
-            //int idx = metaobject->indexOfSignal(methodname);
+            if( rubyscript->d->m_functions.contains(methodname) ) {
+                QPair< QObject* , QString > f = rubyscript->d->m_functions[methodname];
+
+                //TODO destroy if not needed any longer
+                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), unit);
+
+                QByteArray sendersignal = QString("2%1").arg(f.second).toLatin1();
+                QByteArray receiverslot = QString("1%1").arg(f.second).toLatin1();
+                if( QObject::connect(f.first, sendersignal, function, receiverslot) ) {
+                    krossdebug( QString("=> RubyScript::method_added connected object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
+                }
+                else {
+                    krossdebug( QString("=> RubyScript::method_added failed to connect object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
+                }
+                //rubyscript->addFunction(methodname)
+
+                //script->action()->
+                //QObject* object = extension->object();
+                //const QMetaObject* metaobject = object->metaObject();
+                //int idx = metaobject->indexOfSignal(methodname);
+            }
 
             return module;
         }
 
         RubyScriptPrivate() : m_script(0), m_hasBeenSuccessFullyExecuted(false)
         {
-            if(RubyScriptPrivate::s_krossScript == 0)
-            {
+            if(RubyScriptPrivate::s_krossScript == 0) {
                 RubyScriptPrivate::s_krossScript = rb_define_class_under(RubyInterpreter::krossModule(), "Script", rb_cModule);
                 rb_define_method(RubyScriptPrivate::s_krossScript, "method_added", (VALUE (*)(...))RubyScriptPrivate::method_added, 1);
             }
         }
+
+        void addFunctions(ChildrenInterface* children)
+        {
+            QHashIterator< QString, ChildrenInterface::Options > it( children->objectOptions() );
+            while(it.hasNext()) {
+                it.next();
+                if( it.value() & ChildrenInterface::AutoConnectSignals ) {
+                    QObject* sender = children->object( it.key() );
+                    if( sender ) {
+                        const QMetaObject* metaobject = sender->metaObject();
+                        const int count = metaobject->methodCount();
+                        for(int i = 0; i < count; ++i) {
+                            QMetaMethod metamethod = metaobject->method(i);
+                            if( metamethod.methodType() == QMetaMethod::Signal ) {
+                                const QString signature = metamethod.signature();
+                                const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+                                m_functions.insert( name, QPair< QObject* , QString >(sender, signature) );
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         VALUE m_script;
-        QStringList m_functions;
+        QStringList m_functionnames;
         static VALUE s_krossScript;
         bool m_hasBeenSuccessFullyExecuted;
+
+        QHash< QByteArray, // the signalname, e.g. "mySignal"
+                QPair< QObject* , // the QObject the signal belongs to
+                       QString > // the signature, e.g. "mySignal(QString,int)"
+             > m_functions;
     };
 
 }
 
 VALUE RubyScriptPrivate::s_krossScript = 0;
 
-RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* Action)
-    : Kross::Script(interpreter, Action), d(new RubyScriptPrivate())
+RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* action)
+    : Kross::Script(interpreter, action), d(new RubyScriptPrivate())
 {
     d->m_script = rb_funcall(RubyScriptPrivate::s_krossScript, rb_intern("new"), 0);
 
@@ -131,10 +172,14 @@ RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* Action)
     rb_define_const(d->m_script, "RUBYSCRIPTOBJ", rubyscriptvalue);
 
     rb_global_variable(&d->m_script);
+
+    d->addFunctions( &Manager::self() );
+    d->addFunctions( action );
 }
 
 RubyScript::~RubyScript()
 {
+    delete d;
 }
 
 void RubyScript::execute()
@@ -143,23 +188,24 @@ void RubyScript::execute()
         krossdebug("RubyScript::execute()");
     #endif
 
+    const int critical = rb_thread_critical;
+    rb_thread_critical = Qtrue;
+
     ruby_nerrs = 0;
     ruby_errinfo = Qnil;
+
     VALUE src = RubyType<QString>::toVALUE( action()->code() );
     StringValue(src);
     VALUE fileName = RubyType<QString>::toVALUE( action()->file() );
     StringValue(fileName);
 
-    const int critical = rb_thread_critical;
-    rb_thread_critical = Qtrue;
-    ruby_in_eval++;
-
     VALUE args = rb_ary_new2(3);
     rb_ary_store(args, 0, d->m_script); //self
     rb_ary_store(args, 1, src);
     rb_ary_store(args, 2, fileName);
-    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, Qnil, rb_eException, 0);
 
+    ruby_in_eval++;
+    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, Qnil, rb_eException, 0);
     ruby_in_eval--;
 
     if (ruby_nerrs != 0) {
@@ -183,8 +229,9 @@ QStringList RubyScript::functionNames()
 
     if(not d->m_hasBeenSuccessFullyExecuted ) {
         execute();
+        //d->m_functionnames = ; //TODO
     }
-    return d->m_functions;
+    return d->m_functionnames;
 }
 
 QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)

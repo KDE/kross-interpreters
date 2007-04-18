@@ -19,14 +19,11 @@
  ***************************************************************************/
 
 #include "rubyextension.h"
-
 #include "rubycallcache.h"
 #include "rubyvariant.h"
 #include "rubyinterpreter.h"
 #include "rubyfunction.h"
 #include <kross/core/metatype.h>
-
-//#include <st.h>
 
 #include <QMap>
 #include <QString>

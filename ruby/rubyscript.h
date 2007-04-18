@@ -21,6 +21,7 @@
 #ifndef KROSS_RUBYRUBYSCRIPT_H
 #define KROSS_RUBYRUBYSCRIPT_H
 
+#include "rubyconfig.h"
 #include <kross/core/krossconfig.h>
 #include <kross/core/script.h>
 
@@ -35,6 +36,7 @@ namespace Kross {
     */
     class RubyScript : public Kross::Script
     {
+            friend class RubyScriptPrivate;
         public:
 
             /**
@@ -42,11 +44,11 @@ namespace Kross {
             *
             * @param interpreter The @a RubyInterpreter instance used to
             *        create this script.
-            * @param Action The @a Kross::Action
+            * @param action The @a Kross::Action
             *        instance this @a RubyScript does handle the
             *        backend-work for.
             */
-            RubyScript(Kross::Interpreter* interpreter, Kross::Action* Action);
+            RubyScript(Kross::Interpreter* interpreter, Kross::Action* action);
 
             /**
             * Destructor.
