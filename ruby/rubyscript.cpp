@@ -95,8 +95,11 @@ namespace Kross {
             if( rubyscript->d->m_functions.contains(methodname) ) {
                 QPair< QObject* , QString > f = rubyscript->d->m_functions[methodname];
 
+                VALUE method = rb_funcall(self, rb_intern("method"), 1, rb_str_new2(methodname));
+                krossdebug(QString("RubyScriptPrivate::method_added method=%1").arg(STR2CSTR( rb_inspect(method) )));
+
                 //TODO destroy if not needed any longer
-                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), SYM2ID(unit));
+                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), method);
 
                 QObject* sender = f.first;
                 QByteArray sendersignal = QString("2%1").arg(f.second).toLatin1();
