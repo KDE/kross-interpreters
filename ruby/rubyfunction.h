@@ -56,6 +56,36 @@ namespace Kross {
             */
             virtual ~RubyFunction() {}
 
+            static VALUE callFunctionException(VALUE args, VALUE error)
+            {
+                krossdebug("callFunctionException");
+                Q_UNUSED(args);
+                Q_UNUSED(error);
+                VALUE info = rb_gv_get("$!");
+                VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
+                VALUE message = RARRAY(bt)->ptr[0];
+                fprintf(stderr,"%s: %s (%s)\n", STR2CSTR(message), STR2CSTR(rb_obj_as_string(info)), rb_class2name(CLASS_OF(info)));
+                for(int i = 1; i < RARRAY(bt)->len; ++i)
+                    if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
+                        fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
+                //ruby_nerrs++;
+                return Qnil;
+            }
+
+            static VALUE callFunction(VALUE args)
+            {
+                krossdebug("callFunction");
+                Check_Type(args, T_ARRAY);
+                VALUE self = rb_ary_entry(args, 0);
+                int argsize = FIX2INT( rb_ary_entry(args, 1) );
+                VALUE arguments = rb_ary_entry(args, 2);
+                //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
+                //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
+                //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
+return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
+                //return rb_funcall(self, rb_intern("module_eval"), 2, src, fileName);
+            }
+
             /**
             * This method got called if a method this QObject instance
             * defines should be invoked.
@@ -87,14 +117,14 @@ namespace Kross {
                                         switch( tp ) {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
-                                                args[idx-1] = RubyExtension::toVALUE( new RubyExtension(obj) );
+                                                args[ idx-1 ] = RubyExtension::toVALUE( new RubyExtension(obj) );
                                             } break;
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                                args[idx-1] = RubyExtension::toVALUE( new RubyExtension(obj) );
+                                                args[ idx-1 ] = RubyExtension::toVALUE( new RubyExtension(obj) );
                                             } break;
                                             default: {
-                                                args[idx-1] = Qnil;
+                                                args[ idx-1 ] = Qnil;
                                             } break;
                                         }
                                     } break;
@@ -103,15 +133,23 @@ namespace Kross {
                                         #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                             krossdebug( QString("RubyFunction::qt_metacall argument param=%1 typeId=%2").arg(param.constData()).arg(tp) );
                                         #endif
-                                        args[idx-1] = RubyType<QVariant>::toVALUE(v);
+                                        args[ idx-1 ] = RubyType<QVariant>::toVALUE(v);
                                     } break;
                                 }
                                 ++idx;
                             }
 
                             // call the ruby function
-                            //TODO use rb_rescue2 to catch exceptions?
-                            VALUE result = rb_funcall2(m_method, rb_intern("call"), argsize, args);
+                            //VALUE result = rb_funcall2(m_method, rb_intern("call"), argsize, args);
+
+                            //TODO optimize
+                            ruby_in_eval++;
+                            VALUE argarray = rb_ary_new2(3);
+                            rb_ary_store(argarray, 0, m_method); //self
+                            rb_ary_store(argarray, 1, INT2FIX(argsize));
+                            rb_ary_store(argarray, 2, *args);
+                            VALUE result = rb_rescue2((VALUE(*)(...))callFunction, argarray, (VALUE(*)(...))callFunctionException, Qnil, rb_eException, 0);
+                            ruby_in_eval--;
 
                             // finally set the returnvalue
                             m_tmpResult = RubyType<QVariant>::toVariant(result);
