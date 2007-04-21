@@ -54,7 +54,7 @@ namespace Kross {
     RubyCallCache::~RubyCallCache()
     {
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            krossdebug( QString("RubyCallCache Dtor object=%1 methodindex=%2").arg(d->object->objectName()).arg(d->methodindex) );
+            krossdebug( QString("RubyCallCache Dtor") );
         #endif
         delete d;
     }
