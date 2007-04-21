@@ -45,10 +45,17 @@ namespace Kross {
     RubyCallCache::RubyCallCache(QObject* object, int methodindex, bool hasreturnvalue, QVarLengthArray<int> ntypes, QVarLengthArray<int> nmetatypes)
         : d(new RubyCallCachePrivate(object, methodindex, hasreturnvalue, ntypes, nmetatypes)), m_self(0)
     {
+        Q_ASSERT(object);
+        #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
+            krossdebug( QString("RubyCallCache Ctor object=%1 methodindex=%2").arg(d->object->objectName()).arg(d->methodindex) );
+        #endif
     }
 
     RubyCallCache::~RubyCallCache()
     {
+        #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
+            krossdebug( QString("RubyCallCache Dtor object=%1 methodindex=%2").arg(d->object->objectName()).arg(d->methodindex) );
+        #endif
         delete d;
     }
 
@@ -58,7 +65,7 @@ namespace Kross {
         QVarLengthArray<MetaType*> variantargs( typelistcount );
         QVarLengthArray<void*> voidstarargs( typelistcount );
 
-        #ifdef KROSS_RUBY_EXTENSION_DEBUG
+        #ifdef KROSS_RUBY_CALLCACHE_DEBUG
             QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
             krossdebug( QString("RubyCallCache::execfunction signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(metamethod.signature()).arg(metamethod.typeName()).arg(argc).arg(typelistcount) );
             for(int i = 0; i < d->types.count(); ++i)
@@ -97,7 +104,7 @@ namespace Kross {
 
         // call the method now
         int r = d->object->qt_metacall(QMetaObject::InvokeMetaMethod, d->methodindex, &voidstarargs[0]);
-        #ifdef KROSS_RUBY_EXTENSION_DEBUG
+        #ifdef KROSS_RUBY_CALLCACHE_DEBUG
             krossdebug( QString("RESULT nr=%1").arg(r) );
         #else
             Q_UNUSED(r);
@@ -113,7 +120,7 @@ namespace Kross {
         if(d->hasreturnvalue)
         {
             QVariant result(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
-            #ifdef KROSS_RUBY_EXTENSION_DEBUG
+            #ifdef KROSS_RUBY_CALLCACHE_DEBUG
                 QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
                 krossdebug( QString("RubyExtension::callMetaMethod Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4").arg(variantargs[0]->typeId()).arg(metamethod.typeName()).arg(result.toString()).arg(result.typeName()) );
             #endif
@@ -127,7 +134,7 @@ namespace Kross {
 
     void RubyCallCache::delete_object(void* object)
     {
-        #ifdef KROSS_RUBY_EXTENSION_DEBUG
+        #ifdef KROSS_RUBY_CALLCACHE_DEBUG
             krossdebug("RubyCallCache::delete_object");
         #endif
         RubyCallCache* extension = static_cast< RubyCallCache* >(object);
@@ -137,7 +144,7 @@ namespace Kross {
 
     VALUE RubyCallCache::method_cacheexec(int argc, VALUE *argv, VALUE self)
     {
-        #ifdef KROSS_RUBY_EXTENSION_DEBUG
+        #ifdef KROSS_RUBY_CALLCACHE_DEBUG
             krossdebug("RubyCallCache::method_cacheexec");
         #endif
         RubyCallCache* callcache;

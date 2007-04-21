@@ -69,7 +69,7 @@ RubyExtension::RubyExtension(QObject* object)
 {
     d->m_object = object;
 
-    #ifdef KROSS_RUBY_EXTENSION_DEBUG
+    #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
         krossdebug(QString("RubyExtension Ctor QObject=%1").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL" ));
     #endif
 
@@ -113,8 +113,8 @@ RubyExtension::RubyExtension(QObject* object)
 
 RubyExtension::~RubyExtension()
 {
-    #ifdef KROSS_RUBY_EXTENSION_DEBUG
-        krossdebug("RubyExtension Dtor");
+    #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
+        krossdebug(QString("RubyExtension Dtor QObject=%1").arg(d->m_object ? d->m_object->objectName() : "NULL"));
     #endif
     qDeleteAll(d->functions);
     delete d;
@@ -141,8 +141,7 @@ VALUE RubyExtension::method_missing(int argc, VALUE *argv, VALUE self)
         krossdebug("RubyExtension::method_missing Converting self to RubyExtension");
     #endif
 
-    RubyExtension* extension;
-    Data_Get_Struct(self, RubyExtension, extension);
+    RubyExtension* extension = toExtension(self);
     Q_ASSERT(extension);
     return RubyExtension::call_method_missing(extension, argc, argv, self);
 }
@@ -152,8 +151,7 @@ VALUE RubyExtension::clone(VALUE self)
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
         krossdebug("Cloning...");
     #endif
-    RubyExtension* extension;
-    Data_Get_Struct(self, RubyExtension, extension);
+    RubyExtension* extension = toExtension(self);
     Q_ASSERT(extension);
     if( extension->d->m_methods.contains("clone") ) {
         return extension->callMetaMethod("clone", 1, &self, self);
@@ -176,8 +174,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
         return Qfalse;
     }
 
-    RubyExtension* selfextension;
-    Data_Get_Struct(self, RubyExtension, selfextension);
+    RubyExtension* selfextension = toExtension(self);
     Q_ASSERT(selfextension);
 
     int idx; // next argument to check
@@ -198,8 +195,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
                 rb_raise(rb_eTypeError, "Second argument needs to be a signalname.");
                 return Qfalse;
             }
-            RubyExtension* senderextension;
-            Data_Get_Struct(argv[0], RubyExtension, senderextension);
+            RubyExtension* senderextension = toExtension(argv[0]);
             Q_ASSERT(senderextension);
             sender = senderextension->object();
             sendersignal = RubyType<QByteArray>::toVariant(argv[1]);
@@ -230,8 +226,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
         }
         /*TODO
         else if( RubyExtension::isRubyExtension(args[idx]) ) { // connect(..., receiver, signal)
-            RubyExtension* receiverextension;
-            Data_Get_Struct(args[idx], RubyExtension, receiverextension);
+            RubyExtension* receiverextension = toExtension(args[idx]);
             Q_ASSERT(receiverextension);
             receiver = receiverextension->object();
         }
@@ -418,7 +413,7 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
 
 void RubyExtension::delete_object(void* object)
 {
-    #ifdef KROSS_RUBY_EXTENSION_DEBUG
+    #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
         krossdebug("RubyExtension::delete_object");
     #endif
     RubyExtension* extension = static_cast< RubyExtension* >(object);
@@ -463,6 +458,16 @@ VALUE RubyExtension::convertFromException(Kross::Exception::Ptr exc)
     return Data_Wrap_Struct(RubyExtensionPrivate::s_krossException, 0, RubyExtension::delete_exception, exc.data() );
 }
 #endif
+
+RubyExtension* RubyExtension::toExtension(VALUE value)
+{
+    if( ! isRubyExtension(value) )
+        return 0;
+    RubyExtension* extension;
+    Data_Get_Struct(value, RubyExtension, extension);
+    Q_ASSERT(extension);
+    return extension;
+}
 
 VALUE RubyExtension::toVALUE(RubyExtension* extension)
 {

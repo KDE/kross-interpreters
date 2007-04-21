@@ -49,13 +49,29 @@ namespace Kross {
             * be executed if the QObject emits the signal.
             */
             RubyFunction(QObject* sender, const QByteArray& signal, VALUE method)
-                : MetaFunction(sender, signal), m_method(method) {}
+                : MetaFunction(sender, signal), m_method(method)
+            {
+                #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
+                    krossdebug( QString("RubyFunction Ctor sender=%1 signature=%2").arg(m_sender->objectName()).arg(m_signature.data()) );
+                #endif
+                rb_gc_register_address(&m_method);
+            }
 
             /**
             * Destructor.
             */
-            virtual ~RubyFunction() {}
+            virtual ~RubyFunction()
+            {
+                #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
+                    krossdebug( QString("RubyFunction Dtor sender=%1 signature=%2").arg(m_sender->objectName()).arg(m_signature.data()) );
+                #endif
+                rb_gc_unregister_address(&m_method);
+            }
 
+            /**
+            * This static function is called by Ruby if the callFunction bellow
+            * raises an exception.
+            */
             static VALUE callFunctionException(VALUE args, VALUE error)
             {
                 krossdebug("callFunctionException");
@@ -72,6 +88,11 @@ namespace Kross {
                 return Qnil;
             }
 
+            /**
+            * This static function is called by Ruby to perform actions within
+            * a rescue block to provide with the callFunctionException function
+            * above an exception handler.
+            */
             static VALUE callFunction(VALUE args)
             {
                 krossdebug("callFunction");
@@ -83,7 +104,6 @@ namespace Kross {
                 //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
                 //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
 return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
-                //return rb_funcall(self, rb_intern("module_eval"), 2, src, fileName);
             }
 
             /**
@@ -94,7 +114,7 @@ return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
             {
                 _id = QObject::qt_metacall(_c, _id, _a);
                 #ifdef KROSS_RUBY_FUNCTION_DEBUG
-                    krossdebug(QString("RubyFunction::qt_metacall id=%1").arg(_id));
+                    //krossdebug(QString("RubyFunction::qt_metacall id=%1").arg(_id));
                 #endif
                 if(_id >= 0 && _c == QMetaObject::InvokeMetaMethod) {
                     switch(_id) {
@@ -136,6 +156,7 @@ return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
                                         args[ idx-1 ] = RubyType<QVariant>::toVALUE(v);
                                     } break;
                                 }
+rb_gc_register_address(&args[idx-1]);
                                 ++idx;
                             }
 
@@ -160,6 +181,8 @@ return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
 
+for(int i = 0; i < argsize; ++i) rb_gc_unregister_address(&args[i]);
+rb_gc();
                             delete[] args;
                         } break;
                     }

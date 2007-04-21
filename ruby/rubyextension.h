@@ -149,6 +149,14 @@ namespace Kross {
 #endif
 
             /**
+            * Converts the VALUE to a \a RubyExtension .
+            * \param value The VALUE object.
+            * \return The RubyExtension instance or NULL if cast
+            * was not possible.
+            */
+            static RubyExtension* toExtension(VALUE value);
+
+            /**
             * Converts a \a RubyExtension to a VALUE.
             * \param object The RubyExtension to convert.
             * \return The to a VALUE converted RubyExtension.
