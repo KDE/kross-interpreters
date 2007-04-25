@@ -27,6 +27,7 @@
 
 namespace Kross {
 
+    class RubyFunction;
     class RubyScriptPrivate;
 
     /**
@@ -84,6 +85,16 @@ namespace Kross {
              */
             virtual Kross::Object::Ptr classInstance(const QString& name);
             #endif
+
+            /**
+            * Connect a QObject signal with a Ruby method function.
+            *
+            * \param sender The QObject instance that sends the signal.
+            * \param signal The signature of the signal the QObject emits.
+            * \param method The callable ruby methods that should
+            * be executed if the QObject emits the signal.
+            */
+            RubyFunction* connectFunction(QObject* sender, const QByteArray& signal, VALUE method);
 
         private:
             /// Private d-pointer.

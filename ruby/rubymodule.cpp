@@ -47,7 +47,7 @@ RubyModule::RubyModule(QObject* object, const QString & modname)
     d->extension = new RubyExtension(object);
 
     d->modulename = modname.left(1).toUpper() + modname.right(modname.length() - 1 );
-    #ifdef KROSS_RUBY_MODULE_DEBUG
+    #ifdef KROSS_RUBY_MODULE_CTORDTOR_DEBUG
         krossdebug(QString("RubyModule Ctor: %1").arg(d->modulename));
     #endif
 
@@ -59,7 +59,7 @@ RubyModule::RubyModule(QObject* object, const QString & modname)
 
 RubyModule::~RubyModule()
 {
-    #ifdef KROSS_RUBY_MODULE_DEBUG
+    #ifdef KROSS_RUBY_MODULE_CTORDTOR_DEBUG
         krossdebug(QString("RubyModule Dtor: %1").arg(d->modulename));
     #endif
 

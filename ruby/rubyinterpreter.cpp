@@ -57,8 +57,8 @@ VALUE RubyInterpreterPrivate::s_krossModule = 0;
 RubyInterpreter::RubyInterpreter(Kross::InterpreterInfo* info)
     : Kross::Interpreter(info)
 {
-#ifdef KROSS_RUBY_INTERPRETER_DEBUG
-    krossdebug("RubyInterpreter::RubyInterpreter(info)");
+#ifdef KROSS_RUBY_INTERPRETER_CTORDTOR_DEBUG
+    krossdebug("RubyInterpreter Ctor");
 #endif
 
     if(d == 0)
@@ -72,6 +72,9 @@ RubyInterpreter::RubyInterpreter(Kross::InterpreterInfo* info)
 
 RubyInterpreter::~RubyInterpreter()
 {
+#ifdef KROSS_RUBY_INTERPRETER_CTORDTOR_DEBUG
+    krossdebug("RubyInterpreter Dtor");
+#endif
     finalizeRuby();
 }
 

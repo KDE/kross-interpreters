@@ -52,7 +52,11 @@ namespace Kross {
                 : MetaFunction(sender, signal), m_method(method)
             {
                 #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
-                    krossdebug( QString("RubyFunction Ctor sender=%1 signature=%2").arg(m_sender->objectName()).arg(m_signature.data()) );
+                    m_debuginfo = QString("sender=%1 signature=%2 method=%3")
+                        .arg( sender ? QString("%1 (%2)").arg(sender->objectName()).arg(sender->metaObject()->className()) : "NULL" )
+                        .arg( signal.data() )
+                        .arg( STR2CSTR(rb_inspect(method)) );
+                    krossdebug( QString("RubyFunction Ctor %1").arg(m_debuginfo) );
                 #endif
                 rb_gc_register_address(&m_method);
             }
@@ -63,7 +67,7 @@ namespace Kross {
             virtual ~RubyFunction()
             {
                 #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
-                    krossdebug( QString("RubyFunction Dtor sender=%1 signature=%2").arg(m_sender->objectName()).arg(m_signature.data()) );
+                    krossdebug( QString("RubyFunction Dtor %1").arg(m_debuginfo) );
                 #endif
                 rb_gc_unregister_address(&m_method);
             }
@@ -74,7 +78,7 @@ namespace Kross {
             */
             static VALUE callFunctionException(VALUE args, VALUE error)
             {
-                krossdebug("callFunctionException");
+                krossdebug("RubyFunction callFunctionException");
                 Q_UNUSED(args);
                 Q_UNUSED(error);
                 VALUE info = rb_gv_get("$!");
@@ -95,7 +99,7 @@ namespace Kross {
             */
             static VALUE callFunction(VALUE args)
             {
-                krossdebug("callFunction");
+                krossdebug("RubyFunction callFunction");
                 Check_Type(args, T_ARRAY);
                 VALUE self = rb_ary_entry(args, 0);
                 int argsize = FIX2INT( rb_ary_entry(args, 1) );
@@ -103,7 +107,7 @@ namespace Kross {
                 //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
                 //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
                 //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
-return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
+                return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
             }
 
             /**
@@ -156,7 +160,7 @@ return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
                                         args[ idx-1 ] = RubyType<QVariant>::toVALUE(v);
                                     } break;
                                 }
-rb_gc_register_address(&args[idx-1]);
+//rb_gc_register_address(&args[idx-1]);
                                 ++idx;
                             }
 
@@ -181,9 +185,9 @@ rb_gc_register_address(&args[idx-1]);
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
 
-for(int i = 0; i < argsize; ++i) rb_gc_unregister_address(&args[i]);
-rb_gc();
+//for(int i = 0; i < argsize; ++i) rb_gc_unregister_address(&args[i]);
                             delete[] args;
+rb_gc();
                         } break;
                     }
                     _id -= 1;
@@ -192,8 +196,15 @@ rb_gc();
             }
 
         private:
+            /// The pointer to the Ruby method.
             VALUE m_method;
+            /// Dummy variable used to store the last result of a method call.
             QVariant m_tmpResult;
+
+            #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
+                /// \internal string for debugging.
+                QString m_debuginfo;
+            #endif
     };
 
 }

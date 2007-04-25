@@ -80,37 +80,28 @@ namespace Kross {
             Q_ASSERT( TYPE(module) == TYPE(self) );
 
             char *methodname = rb_id2name(SYM2ID(unit));
-            krossdebug( QString("RubyScriptPrivate::method_added methodname=%1").arg(methodname) );
-            krossdebug(QString("RubyScriptPrivate::method_added self=%1").arg(STR2CSTR( rb_inspect(self) )));
-            krossdebug(QString("RubyScriptPrivate::method_added module=%1").arg(STR2CSTR( rb_inspect(module) )));
+            #ifdef KROSS_RUBY_SCRIPT_METHODADDED_DEBUG
+                krossdebug(QString("RubyScriptPrivate::method_added methodname=%1 self=%2 module=%3").arg(methodname).arg(STR2CSTR( rb_inspect(self) )).arg(STR2CSTR( rb_inspect(module) )));
+            #endif
 
             VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
-            krossdebug(QString("RubyScriptPrivate::method_added rubyscriptvalue=%1").arg(STR2CSTR( rb_inspect(rubyscriptvalue) )));
+            //krossdebug(QString("RubyScriptPrivate::method_added rubyscriptvalue=%1").arg(STR2CSTR( rb_inspect(rubyscriptvalue) )));
 
             RubyScript* rubyscript;
             Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
             Q_ASSERT(rubyscript);
-            krossdebug(QString("RubyScriptPrivate::method_added rubyscript=%1").arg(rubyscript->action()->objectName()));
+            //krossdebug(QString("RubyScriptPrivate::method_added rubyscript=%1").arg(rubyscript->action()->objectName()));
 
             if( rubyscript->d->m_functions.contains(methodname) ) {
                 QPair< QObject* , QString > f = rubyscript->d->m_functions[methodname];
 
                 VALUE method = rb_funcall(self, rb_intern("method"), 1, rb_str_new2(methodname));
-                krossdebug(QString("RubyScriptPrivate::method_added method=%1").arg(STR2CSTR( rb_inspect(method) )));
+                #ifdef KROSS_RUBY_SCRIPT_METHODADDED_DEBUG
+                    krossdebug(QString("RubyScriptPrivate::method_added method=%1").arg(STR2CSTR( rb_inspect(method) )));
+                #endif
 
-                //TODO destroy if not needed any longer
-                RubyFunction* function = new RubyFunction(f.first, f.second.toLatin1(), method);
-
-                QObject* sender = f.first;
-                QByteArray sendersignal = QString("2%1").arg(f.second).toLatin1();
-                QByteArray receiverslot = QString("1%1").arg(f.second).toLatin1();
-                if( QObject::connect(sender, sendersignal, function, receiverslot) ) {
-                    krossdebug( QString("=> RubyScript::method_added connected object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
-                }
-                else {
-                    krossdebug( QString("=> RubyScript::method_added failed to connect object='%1' signal='%2' method='%3'").arg(f.first->objectName()).arg(f.second).arg(methodname) );
-                }
-                //rubyscript->addFunction(methodname)
+                RubyFunction* function = rubyscript->connectFunction(f.first, f.second.toLatin1(), method);
+                Q_UNUSED(function);
             }
 
             return module;
@@ -156,6 +147,9 @@ namespace Kross {
                 QPair< QObject* , // the QObject the signal belongs to
                        QString > // the signature, e.g. "mySignal(QString,int)"
              > m_functions;
+
+        //QList< RubyFunction* > m_rubyfunctions;
+        QList< QPointer<RubyFunction> > m_rubyfunctions;
     };
 
 }
@@ -165,12 +159,17 @@ VALUE RubyScriptPrivate::s_krossScript = 0;
 RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* action)
     : Kross::Script(interpreter, action), d(new RubyScriptPrivate())
 {
+    #ifdef KROSS_RUBY_SCRIPT_CTORDTOR_DEBUG
+        krossdebug("RubyScript Ctor");
+    #endif
+
     d->m_script = rb_funcall(RubyScriptPrivate::s_krossScript, rb_intern("new"), 0);
+    Q_ASSERT(TYPE(d->m_script) == T_MODULE);
+    rb_gc_register_address(&d->m_script);
+    //rb_global_variable(&d->m_script);
 
     VALUE rubyscriptvalue = Data_Wrap_Struct(RubyScriptPrivate::s_krossScript, 0, 0, this);
     rb_define_const(d->m_script, "RUBYSCRIPTOBJ", rubyscriptvalue);
-
-    rb_global_variable(&d->m_script);
 
     d->addFunctions( &Manager::self() );
     d->addFunctions( action );
@@ -178,12 +177,20 @@ RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* action)
 
 RubyScript::~RubyScript()
 {
+    #ifdef KROSS_RUBY_SCRIPT_CTORDTOR_DEBUG
+        krossdebug("RubyScript Dtor");
+    #endif
+
+    qDeleteAll( d->m_rubyfunctions );
+    d->m_rubyfunctions.clear();
+    rb_gc_unregister_address(&d->m_script);
     delete d;
+    rb_gc();
 }
 
 void RubyScript::execute()
 {
-    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_SCRIPT_EXECUTE_DEBUG
         krossdebug("RubyScript::execute()");
     #endif
 
@@ -208,7 +215,7 @@ void RubyScript::execute()
     ruby_in_eval--;
 
     if (ruby_nerrs != 0) {
-        #ifdef KROSS_RUBY_SCRIPT_DEBUG
+        #ifdef KROSS_RUBY_SCRIPT_EXECUTE_DEBUG
             krossdebug("Compilation has failed");
         #endif
         setError( QString("Failed to compile ruby code: %1").arg(STR2CSTR( rb_obj_as_string(ruby_errinfo) )) ); // TODO: get the error
@@ -222,7 +229,7 @@ void RubyScript::execute()
 
 QStringList RubyScript::functionNames()
 {
-    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_SCRIPT_FUNCTIONNAMES_DEBUG
         krossdebug("RubyScript::getFunctionNames()");
     #endif
 
@@ -236,7 +243,7 @@ QStringList RubyScript::functionNames()
 QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
 {
     QVariant result;
-    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
         krossdebug(QString("RubyScript::callFunction() name=%1").arg(name));
     #endif
 
@@ -250,7 +257,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     }
     if(not d->m_hasBeenSuccessFullyExecuted)
     {
-        #ifdef KROSS_RUBY_SCRIPT_DEBUG
+        #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
             krossdebug("RubyScript::callFunction failed");
         #endif
         setError( QString("Failed to call function \"%1\": %2").arg(name).arg(STR2CSTR( rb_obj_as_string(ruby_errinfo) )) ); // TODO: get the error
@@ -274,8 +281,25 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     ruby_in_eval--;
     rb_thread_critical = critical;
 
-    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
         krossdebug(QString("RubyScript::callFunction() Result typeName=%1 toString=%2").arg(result.typeName()).arg(result.toString()));
     #endif
     return result;
+}
+
+RubyFunction* RubyScript::connectFunction(QObject* sender, const QByteArray& signature, VALUE method)
+{
+    RubyFunction* function = new RubyFunction(sender, signature, method);
+    QByteArray sendersignal = QString("2%1").arg(signature.data()).toLatin1(); //prepanding 2 means SIGNAL()
+    QByteArray receiverslot = QString("1%1").arg(signature.data()).toLatin1(); //prepanding 1 means SLOT()
+    if( ! QObject::connect(sender, sendersignal, function, receiverslot) ) {
+        krosswarning( QString("RubyScript::method_added failed to connect object='%1' signal='%2' method='%3'").arg(sender->objectName()).arg(signature.data()).arg(STR2CSTR(rb_inspect(method))) );
+        delete function;
+        return 0;
+    }
+    #ifdef KROSS_RUBY_SCRIPT_CONNECTFUNCTION_DEBUG
+        krossdebug( QString("RubyScript::method_added connected object='%1' signal='%2' method='%3'").arg(sender->objectName()).arg(signature.data()).arg(STR2CSTR(rb_inspect(method))) );
+    #endif
+    d->m_rubyfunctions.append( function );
+    return function;
 }

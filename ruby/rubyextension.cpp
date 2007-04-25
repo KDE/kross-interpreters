@@ -42,7 +42,13 @@ namespace Kross {
         friend class RubyExtension;
 
         /// The wrapped QObject.
+        //QObject* m_object;
         QPointer<QObject> m_object;
+
+        #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
+            /// \internal string for debugging.
+            QString debuginfo;
+        #endif
 
         /// The wrapped krossobject VALUE type.
         static VALUE s_krossObject;
@@ -70,7 +76,8 @@ RubyExtension::RubyExtension(QObject* object)
     d->m_object = object;
 
     #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
-        krossdebug(QString("RubyExtension Ctor QObject=%1").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL" ));
+        d->debuginfo = object ? QString("name=%1 class=%2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
+        krossdebug(QString("RubyExtension Ctor %1").arg(d->debuginfo));
     #endif
 
     if(d->m_object) {
@@ -114,7 +121,7 @@ RubyExtension::RubyExtension(QObject* object)
 RubyExtension::~RubyExtension()
 {
     #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
-        krossdebug(QString("RubyExtension Dtor QObject=%1").arg(d->m_object ? d->m_object->objectName() : "NULL"));
+        krossdebug(QString("RubyExtension Dtor %1").arg(d->debuginfo));
     #endif
     qDeleteAll(d->functions);
     delete d;
@@ -161,7 +168,9 @@ VALUE RubyExtension::clone(VALUE self)
 
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 {
-    krossdebug(QString("RubyExtension::callConnect"));
+    #ifdef KROSS_RUBY_EXTENSION_CALLCONNECT_DEBUG
+        krossdebug(QString("RubyExtension::callConnect"));
+    #endif
     /*
     http://www.ruby-doc.org/doxygen/1.8.4/eval_8c-source.html#l08914
     http://renaud.waldura.com/doc/ruby/idioms.shtml
@@ -247,7 +256,9 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
     if( ! receiverslot.startsWith('1') && ! receiverslot.startsWith('2') )
         receiverslot.prepend('1'); // prepending 1 means SLOT(...)
 
-    krossdebug( QString("RubyExtension::doConnect sender=%1 signal=%2 receiver=%3 slot=%4").arg(sender->objectName()).arg(sendersignal.constData()).arg(receiver->objectName()).arg(receiverslot.constData()).toLatin1().constData() );
+    #ifdef KROSS_RUBY_EXTENSION_CALLCONNECT_DEBUG
+        krossdebug( QString("RubyExtension::doConnect sender=%1 signal=%2 receiver=%3 slot=%4").arg(sender->objectName()).arg(sendersignal.constData()).arg(receiver->objectName()).arg(receiverslot.constData()).toLatin1().constData() );
+    #endif
     if(! QObject::connect(sender, sendersignal, receiver, receiverslot) ) {
         krosswarning( QString("RubyExtension::doConnect Failed to connect").toLatin1().constData() );
         return Qfalse;
@@ -414,7 +425,7 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
 void RubyExtension::delete_object(void* object)
 {
     #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
-        krossdebug("RubyExtension::delete_object");
+        //krossdebug("RubyExtension::delete_object");
     #endif
     RubyExtension* extension = static_cast< RubyExtension* >(object);
     delete extension;

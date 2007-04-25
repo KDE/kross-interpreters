@@ -134,12 +134,12 @@ namespace Kross {
 
     void RubyCallCache::delete_object(void* object)
     {
-        #ifdef KROSS_RUBY_CALLCACHE_DEBUG
-            krossdebug("RubyCallCache::delete_object");
+        #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
+            //krossdebug("RubyCallCache::delete_object");
         #endif
-        RubyCallCache* extension = static_cast< RubyCallCache* >(object);
-        delete extension;
-        extension = 0;
+        RubyCallCache* callcache = static_cast< RubyCallCache* >(object);
+        delete callcache;
+        callcache = 0;
     }
 
     VALUE RubyCallCache::method_cacheexec(int argc, VALUE *argv, VALUE self)
