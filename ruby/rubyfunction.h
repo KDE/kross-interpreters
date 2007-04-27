@@ -78,9 +78,13 @@ namespace Kross {
             */
             static VALUE callFunctionException(VALUE args, VALUE error)
             {
-                krossdebug("RubyFunction callFunctionException");
-                Q_UNUSED(args);
-                Q_UNUSED(error);
+                //#ifdef KROSS_RUBY_FUNCTION_DEBUG
+                    krossdebug( QString("RubyFunction callFunctionException args=%1 error=%2")
+                                .arg( STR2CSTR(rb_inspect(args)) ).arg( STR2CSTR(rb_inspect(error)) ) );
+                //#else
+                //    Q_UNUSED(args);
+                //    Q_UNUSED(error);
+                //#endif
                 VALUE info = rb_gv_get("$!");
                 VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
                 VALUE message = RARRAY(bt)->ptr[0];
@@ -99,8 +103,10 @@ namespace Kross {
             */
             static VALUE callFunction(VALUE args)
             {
-                krossdebug("RubyFunction callFunction");
-                Check_Type(args, T_ARRAY);
+                #ifdef KROSS_RUBY_FUNCTION_DEBUG
+                    krossdebug( QString("RubyFunction callFunction args=%1").arg(STR2CSTR(rb_inspect(args))) );
+                #endif
+                Q_ASSERT( TYPE(args) == T_ARRAY );
                 VALUE self = rb_ary_entry(args, 0);
                 int argsize = FIX2INT( rb_ary_entry(args, 1) );
                 VALUE arguments = rb_ary_entry(args, 2);
@@ -187,7 +193,9 @@ namespace Kross {
 
 //for(int i = 0; i < argsize; ++i) rb_gc_unregister_address(&args[i]);
                             delete[] args;
-rb_gc();
+                            #ifdef KROSS_RUBY_EXPLICIT_GC
+                                rb_gc();
+                            #endif
                         } break;
                     }
                     _id -= 1;
