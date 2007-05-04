@@ -73,7 +73,7 @@ Py::Object PythonModule::import(const Py::Tuple& args)
 {
     if(args.size() >= 2) {
         QString modname = args[1].as_string().c_str();
-        krossdebug( QString("PythonModule::import() module=%1").arg(modname) );
+        //krossdebug( QString("PythonModule::import() module=%1").arg(modname) );
 
         Py::ExtensionObject<PythonExtension> extobj( args[0] );
         PythonExtension* extension = extobj.extensionObject();
