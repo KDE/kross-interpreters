@@ -72,14 +72,14 @@ Py::Dict PythonModule::getDict()
 Py::Object PythonModule::import(const Py::Tuple& args)
 {
     if(args.size() >= 2) {
-        Py::ExtensionObject<PythonExtension> extobj(args[0]);
+        QString modname = args[1].as_string().c_str();
+        krossdebug( QString("PythonModule::import() module=%1").arg(modname) );
+
+        Py::ExtensionObject<PythonExtension> extobj( args[0] );
         PythonExtension* extension = extobj.extensionObject();
         Action* action = dynamic_cast< Action* >( extension->object() );
-        Q_ASSERT(action);
 
-        QString modname = args[1].as_string().c_str();
-
-        if( action->hasObject(modname) ) {
+        if( action && action->hasObject(modname) ) {
             #ifdef KROSS_PYTHON_MODULE_DEBUG
                 krossdebug( QString("PythonModule::import() module=%1 is internal local child").arg(modname) );
             #endif
