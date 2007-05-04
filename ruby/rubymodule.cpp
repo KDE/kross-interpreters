@@ -40,17 +40,18 @@ namespace Kross {
 
 }
 
-RubyModule::RubyModule(QObject* object, const QString & modname)
-    : d(new RubyModulePrivate())
+RubyModule::RubyModule(QObject* parent, QObject* object, const QString & modname)
+    : QObject(parent)
+    , d(new RubyModulePrivate())
 {
     Q_ASSERT(object);
-    d->extension = new RubyExtension(object);
 
     d->modulename = modname.left(1).toUpper() + modname.right(modname.length() - 1 );
     #ifdef KROSS_RUBY_MODULE_CTORDTOR_DEBUG
         krossdebug(QString("RubyModule Ctor: %1").arg(d->modulename));
     #endif
 
+    d->extension = new RubyExtension(object);
     VALUE rmodule = rb_define_module(d->modulename.toAscii());
     rb_define_module_function(rmodule,"method_missing",  (VALUE (*)(...))RubyModule::method_missing, -1);
     VALUE extension = RubyExtension::toVALUE( d->extension );
@@ -67,6 +68,10 @@ RubyModule::~RubyModule()
     //delete d->extension;
 
     delete d;
+
+    #ifdef KROSS_RUBY_EXPLICIT_GC
+        rb_gc();
+    #endif
 }
 
 VALUE RubyModule::method_missing(int argc, VALUE *argv, VALUE self)

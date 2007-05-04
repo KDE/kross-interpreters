@@ -160,7 +160,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "sys.modules['_oldmain'] = sys.modules['__main__']\n"
         "class _Importer:\n"
         "   def __init__(self, script = None):\n"
-        //"       self.script = script\n"
+        "       self.script = script\n"
         //"       self.realImporter = __builtin__.__import__\n"
         //"       __builtin__.__import__ = self._import\n"
         "       self.realImporter = __main__.__builtin__.__import__\n"
@@ -168,7 +168,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "   def _import(self, name, globals=None, locals=None, fromlist=[]):\n"
         //"       print \"_Importer name=%s fromlist=%s\" % (name,fromlist)\n"
         "       if fromlist == None:\n"
-        "           mod = __main__._import(name, globals, locals, fromlist)\n"
+        "           mod = __main__._import(self.script, name, globals, locals, fromlist)\n"
         "           if mod != None:\n"
         //"               print \"2===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
         "               globals[name] = mod\n"
@@ -195,7 +195,6 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "               return self.realImporter(name, globals, locals, fromlist)\n"
         //"           print \"9===========> _Importer Trying ImportError with name=%s fromlist=%s insysmodules=%s\" % (name,fromlist,name in sys.modules)\n"
         "           raise\n"
-        "_Importer()\n"
         ;
 
     PyObject* pyrun = PyRun_String(s.toLatin1().data(), Py_file_input, moduledict.ptr(), moduledict.ptr());

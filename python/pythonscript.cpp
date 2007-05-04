@@ -176,9 +176,9 @@ bool PythonScript::initialize()
             }
 
             // Set up the import hook
-            //PyObject* pyrun1 = PyRun_String("__main__._Importer(self)", Py_file_input, moduledict.ptr(), moduledict.ptr());
-            //if(! pyrun1) throw Py::Exception(); // throw exception
-            //Py_XDECREF(pyrun1); // free the reference.
+            PyObject* pyimporthook = PyRun_String("__main__._Importer(self)", Py_file_input, moduledict.ptr(), moduledict.ptr());
+            if(! pyimporthook) throw Py::Exception(); // throw exception
+            Py_XDECREF(pyimporthook); // free the reference.
 
             // Add the script's directory to the sys.path
             if( ! action()->currentPath().isNull() ) {

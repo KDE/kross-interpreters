@@ -23,6 +23,7 @@
 #include "rubyinterpreter.h"
 #include "rubyextension.h"
 #include "rubyfunction.h"
+#include "rubymodule.h"
 
 #include <kross/core/manager.h>
 #include <kross/core/action.h>
@@ -193,6 +194,9 @@ namespace Kross {
         //QList< RubyFunction* > m_rubyfunctions;
         QList< QPointer<RubyFunction> > m_rubyfunctions;
 
+        /// The map of local modules.
+        QHash<QString, QPointer<RubyModule> > modules;
+
         #ifdef KROSS_RUBY_SCRIPT_CTORDTOR_DEBUG
             /// \internal string for debugging.
             QString debuginfo;
@@ -230,12 +234,29 @@ RubyScript::~RubyScript()
     #endif
 
     qDeleteAll( d->m_rubyfunctions );
+//qDeleteAll( d->modules.values() );
     rb_gc_unregister_address(&d->m_script);
     delete d;
 
     #ifdef KROSS_RUBY_EXPLICIT_GC
         rb_gc();
     #endif
+}
+
+RubyModule* RubyScript::module(QObject* object, const QString& modname)
+{
+    RubyModule* module = d->modules.contains(modname) ? d->modules[modname] : 0;
+    if( ! module ) {
+        module = new RubyModule(this, object, modname);
+        d->modules.insert(modname, module);
+    }
+    return module;
+}
+
+bool RubyScript::isRubyScript(VALUE value)
+{
+    VALUE result = rb_funcall(value, rb_intern("kind_of?"), 1, RubyScriptPrivate::s_krossScript);
+    return (TYPE(result) == T_TRUE);
 }
 
 void RubyScript::execute()

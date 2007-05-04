@@ -23,13 +23,12 @@
 #include "rubymodule.h"
 #include "rubyscript.h"
 
+#include <kross/core/manager.h>
+#include <kross/core/action.h>
+
 #include <map>
 
 #include <QRegExp>
-
-//#include "../core/exception.h"
-//#include "../core/module.h"
-#include <kross/core/manager.h>
 
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::RubyInterpreter instances.
@@ -46,7 +45,7 @@ namespace Kross {
     /// \internal
     class RubyInterpreterPrivate {
         friend class RubyInterpreter;
-        QHash<QString, RubyModule* > modules;
+        QHash<QString, QPointer<RubyModule> > modules;
         static VALUE s_krossModule;
     };
 }
@@ -78,7 +77,7 @@ RubyInterpreter::~RubyInterpreter()
     finalizeRuby();
 }
 
-QHash<QString, RubyModule* > RubyInterpreter::modules() const
+QHash<QString, QPointer<RubyModule> > RubyInterpreter::modules() const
 {
     return d->modules;
 }
@@ -117,7 +116,7 @@ void RubyInterpreter::finalizeRuby()
     #endif
 
     if(d) {
-        for(QHash<QString, RubyModule* >::Iterator it = d->modules.begin(); it != d->modules.end(); ++it)
+        for(QHash<QString, QPointer<RubyModule> >::Iterator it = d->modules.begin(); it != d->modules.end(); ++it)
             delete it.value();
         d->modules.clear();
     }
@@ -126,27 +125,50 @@ void RubyInterpreter::finalizeRuby()
     ruby_finalize();
 }
 
-VALUE RubyInterpreter::require (VALUE obj, VALUE name)
+VALUE RubyInterpreter::require (VALUE self, VALUE name)
 {
+    //krossdebug( QString("RubyInterpreter::require self=%1 name=%2").arg(STR2CSTR(rb_inspect(self))).arg(STR2CSTR(rb_inspect(name))) );
+
     QString modname = StringValuePtr(name);
-    if( Kross::Manager::self().hasObject(modname) ) {
-        #ifdef KROSS_RUBY_INTERPRETER_DEBUG
-            krossdebug( QString("RubyInterpreter::require() module=%1 is internal").arg(modname) );
-        #endif
 
-        if(! d->modules.contains(modname)) {
-            QObject* obj = Kross::Manager::self().object(modname);
-            Q_ASSERT(obj);
-            RubyModule* module = new RubyModule(obj, modname);
-            //VALUE rmodule = rb_define_module(modname.ascii());
-            //rb_define_module_function();
-            //VALUE rm = RubyExtension::toVALUE(module);
-            //rb_define_variable( ("$" + modname).ascii(), & RubyInterpreter::d->m_modules.insert( mStrVALUE::value_type( modname, rm) ).first->second );
-            d->modules.insert(modname, module);
+    if( RubyScript::isRubyScript(self) ) {
+        VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
+        RubyScript* rubyscript;
+        Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
+        Q_ASSERT(rubyscript);
+        Action* action = rubyscript->action();
+        Q_ASSERT(action);
+
+        if( action->hasObject(modname) ) {
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+                krossdebug( QString("RubyInterpreter::require() module=%1 is internal local child").arg(modname) );
+            #endif
+            QObject* object = action->object(modname);
+            Q_ASSERT(object);
+            RubyModule* module = rubyscript->module(object, modname);
+            Q_ASSERT(module);
+            return Qtrue;
         }
-
-        return Qtrue;
+        if( Kross::Manager::self().hasObject(modname) ) {
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+                krossdebug( QString("RubyInterpreter::require() module=%1 is internal global child").arg(modname) );
+            #endif
+            QObject* object = Kross::Manager::self().object(modname);
+            Q_ASSERT(object);
+            RubyModule* module = d->modules.contains(modname) ? d->modules[modname] : 0;
+            if( ! module ) {
+                module = new RubyModule(rubyscript, object, modname);
+                //VALUE rmodule = rb_define_module(modname.ascii());
+                //rb_define_module_function();
+                //VALUE rm = RubyExtension::toVALUE(module);
+                //rb_define_variable( ("$" + modname).ascii(), & RubyInterpreter::d->m_modules.insert( mStrVALUE::value_type( modname, rm) ).first->second );
+                d->modules.insert(modname, module);
+            }
+            Q_ASSERT(module);
+            return Qtrue;
+        }
     }
 
-    return rb_f_require(obj, name);
+    // We don't know about a module with such a name. So, let Ruby handle it...
+    return rb_f_require(self, name);
 }

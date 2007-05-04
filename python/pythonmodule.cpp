@@ -71,15 +71,29 @@ Py::Dict PythonModule::getDict()
 
 Py::Object PythonModule::import(const Py::Tuple& args)
 {
-    if(args.size() > 0) {
-        QString modname = args[0].as_string().c_str();
+    if(args.size() >= 2) {
+        Py::ExtensionObject<PythonExtension> extobj(args[0]);
+        PythonExtension* extension = extobj.extensionObject();
+        Action* action = dynamic_cast< Action* >( extension->object() );
+        Q_ASSERT(action);
+
+        QString modname = args[1].as_string().c_str();
+
+        if( action->hasObject(modname) ) {
+            #ifdef KROSS_PYTHON_MODULE_DEBUG
+                krossdebug( QString("PythonModule::import() module=%1 is internal local child").arg(modname) );
+            #endif
+            QObject* object = action->object(modname);
+            Q_ASSERT(object);
+            return Py::asObject( new PythonExtension(object) );
+        }
         if(Kross::Manager::self().hasObject(modname)) {
             #ifdef KROSS_PYTHON_MODULE_DEBUG
-                krossdebug( QString("PythonModule::import() module=%1 is internal").arg(modname) );
+                krossdebug( QString("PythonModule::import() module=%1 is internal global child").arg(modname) );
             #endif
-            QObject* obj = Kross::Manager::self().object(modname);
-            Q_ASSERT(obj);
-            return Py::asObject( new PythonExtension(obj) );
+            QObject* object = Kross::Manager::self().object(modname);
+            Q_ASSERT(object);
+            return Py::asObject( new PythonExtension(object) );
         }
     }
     return Py::None();

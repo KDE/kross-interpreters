@@ -62,7 +62,10 @@ namespace Kross {
         QHash<QByteArray, int> m_enumerations;
 
         /// The \a RubyFunction instances.
-        QHash<QByteArray, RubyFunction*> functions;
+        QHash<QByteArray, RubyFunction*> m_functions;
+
+        /// The list of \a RubyCallCache instances.
+        QList< RubyCallCache* > m_cachelist;
     };
 
 }
@@ -121,9 +124,10 @@ RubyExtension::RubyExtension(QObject* object)
 RubyExtension::~RubyExtension()
 {
     #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
-        krossdebug(QString("RubyExtension Dtor %1").arg(d->debuginfo));
+        krossdebug(QString("RubyExtension Dtor %1 functioncount=%2 cachecount=%3").arg(d->debuginfo).arg(d->m_functions.count()).arg(d->m_cachelist.count()));
     #endif
-    qDeleteAll(d->functions);
+    qDeleteAll(d->m_functions);
+    //qDeleteAll(d->m_cachelist);
     delete d;
 }
 
@@ -135,7 +139,7 @@ QObject* RubyExtension::object() const
 RubyFunction* RubyExtension::createFunction(QObject* sender, const QByteArray& signal, const VALUE& method)
 {
     RubyFunction* function = new RubyFunction(sender, signal, method);
-    d->functions.insertMulti(signal, function);
+    d->m_functions.insertMulti(signal, function);
     return function;
 }
 
@@ -376,6 +380,9 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
     rb_iv_set(self, varcallcache, callobj->toValue());
     rb_define_variable("$krossinternallastclass", &self);
     rb_eval_string("def $krossinternallastclass." + funcname + "(*args)\n "+ varcallcache +".cacheexec(nil,*args)\nend");
+    d->m_cachelist.append( callobj );
+krossdebug( QString("|||>>> %1").arg(d->debuginfo) );
+
     return callobj->execfunction(argc, argv);
 }
 

@@ -38,6 +38,11 @@ namespace Kross {
         bool hasreturnvalue;
         QVarLengthArray<int> types, metatypes;
         static VALUE s_rccObject;
+
+        #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
+            /// \internal string for debugging.
+            QString debuginfo;
+        #endif
     };
 
     VALUE RubyCallCachePrivate::s_rccObject = 0;
@@ -47,14 +52,15 @@ namespace Kross {
     {
         Q_ASSERT(object);
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            krossdebug( QString("RubyCallCache Ctor object=%1 methodindex=%2").arg(d->object->objectName()).arg(d->methodindex) );
+            d->debuginfo = QString("name=%1 class=%2 methodindex=%3").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex);
+            krossdebug( QString("RubyCallCache Ctor %1 ").arg(d->debuginfo) );
         #endif
     }
 
     RubyCallCache::~RubyCallCache()
     {
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            krossdebug( QString("RubyCallCache Dtor") );
+            krossdebug( QString("RubyCallCache Dtor %1 ").arg(d->debuginfo) );
         #endif
         delete d;
     }
@@ -135,7 +141,7 @@ namespace Kross {
     void RubyCallCache::delete_object(void* object)
     {
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            //krossdebug("RubyCallCache::delete_object");
+            krossdebug("RubyCallCache::delete_object");
         #endif
         RubyCallCache* callcache = static_cast< RubyCallCache* >(object);
         delete callcache;

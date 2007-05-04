@@ -37,16 +37,18 @@ namespace Kross {
     * A ruby module.
     * @author Cyrille Berger
     */
-    class RubyModule {
+    class RubyModule : public QObject {
         public:
 
             /**
             * Constructor.
             *
+            * @param parent The parent QObject. This \a RubyModule instance will
+            * be destroyed if the parent QObject got destroyed.
             * @param object The QObject instance this extension provides access to.
             * @param modname The name the module will be published as.
             */
-            RubyModule(QObject* object, const QString & modname);
+            RubyModule(QObject* parent, QObject* object, const QString & modname);
 
             /**
             * Destructor.

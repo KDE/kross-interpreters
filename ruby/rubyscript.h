@@ -27,6 +27,7 @@
 
 namespace Kross {
 
+    class RubyModule;
     class RubyFunction;
     class RubyScriptPrivate;
 
@@ -55,6 +56,19 @@ namespace Kross {
             * Destructor.
             */
             ~RubyScript();
+
+            /**
+            * \return a \a RubyModule instance defined with the \p modname for
+            * that wraps the QObject \p object . If there exist no such
+            * module yet we create a new one and remember it.
+            */
+            RubyModule* module(QObject* object, const QString& modname);
+
+            /**
+            * \return true if the as argument passed \p value is a
+            * \a RubyScript object else false is returned.
+            */
+            static bool isRubyScript(VALUE value);
 
             /**
             * Execute the script.

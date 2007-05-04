@@ -26,6 +26,8 @@
 #include <kross/core/krossconfig.h>
 #include <kross/core/interpreter.h>
 
+#include <QPointer>
+
 namespace Kross {
 
     class RubyModule;
@@ -60,7 +62,7 @@ namespace Kross {
             /**
             * @return the hash of \a RubyModule instances we know about.
             */
-            QHash<QString, RubyModule* > modules() const;
+            QHash<QString, QPointer<RubyModule> > modules() const;
         public:
             /**
              * @return the ruby object with the module Kross, this module holds class
