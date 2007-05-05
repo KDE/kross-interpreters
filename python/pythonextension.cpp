@@ -188,6 +188,8 @@ Py::Object PythonExtension::getattr(const char* n)
             return d->membernames;
         //if(strcmp(n,"__dict__") == 0)
         //    return PythonType<QStringList>::toPyObject( QStringList() );
+        if(strcmp(n,"__all__") == 0) //this hack is needed to prevent "from-import-* object has no __dict__ and no __all__" exceptions
+            return PythonType<QStringList>::toPyObject( QStringList() );
     }
 
     // look if the attribute is a method
