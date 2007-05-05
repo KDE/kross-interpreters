@@ -510,8 +510,6 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
 
     try {
         Py::Tuple selftuple(_self_and_name_tuple);
-        PythonExtension *self = static_cast<PythonExtension*>( selftuple[0].ptr() );
-        Q_ASSERT(self->d->object);
 
         int methodindex = Py::Int(selftuple[1]);
 
@@ -521,6 +519,12 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
         #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
             krossdebug( QString("PythonExtension::proxyhandler methodname=%1 methodindex=%2").arg(methodname).arg(methodindex) );
         #endif
+
+        PythonExtension *self = static_cast<PythonExtension*>( selftuple[0].ptr() );
+        if( ! self->d->object ) {
+            Py::RuntimeError( QString("Underlying QObject instance of method '%1' was removed.").arg(methodname).toLatin1().constData() );
+            return Py_None;
+        }
 
         Py::Tuple argstuple(args);
         const int argssize = int( argstuple.size() );

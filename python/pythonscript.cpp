@@ -159,6 +159,8 @@ bool PythonScript::initialize()
             PythonModule* pythonmodule = ((PythonInterpreter*)interpreter())->mainModule();
             moduledict["__builtins__"] = pythonmodule->getDict()["__builtins__"];
             moduledict["__main__"] = pythonmodule->module();
+//moduledict["__dict__"] = Py::Dict();
+//moduledict["__all__"] = Py::Dict();
 
             // Add our Action instance as "self" to the modules dictonary.
             moduledict[ "self" ] = Py::asObject(new PythonExtension(action()));

@@ -37,6 +37,11 @@ namespace Kross {
              */
             PythonInterpreter* const m_interpreter;
 
+            #ifdef KROSS_PYTHON_MODULE_CTORDTOR_DEBUG
+                /// \internal string for debugging.
+                QString debuginfo;
+            #endif
+
             PythonModulePrivate(PythonInterpreter* const interpreter)
                 : m_interpreter(interpreter) {}
     };
@@ -47,8 +52,9 @@ PythonModule::PythonModule(PythonInterpreter* interpreter)
     : Py::ExtensionModule<PythonModule>("__main__")
     , d(new PythonModulePrivate(interpreter))
 {
-    #ifdef KROSS_PYTHON_MODULE_DEBUG
-        krossdebug( QString("PythonModule::Constructor name='%1'").arg(name().c_str()) );
+    #ifdef KROSS_PYTHON_MODULE_CTORDTOR_DEBUG
+        d->debuginfo = QString("name=%1").arg(name().c_str());
+        krossdebug( QString("PythonModule Ctor %1").arg(d->debuginfo) );
     #endif
 
     add_varargs_method("_import", &PythonModule::import, "Kross import hook.");
@@ -57,8 +63,8 @@ PythonModule::PythonModule(PythonInterpreter* interpreter)
 
 PythonModule::~PythonModule()
 {
-    #ifdef KROSS_PYTHON_MODULE_DEBUG
-        krossdebug( QString("PythonModule::Destructor name='%1'").arg(name().c_str()) );
+    #ifdef KROSS_PYTHON_MODULE_CTORDTOR_DEBUG
+        krossdebug( QString("PythonModule Dtor %1").arg(d->debuginfo) );
     #endif
 
     delete d;
@@ -73,14 +79,17 @@ Py::Object PythonModule::import(const Py::Tuple& args)
 {
     if(args.size() >= 2) {
         QString modname = args[1].as_string().c_str();
-        //krossdebug( QString("PythonModule::import() module=%1").arg(modname) );
 
         Py::ExtensionObject<PythonExtension> extobj( args[0] );
         PythonExtension* extension = extobj.extensionObject();
         Action* action = dynamic_cast< Action* >( extension->object() );
 
+        #ifdef KROSS_PYTHON_MODULE_IMPORT_DEBUG
+            krossdebug( QString("PythonModule::import() module=%1 action=%2").arg(modname).arg(action ? action->objectName() : "NULL") );
+        #endif
+
         if( action && action->hasObject(modname) ) {
-            #ifdef KROSS_PYTHON_MODULE_DEBUG
+            #ifdef KROSS_PYTHON_MODULE_IMPORT_DEBUG
                 krossdebug( QString("PythonModule::import() module=%1 is internal local child").arg(modname) );
             #endif
             QObject* object = action->object(modname);
@@ -88,7 +97,7 @@ Py::Object PythonModule::import(const Py::Tuple& args)
             return Py::asObject( new PythonExtension(object) );
         }
         if(Kross::Manager::self().hasObject(modname)) {
-            #ifdef KROSS_PYTHON_MODULE_DEBUG
+            #ifdef KROSS_PYTHON_MODULE_IMPORT_DEBUG
                 krossdebug( QString("PythonModule::import() module=%1 is internal global child").arg(modname) );
             #endif
             QObject* object = Kross::Manager::self().object(modname);
