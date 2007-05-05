@@ -39,7 +39,7 @@ namespace Kross {
         QVarLengthArray<int> types, metatypes;
         static VALUE s_rccObject;
 
-        #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
+        #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
             /// \internal string for debugging.
             QString debuginfo;
         #endif
