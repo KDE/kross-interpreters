@@ -338,7 +338,8 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
                 Py::ExtensionObject<PythonExtension> extobj(object);
                 PythonExtension* extension = extobj.extensionObject();
-                Q_ASSERT( extension->object() );
+                if( ! extension->object() )
+                    throw Py::RuntimeError( QString("Underlying QObject instance of the PythonExtension was removed.").toLatin1().constData() );
                 return new MetaTypeVoidStar( typeId, extension->object(), owner );
             }
 
