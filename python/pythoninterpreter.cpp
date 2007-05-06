@@ -172,7 +172,6 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         //"           print \"1===========> _Importer name=%s fromlist=%s mod=%s\" % (name,fromlist,mod)\n"
         "           if mod == None:\n"
         //"               print \"2===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
-        "               fromlist = []\n"
         "               mod = self.realImporter(name, globals, locals, fromlist)\n"
         "           if mod != None:\n"
         //"               print \"3===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
