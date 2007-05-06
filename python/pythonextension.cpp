@@ -630,6 +630,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
         int lineno;
         PythonInterpreter::extractException(trace, lineno);
         krosswarning( QString("PythonExtension::proxyhandler Had exception on line %1:\n%2 \n%3").arg(lineno).arg(Py::value(e).as_string().c_str()).arg(trace.join("\n")) );
+        PyErr_Print(); //e.clear();
     }
 
     return Py_None;

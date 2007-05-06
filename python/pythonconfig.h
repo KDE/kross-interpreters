@@ -64,7 +64,7 @@
 
 // Enable debugging for Kross::PythonModule
 #define KROSS_PYTHON_MODULE_CTORDTOR_DEBUG
-#define KROSS_PYTHON_MODULE_IMPORT_DEBUG
+//#define KROSS_PYTHON_MODULE_IMPORT_DEBUG
 
 // Enable debugging for Kross::PythonExtension
 //#define KROSS_PYTHON_EXTENSION_CTORDTOR_DEBUG
