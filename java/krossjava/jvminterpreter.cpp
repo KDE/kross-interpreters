@@ -60,8 +60,8 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     krossdebug("JVMInterpreter Ctor");
 
     JavaVMOption    options[2];
-    options[0].optionString = "-Djava.class.path=/myClassDir";
-    options[1].optionString = "-Djava.library.path=/myLibDir";
+    options[0].optionString = "-Djava.class.path=.:/myClassDir";
+    options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
     d->vm_args.nOptions = 2;
 
@@ -80,4 +80,9 @@ JVMInterpreter::~JVMInterpreter()
 Script* JVMInterpreter::createScript(Action* action)
 {
     return new JVMScript(this, action);
+}
+
+JNIEnv* JVMInterpreter::getEnv() const
+{
+    return d->env;
 }

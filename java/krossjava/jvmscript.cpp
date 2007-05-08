@@ -19,7 +19,7 @@
 
 #include "jvmscript.h"
 #include "jvminterpreter.h"
-//#include <kross/core/action.h>
+#include <kross/core/action.h>
 
 using namespace Kross;
 
@@ -48,6 +48,27 @@ JVMScript::~JVMScript()
 void JVMScript::execute()
 {
     krossdebug("JVMScript execute");
+    krossdebug( QString("executing file %1").arg(action()->file()) );
 
-    //TODO
+    JNIEnv* env = ((JVMInterpreter*)interpreter())->getEnv();
+
+    //TODO: get a better way to extract the filename :)
+    jclass cls = env->FindClass( action()->file().section('.',0,0).toAscii().data() );
+    if (cls == 0) {
+      krosswarning("Class not found!");
+      return;
+    }
+    jmethodID mid =
+      env->GetStaticMethodID(cls, "main", "([Ljava/lang/String;)V");
+    if (mid == 0) {
+      krosswarning("main() method not found");
+      return;
+    }
+    jstring jstr;
+    jobjectArray args = env->NewObjectArray(1, env->FindClass("java/lang/String"), jstr);
+    if (args == 0) {
+      krosswarning("Could not create a new object - out of memory?");
+      return;
+    }
+    env->CallStaticVoidMethod(cls, mid, args);
 }

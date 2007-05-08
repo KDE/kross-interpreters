@@ -25,6 +25,7 @@
 #include <kross/core/interpreter.h>
 
 #include <QString>
+#include <jni.h>
 
 namespace Kross {
 
@@ -45,6 +46,9 @@ namespace Kross {
         private:
             class Private;
             Private * const d;
+
+            //This should probably become a more local class
+            JNIEnv* getEnv() const;
     };
 
 }
