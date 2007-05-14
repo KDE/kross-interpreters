@@ -50,6 +50,11 @@ namespace Kross {
                 krossdebug("JVMInterpreter initialize");
                 return res >= 0;
             }
+            bool finalize() {
+                jint res = jvm->DestroyJavaVM();
+                //return ( ! env->ExceptionOccurred() );
+                return res >= 0;
+            }
     };
 
 }
@@ -73,7 +78,9 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
 JVMInterpreter::~JVMInterpreter()
 {
     krossdebug("JVMInterpreter Dtor");
-    d->jvm->DestroyJavaVM(jvm);
+    if( ! d->finalize() ) {
+        krosswarning("JVMInterpreter Ctor: Failed to finalize");
+    }
     delete d;
 }
 
