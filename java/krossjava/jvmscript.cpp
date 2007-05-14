@@ -47,15 +47,24 @@ JVMScript::~JVMScript()
 
 void JVMScript::execute()
 {
+    //TODO: if the code is not compiled (aka a class) we need to do it
+    //before somehow...
+
     krossdebug("JVMScript execute");
     krossdebug( QString("executing file %1").arg(action()->file()) );
 
-    JNIEnv* env = ((JVMInterpreter*)interpreter())->getEnv();
+    //TODO: multiple scripts can run the same time and each of them would
+    //need an own environment. So, probably just move the JNIEnv setup
+    //to the JVMScript class?
+    JNIEnv* env = static_cast< JVMInterpreter* >( interpreter() )->getEnv();
 
     //TODO: get a better way to extract the filename :)
-    jclass cls = env->FindClass( action()->file().section('.',0,0).toAscii().data() );
+    //TODO: handle also the case if we don't got a file but just some
+    //action()->code() which then need to be compiled before...
+    QString classname = action()->file().section('.',0,0);
+    jclass cls = env->FindClass( classname.toAscii().data() );
     if (cls == 0) {
-      krosswarning("Class not found!");
+      krosswarning( QString("Class '%1' not found!").arg(classname) );
       return;
     }
     jmethodID mid =

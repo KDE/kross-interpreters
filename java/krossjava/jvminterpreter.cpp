@@ -73,6 +73,7 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
 JVMInterpreter::~JVMInterpreter()
 {
     krossdebug("JVMInterpreter Dtor");
+    d->jvm->DestroyJavaVM(jvm);
     delete d;
 }
 
