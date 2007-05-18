@@ -73,10 +73,22 @@ void JVMScript::execute()
       krosswarning("main() method not found");
       return;
     }
-    jstring jstr;
-    jobjectArray args = env->NewObjectArray(1, env->FindClass("java/lang/String"), jstr);
+    //TODO: do we need parameters?
+    jstring jstr = env->NewStringUTF("[insert parameters here]");
+    if (jstr == 0) {
+      krosswarning("Could not create parameter string!");
+      return;
+    }
+    jclass stringcl = env->FindClass("java/lang/String");
+    jobjectArray args = env->NewObjectArray(1, stringcl, jstr);
     if (args == 0) {
       krosswarning("Could not create a new object - out of memory?");
+      //TODO: see for a better way to this this in our context
+      //quick hack on possible exceptions
+      if ((env)->ExceptionOccurred()) {
+        (env)->ExceptionDescribe();
+      }
+
       return;
     }
     env->CallStaticVoidMethod(cls, mid, args);
