@@ -8,7 +8,8 @@ include (MacroLibrary)
 include(MacroOptionalAddSubdirectory)
 include_directories (${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
 
-macro_optional_find_package(JNI)
+set(KrossJNI_DIR ${CMAKE_SOURCE_DIR})
+macro_optional_find_package(KrossJNI)
 
 #the path to the jawt library
 message(STATUS "JAVA_AWT_LIB_PATH: " ${JAVA_AWT_LIB_PATH})
