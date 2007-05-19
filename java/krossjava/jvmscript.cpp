@@ -29,6 +29,11 @@ namespace Kross {
     class JVMScript::Private
     {
         public:
+            jobject scriptobj;
+
+        explicit Private() : scriptobj(0) {
+
+        }
     };
 
 }
@@ -67,29 +72,11 @@ void JVMScript::execute()
       krosswarning( QString("Class '%1' not found!").arg(classname) );
       return;
     }
-    jmethodID mid =
-      env->GetStaticMethodID(cls, "main", "([Ljava/lang/String;)V");
-    if (mid == 0) {
-      krosswarning("main() method not found");
+    jmethodID ctor = env->GetMethodID(cls, "<init>", "()V");
+    if (ctor == 0) {
+      krosswarning("Constructor not found!");
       return;
     }
-    //TODO: do we need parameters?
-    jstring jstr = env->NewStringUTF("[insert parameters here]");
-    if (jstr == 0) {
-      krosswarning("Could not create parameter string!");
-      return;
-    }
-    jclass stringcl = env->FindClass("java/lang/String");
-    jobjectArray args = env->NewObjectArray(1, stringcl, jstr);
-    if (args == 0) {
-      krosswarning("Could not create a new object - out of memory?");
-      //TODO: see for a better way to this this in our context
-      //quick hack on possible exceptions
-      if ((env)->ExceptionOccurred()) {
-        (env)->ExceptionDescribe();
-      }
-
-      return;
-    }
-    env->CallStaticVoidMethod(cls, mid, args);
+    //This might need a global reference...
+    d->scriptobj = env->NewObject(cls, ctor);
 }

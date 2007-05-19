@@ -53,6 +53,7 @@ namespace Kross {
             bool finalize() {
                 jint res = jvm->DestroyJavaVM();
                 //return ( ! env->ExceptionOccurred() );
+                //Note, this will always fail according to DestroyJavaVM specification
                 return res >= 0;
             }
     };
