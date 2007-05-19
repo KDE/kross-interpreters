@@ -32,8 +32,9 @@ namespace Kross {
     {
         public:
             jobject scriptobj;
+            JNIEnv* env;
 
-        explicit Private() : scriptobj(0) {
+        explicit Private() : scriptobj(0), env(0) {
 
         }
     };
@@ -44,11 +45,20 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     : Script(interpreter, action), d(new Private())
 {
     krossdebug("JVMScript Ctor");
+
+    //TODO: multiple scripts can run the same time and each of them would
+    //need an own environment. So, probably just move the JNIEnv setup
+    //to the JVMScript class?
+    d->env = static_cast< JVMInterpreter* >( interpreter )->getEnv();
 }
 
 JVMScript::~JVMScript()
 {
     krossdebug("JVMScript Dtor");
+    if(d->env && d->scriptobj){
+         d->env->DeleteGlobalRef(d->scriptobj);
+         d->scriptobj = 0;
+    }
     delete d;
 }
 
@@ -59,25 +69,27 @@ void JVMScript::execute()
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
-    //TODO: multiple scripts can run the same time and each of them would
-    //need an own environment. So, probably just move the JNIEnv setup
-    //to the JVMScript class?
-    JNIEnv* env = static_cast< JVMInterpreter* >( interpreter() )->getEnv();
-
     //TODO: get a better way to extract the filename :)
     //TODO: handle also the case if we don't got a file but just some
     //action()->code() which then need to be compiled before...
+    //TODO: in case of failure, one should look at possible Java
+    //exceptions being thrown
     QString classname = action()->file().section('.',0,0);
-    jclass cls = env->FindClass( classname.toAscii().data() );
+    jclass cls = d->env->FindClass( classname.toAscii().data() );
     if (cls == 0) {
       krosswarning( QString("Class '%1' not found!").arg(classname) );
       return;
     }
-    jmethodID ctor = env->GetMethodID(cls, "<init>", "()V");
+    jmethodID ctor = d->env->GetMethodID(cls, "<init>", "()V");
     if (ctor == 0) {
       krosswarning("Constructor not found!");
       return;
     }
-    //This might need a global reference...
-    d->scriptobj = env->NewObject(cls, ctor);
+    jobject scriptweak = d->env->NewObject(cls, ctor);
+    if (scriptweak == 0) {
+      krosswarning("Could not create new Java script object!");
+      return;
+    }
+    //Global reference to keep the object from being garbage collected
+    d->scriptobj = d->env->NewGlobalRef(scriptweak);
 }
