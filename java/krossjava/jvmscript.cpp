@@ -1,7 +1,9 @@
 /***************************************************************************
  * jvmscript.cpp
  * This file is part of the KDE project
- * copyright (C)2007 by Sebastian Sauer (mail@dipe.org)
+ *
+ * copyright (C)2007 by Vincent Verhoeven <verhoevenv@gmail.com>
+ * copyright (C)2007 by Sebastian Sauer <mail@dipe.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -55,8 +57,7 @@ void JVMScript::execute()
     //TODO: if the code is not compiled (aka a class) we need to do it
     //before somehow...
 
-    krossdebug("JVMScript execute");
-    krossdebug( QString("executing file %1").arg(action()->file()) );
+    krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
     //TODO: multiple scripts can run the same time and each of them would
     //need an own environment. So, probably just move the JNIEnv setup

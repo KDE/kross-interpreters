@@ -1,7 +1,9 @@
 /***************************************************************************
  * jvminterpreter.cpp
  * This file is part of the KDE project
- * copyright (C)2007 by Sebastian Sauer (mail@dipe.org)
+ *
+ * copyright (C)2007 by Vincent Verhoeven <verhoevenv@gmail.com>
+ * copyright (C)2007 by Sebastian Sauer <mail@dipe.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -22,8 +24,6 @@
 
 #include <kross/core/action.h>
 #include <kross/core/manager.h>
-
-#include <jni.h>
 
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::JVMInterpreter instances.

@@ -20,6 +20,10 @@
 #ifndef KROSS_JVMCONFIG_H
 #define KROSS_JVMCONFIG_H
 
+// Java includes
+#include <jni.h>
+
+// Kross includes
 #include <kross/core/krossconfig.h>
 
 #endif

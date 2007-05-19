@@ -1,7 +1,9 @@
 /***************************************************************************
  * jvminterpreter.h
  * This file is part of the KDE project
- * copyright (C)2007 by Sebastian Sauer (mail@dipe.org)
+ *
+ * copyright (C)2007 by Vincent Verhoeven <verhoevenv@gmail.com>
+ * copyright (C)2007 by Sebastian Sauer <mail@dipe.org>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -25,7 +27,6 @@
 #include <kross/core/interpreter.h>
 
 #include <QString>
-#include <jni.h>
 
 namespace Kross {
 
