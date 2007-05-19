@@ -54,6 +54,10 @@ JVMExtension::JVMExtension(QObject* object)
     d->debuginfo = object ? QString("name=%1 class=%2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
     krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
 
+    //TODO what we could do here is to create a class on the fly and register native
+    //callbacks using the env->RegisterNatives method to be able to provide a Java
+    //wrapper that calls slots and get/set properties fo the QObject.
+
     /*
         const QMetaObject* metaobject = d->m_object->metaObject();
 

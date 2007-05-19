@@ -35,8 +35,9 @@ namespace Kross {
     * provide a dynamic created jobject class that provides access to the QObject.
     *
     * More details how this maybe could be done are at;
-    * \a http://java.sun.com/docs/books/jni/html/other.html#29535 Registering Native Methods
-    * \a http://java.sun.com/docs/books/jni/html/other.html#30982 Reflection Support
+    * \li \a http://java.sun.com/docs/books/jni/html/jniTOC.html The Java Native Interface - Programmer's Guide and Specification
+    * \li \a http://java.sun.com/docs/books/jni/html/other.html#29535 Registering Native Methods
+    * \li \a http://java.sun.com/docs/books/jni/html/other.html#30982 Reflection Support
     */
     class JVMExtension {
         public:
@@ -54,7 +55,7 @@ namespace Kross {
             ~JVMExtension();
 
             /**
-            * \return the QObject this \a RubyExtension wraps.
+            * \return the QObject this \a JVMExtension wraps.
             */
             QObject* object() const;
 
