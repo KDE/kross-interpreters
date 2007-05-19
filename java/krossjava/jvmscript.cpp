@@ -92,4 +92,8 @@ void JVMScript::execute()
     }
     //Global reference to keep the object from being garbage collected
     d->scriptobj = d->env->NewGlobalRef(scriptweak);
+
+    //TODO how to "publish our own jobject instance" here? we may like
+    //to create an publish an instance of JVMExtension here that the
+    //Java code can use/access then...
 }
