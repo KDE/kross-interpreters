@@ -85,6 +85,27 @@ namespace Kross {
         }
     };
 
+    template<>
+    struct JavaType<QByteArray>
+    {
+        inline static jbyteArray toJObject(JNIEnv *env, const QByteArray& array) {
+            const int count = array.count();
+            jbyteArray bytearray = env->NewByteArray(count);
+            //TODO: there has to be a better way...
+            jbyte bytes[count];
+            for(int i = 0; i < count; ++i)
+                bytes[i] = array[i];
+            env->SetByteArrayRegion(bytearray, 0, count, bytes);
+            return bytearray;
+        }
+        inline static QByteArray toVariant(JNIEnv *env, jbyteArray bytearray) {
+            jsize len = env->GetArrayLength(bytearray);
+            int count = len;
+            char bytes[count];
+            env->GetByteArrayRegion(bytearray, 0, len, (jbyte*)bytes);
+            return QByteArray(bytes);
+        }
+    };
 #if 0
     /// \internal
     template<>

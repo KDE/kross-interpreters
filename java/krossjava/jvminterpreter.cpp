@@ -21,6 +21,7 @@
 
 #include "jvminterpreter.h"
 #include "jvmscript.h"
+#include "jvmvariant.h"
 
 #include <kross/core/action.h>
 #include <kross/core/manager.h>
@@ -40,15 +41,46 @@ namespace Kross {
             JNIEnv *env;
             JavaVM *jvm;
             JavaVMInitArgs vm_args;
+            jobject classloader;
+            jclass clclass;
+            jmethodID addclass;
+            jmethodID newinst;
 
-            explicit Private() : env(0), jvm(0) {
+            explicit Private() : env(0), jvm(0), classloader(0), addclass(0) {
                 vm_args.version  = JNI_VERSION_1_2; /* Specifies the JNI version used */
                 vm_args.ignoreUnrecognized = JNI_TRUE; /* JNI won't complain about unrecognized options */
             }
             bool initialize() {
-                jint res = JNI_CreateJavaVM( &jvm, (void **)&env, &vm_args );
                 krossdebug("JVMInterpreter initialize");
-                return res >= 0;
+                jint res = JNI_CreateJavaVM( &jvm, (void **)&env, &vm_args );
+                if(res < 0)
+                    return false;
+
+                //Create classloader
+                jclass clclass = env->FindClass( "org.kde.kdebindings.java.krossjava.KrossClassLoader" );
+                if (clclass == 0) {
+                  krosswarning( "Class 'KrossClassLoader' not found! Is kross.jar accessible?" );
+                  return false;
+                }
+                addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
+                newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
+                if (addclass == 0 || newinst == 0) {
+                  krosswarning("Classloader method not found!");
+                  return false;
+                }
+                jmethodID ctor = env->GetMethodID(clclass, "<init>", "()V");
+                if (ctor == 0) {
+                  krosswarning("Classloader constructor not found!");
+                  return false;
+                }
+                jobject loaderweak = env->NewObject(clclass, ctor);
+                if (loaderweak == 0) {
+                  krosswarning("Could not create classloader!");
+                  return false;
+                }
+                classloader = env->NewGlobalRef(loaderweak);
+
+                return true;
             }
             bool finalize() {
                 jint res = jvm->DestroyJavaVM();
@@ -66,7 +98,7 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     krossdebug("JVMInterpreter Ctor");
 
     JavaVMOption    options[2];
-    options[0].optionString = "-Djava.class.path=.:/myClassDir";
+    options[0].optionString = "-Djava.class.path=kross.jar:.:/myClassDir";
     options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
     d->vm_args.nOptions = 2;
@@ -94,4 +126,30 @@ Script* JVMInterpreter::createScript(Action* action)
 JNIEnv* JVMInterpreter::getEnv() const
 {
     return d->env;
+}
+
+bool JVMInterpreter::addClass(QString name, QByteArray array)
+{
+    jstring jname = JavaType<QString>::toJObject(d->env,name);
+    jbyteArray jarray = JavaType<QByteArray>::toJObject(d->env,array);
+    d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
+
+    if(d->env->ExceptionOccurred()){
+        d->env->ExceptionDescribe();
+        return false;
+    }
+    return true;
+}
+
+//TODO: a way to add arguments? Would be hard though.
+jobject JVMInterpreter::newObject(QString fullname)
+{
+    jstring jname = JavaType<QString>::toJObject(d->env,fullname);
+    jobject obj = d->env->CallObjectMethod(d->classloader,d->newinst,jname);
+
+    if(d->env->ExceptionOccurred()){
+        d->env->ExceptionDescribe();
+        return 0;
+    }
+    return obj;
 }

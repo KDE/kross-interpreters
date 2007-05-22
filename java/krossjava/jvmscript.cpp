@@ -64,28 +64,20 @@ JVMScript::~JVMScript()
 
 void JVMScript::execute()
 {
-    //TODO: if the code is not compiled (aka a class) we need to do it
-    //before somehow...
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
     //TODO: get a better way to extract the filename :)
-    //TODO: handle also the case if we don't got a file but just some
-    //action()->code() which then need to be compiled before...
-    //TODO: in case of failure, one should look at possible Java
-    //exceptions being thrown
     QString classname = action()->file().section('.',0,0);
-    jclass cls = d->env->FindClass( classname.toAscii().data() );
-    if (cls == 0) {
-      krosswarning( QString("Class '%1' not found!").arg(classname) );
-      return;
-    }
-    jmethodID ctor = d->env->GetMethodID(cls, "<init>", "()V");
-    if (ctor == 0) {
-      krosswarning("Constructor not found!");
-      return;
-    }
-    jobject scriptweak = d->env->NewObject(cls, ctor);
+
+    JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
+
+    //Add the code to the classloader, which compiles it if needed
+    //FIXME: this should change when action()->code() becomes QByteArray
+    //Right now, the code is wrong (stops at first \0 character)
+    jvmi->addClass(classname, QByteArray(action()->code().toAscii()));
+
+    jobject scriptweak = jvmi->newObject(classname);
     if (scriptweak == 0) {
       krosswarning("Could not create new Java script object!");
       return;

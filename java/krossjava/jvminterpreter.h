@@ -50,6 +50,8 @@ namespace Kross {
 
             //This should probably become a more local class
             JNIEnv* getEnv() const;
+            bool addClass(QString name, QByteArray array);
+            jobject newObject(QString name);
     };
 
 }
