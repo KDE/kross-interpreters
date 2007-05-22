@@ -13,8 +13,12 @@ public class KrossClassLoader extends ClassLoader {
 		//TODO: check difference between compiled
 		//and non-compiled, compile if needed
 		//TODO: don't overwrite if name already exists?
-		//TODO: if name = "", make up a new one
-		storedClasses.put(name,data);
+		Class c = defineClass(null, data, 0, data.length);
+		//The passed name may be not the actual classname!
+		//We allow both ways of access here.
+		if(name != null && !name.equals(""))
+			storedClasses.put(name,c);
+		storedClasses.put(c.getName(),c);
 	}
 
 	public Object newInstance(String name) throws
@@ -24,8 +28,7 @@ public class KrossClassLoader extends ClassLoader {
 
 	public Class findClass(String name) throws ClassNotFoundException{
 		if(storedClasses.containsKey(name)){
-			byte[] b = (byte[])storedClasses.get(name);
-			return defineClass(name, b, 0, b.length);
+			return (Class)storedClasses.get(name);
 		}
 		throw new ClassNotFoundException();
 	}

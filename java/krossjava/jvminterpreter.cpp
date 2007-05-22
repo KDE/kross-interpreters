@@ -135,11 +135,7 @@ bool JVMInterpreter::addClass(QString name, QByteArray array)
     jbyteArray jarray = JavaType<QByteArray>::toJObject(d->env,array);
     d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
 
-    if(d->env->ExceptionOccurred()){
-        d->env->ExceptionDescribe();
-        return false;
-    }
-    return true;
+    return !handleException(d->env);
 }
 
 //TODO: a way to add arguments? Would be hard though.
@@ -148,9 +144,19 @@ jobject JVMInterpreter::newObject(QString fullname)
     jstring jname = JavaType<QString>::toJObject(d->env,fullname);
     jobject obj = d->env->CallObjectMethod(d->classloader,d->newinst,jname);
 
-    if(d->env->ExceptionOccurred()){
-        d->env->ExceptionDescribe();
+    if(handleException(d->env)){
         return 0;
     }
     return obj;
+}
+
+bool JVMInterpreter::handleException(JNIEnv* env)
+{
+    if(/*jthrowable exc = */env->ExceptionOccurred()){
+        //TODO: do this with krosswarning()
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        return true;
+    }
+    return false;
 }

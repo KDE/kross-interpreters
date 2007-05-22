@@ -52,6 +52,8 @@ namespace Kross {
             JNIEnv* getEnv() const;
             bool addClass(QString name, QByteArray array);
             jobject newObject(QString name);
+            //TODO: would this be the right place?
+            static bool handleException(JNIEnv* env);
     };
 
 }
