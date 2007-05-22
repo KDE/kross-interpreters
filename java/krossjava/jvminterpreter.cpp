@@ -26,6 +26,9 @@
 #include <kross/core/action.h>
 #include <kross/core/manager.h>
 
+#include <kglobal.h>
+#include <kstandarddirs.h>
+
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::JVMInterpreter instances.
 KROSS_EXPORT_INTERPRETER( Kross::JVMInterpreter )
@@ -97,9 +100,21 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
 {
     krossdebug("JVMInterpreter Ctor");
 
+    //Construct classpath
+    QString cp = "-Djava.class.path=";
+    //Add kross.jar
+    QString jarlocation = KGlobal::dirs()->findResource("module", "kross/kross.jar");
+    if(jarlocation.isNull()){
+        krosswarning("kross.jar not found!");
+    }
+    cp += jarlocation;
+    //Add other dirs - probably use KGlobal::dirs() here too?
+    cp += ":.:/myClassDir";
+    QByteArray ba( cp.toAscii() );
+
     JavaVMOption    options[2];
     //TODO: should the seperator be ";" on Windows?
-    options[0].optionString = "-Djava.class.path=kross.jar:.:/myClassDir";
+    options[0].optionString = ba.data();
     options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
     d->vm_args.nOptions = 2;
