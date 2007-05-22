@@ -67,8 +67,9 @@ void JVMScript::execute()
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
-    //TODO: get a better way to extract the filename :)
-    QString classname = action()->file().section('.',0,0);
+    //TODO: in some cases, the classname might not be given.
+    //We need to gather it from the code, then, I think.
+    QString classname = QFileInfo(action()->file()).completeBaseName();
 
     JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
 

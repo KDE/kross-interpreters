@@ -98,6 +98,7 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     krossdebug("JVMInterpreter Ctor");
 
     JavaVMOption    options[2];
+    //TODO: should the seperator be ";" on Windows?
     options[0].optionString = "-Djava.class.path=kross.jar:.:/myClassDir";
     options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
