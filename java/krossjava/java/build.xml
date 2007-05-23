@@ -7,7 +7,7 @@
 	
 	<target name="compile">
 		<mkdir dir="${build}"/>
-		<javac srcdir="${src}" destdir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}" target="1.1" source="1.2"/>
 	</target>
 	
 	<target name="makejar" depends="compile">
