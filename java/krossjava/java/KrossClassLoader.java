@@ -1,12 +1,14 @@
 package org.kde.kdebindings.java.krossjava;
 
 import java.util.*;
+import java.net.*;
+import java.io.File;
 
-public class KrossClassLoader extends ClassLoader {
+public class KrossClassLoader extends URLClassLoader {
 	private Map storedClasses = new Hashtable();
 
 	public KrossClassLoader(){
-		super(KrossClassLoader.class.getClassLoader());
+		super(new URL[0], KrossClassLoader.class.getClassLoader());
 	}
 
 	public void addClass(String name, byte[] data){
@@ -30,6 +32,16 @@ public class KrossClassLoader extends ClassLoader {
 		if(storedClasses.containsKey(name)){
 			return (Class)storedClasses.get(name);
 		}
-		throw new ClassNotFoundException();
+		return super.findClass(name);
+	}
+
+	public void addURL(URL url){
+		super.addURL(url);
+	}
+
+	public void addURL(String url) throws MalformedURLException{
+		//TODO: perhaps this is not always a file?
+		File f = new File(url);
+		addURL(f.toURL());
 	}
 }

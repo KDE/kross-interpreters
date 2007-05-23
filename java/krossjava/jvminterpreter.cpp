@@ -46,10 +46,12 @@ namespace Kross {
             JavaVMInitArgs vm_args;
             jobject classloader;
             jclass clclass;
+
             jmethodID addclass;
             jmethodID newinst;
+            jmethodID addurl;
 
-            explicit Private() : env(0), jvm(0), classloader(0), addclass(0) {
+            explicit Private() : env(0), jvm(0), classloader(0), addclass(0), addurl(0) {
                 vm_args.version  = JNI_VERSION_1_2; /* Specifies the JNI version used */
                 vm_args.ignoreUnrecognized = JNI_TRUE; /* JNI won't complain about unrecognized options */
             }
@@ -67,7 +69,8 @@ namespace Kross {
                 }
                 addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
                 newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
-                if (addclass == 0 || newinst == 0) {
+                addurl = env->GetMethodID(clclass, "addURL", "(Ljava/lang/String;)V");
+                if (addclass == 0 || newinst == 0 || addurl == 0) {
                   krosswarning("Classloader method not found!");
                   return false;
                 }
@@ -113,7 +116,7 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     QByteArray ba( cp.toAscii() );
 
     JavaVMOption    options[2];
-    //TODO: should the seperator be ";" on Windows?
+    //TODO: should the separator be ";" on Windows?
     options[0].optionString = ba.data();
     options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
@@ -144,7 +147,15 @@ JNIEnv* JVMInterpreter::getEnv() const
     return d->env;
 }
 
-bool JVMInterpreter::addClass(QString name, QByteArray array)
+void JVMInterpreter::addToCP(const QString& path)
+{
+    jstring jpath = JavaType<QString>::toJObject(d->env,path);
+    d->env->CallVoidMethod(d->classloader,d->addurl,jpath);
+
+    handleException(d->env);
+}
+
+bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
 {
     jstring jname = JavaType<QString>::toJObject(d->env,name);
     jbyteArray jarray = JavaType<QByteArray>::toJObject(d->env,array);
@@ -154,7 +165,7 @@ bool JVMInterpreter::addClass(QString name, QByteArray array)
 }
 
 //TODO: a way to add arguments? Would be hard though.
-jobject JVMInterpreter::newObject(QString fullname)
+jobject JVMInterpreter::newObject(const QString& fullname)
 {
     jstring jname = JavaType<QString>::toJObject(d->env,fullname);
     jobject obj = d->env->CallObjectMethod(d->classloader,d->newinst,jname);

@@ -64,14 +64,15 @@ JVMScript::~JVMScript()
 
 void JVMScript::execute()
 {
+    JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
+    QFileInfo file(action()->file());
     //TODO: in some cases, the classname might not be given.
     //We need to gather it from the code, then, I think.
-    QString classname = QFileInfo(action()->file()).completeBaseName();
-
-    JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
+    QString classname = file.completeBaseName();
+    jvmi->addToCP(file.absolutePath());
 
     //Add the code to the classloader, which compiles it if needed
     //FIXME: this should change when action()->code() becomes QByteArray
