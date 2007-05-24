@@ -106,43 +106,32 @@ namespace Kross {
             return QByteArray(bytes);
         }
     };
+
 #if 0
-    /// \internal
     template<>
     struct JavaType<QVariant>
     {
-        static VALUE toVALUE(const QVariant& v);
-        static QVariant toVariant(VALUE value);
+        static jvalue toJObject(const QVariant& v);
+        static QVariant toVariant(jvalue value);
     };
+#endif
 
-    /// \internal
     template<>
     struct JavaType<int>
     {
-        inline static VALUE toVALUE(int i) {
-            return INT2FIX(i);
+        inline static jint toJObject(JNIEnv *env, int i) {
+            return qint32(i); //jint is signed 32 bits
         }
-        inline static int toVariant(VALUE value) {
-            switch( TYPE(value) ) {
-                case T_FIXNUM:
-                    return FIX2INT(value);
-                case T_BIGNUM:
-                    return rb_big2int(value);
-                case T_FLOAT:
-                    return (int)(RFLOAT(value)->value);
-                default:
-                    break;
-            }
-            rb_raise(rb_eTypeError, "Integer must be a fixed number");
-            return 0;
+        inline static int toVariant(JNIEnv *env, jint value) {
+            return qint32(value);
         }
     };
 
-    /// \internal
+#if 0
     template<>
     struct JavaType<uint>
     {
-        inline static VALUE toVALUE(uint i) {
+        inline static VALUE toJObject(uint i) {
             return UINT2NUM(i);
         }
         inline static uint toVariant(VALUE value) {
@@ -161,56 +150,45 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<double>
     {
-        inline static VALUE toVALUE(double d) {
+        inline static VALUE toJObject(double d) {
             return rb_float_new(d);
         }
         inline static double toVariant(VALUE value) {
             return NUM2DBL(value);
         }
     };
+#endif
 
-    /// \internal
     template<>
     struct JavaType<bool>
     {
-        inline static VALUE toVALUE(bool b) {
-            return b ? Qtrue : Qfalse;
+        inline static jboolean toJObject(bool b) {
+            return b ? JNI_TRUE : JNI_FALSE;
         }
-        inline static bool toVariant(VALUE value) {
-            switch( TYPE(value) ) {
-                case T_TRUE:
-                    return true;
-                case T_FALSE:
-                    return false;
-                default: {
-                    rb_raise(rb_eTypeError, "Boolean value expected");
-                    return false;
-                } break;
-            }
+        inline static bool toVariant(jboolean value) {
+            return value == JNI_TRUE;
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<qlonglong>
     {
-        inline static VALUE toVALUE(qlonglong l) {
-            return /*INT2NUM*/ LONG2NUM((long)l);
+        inline static jlong toJObject(qlonglong l) {
+            return qint64(l); //jlong is a signed 64 bits
         }
-        inline static qlonglong toVariant(VALUE value) {
-            return NUM2LONG(value);
+        inline static qlonglong toVariant(jlong value) {
+            return qint64(value);
         }
     };
 
-    /// \internal
+#if 0
     template<>
     struct JavaType<qulonglong>
     {
-        inline static VALUE toVALUE(qulonglong l) {
+        inline static VALUE toJObject(qulonglong l) {
             return UINT2NUM((unsigned long)l);
         }
         inline static qulonglong toVariant(VALUE value) {
@@ -218,35 +196,13 @@ namespace Kross {
         }
     };
 
-    /// \internal
-    template<>
-    struct JavaType<QByteArray>
-    {
-        inline static VALUE toVALUE(const QByteArray& ba) {
-            return rb_str_new(ba.constData(), ba.size());
-        }
-        inline static QByteArray toVariant(VALUE value) {
-            if( TYPE(value) != T_STRING ) {
-                rb_raise(rb_eTypeError, "QByteArray must be a string");
-                //return STR2CSTR( rb_inspect(value) );
-                return QByteArray("");
-            }
-            long length = LONG2NUM( RSTRING(value)->len );
-            if( length < 0 )
-                return QByteArray("");
-            char* ca = rb_str2cstr(value, &length);
-            return QByteArray(ca, length);
-        }
-    };
-
-    /// \internal
     template<>
     struct JavaType<QSize>
     {
-        inline static VALUE toVALUE(const QSize& s) {
+        inline static VALUE toJObject(const QSize& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toVALUE(s.width()));
-            rb_ary_push(l, JavaType<int>::toVALUE(s.height()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.width()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.height()));
             return l;
         }
         inline static QSize toVariant(VALUE value) {
@@ -258,14 +214,13 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QSizeF>
     {
-        inline static VALUE toVALUE(const QSizeF& s) {
+        inline static VALUE toJObject(const QSizeF& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toVALUE(s.width()));
-            rb_ary_push(l, JavaType<double>::toVALUE(s.height()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.width()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.height()));
             return l;
         }
         inline static QSizeF toVariant(VALUE value) {
@@ -278,14 +233,13 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QPoint>
     {
-        inline static VALUE toVALUE(const QPoint& s) {
+        inline static VALUE toJObject(const QPoint& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toVALUE(s.x()));
-            rb_ary_push(l, JavaType<int>::toVALUE(s.y()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.x()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.y()));
             return l;
         }
         inline static QPoint toVariant(VALUE value) {
@@ -297,14 +251,13 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QPointF>
     {
-        inline static VALUE toVALUE(const QPointF& s) {
+        inline static VALUE toJObject(const QPointF& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toVALUE(s.x()));
-            rb_ary_push(l, JavaType<double>::toVALUE(s.y()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.x()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.y()));
             return l;
         }
         inline static QPointF toVariant(VALUE value) {
@@ -316,16 +269,15 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QRect>
     {
-        inline static VALUE toVALUE(const QRect& s) {
+        inline static VALUE toJObject(const QRect& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toVALUE(s.x()));
-            rb_ary_push(l, JavaType<int>::toVALUE(s.y()));
-            rb_ary_push(l, JavaType<int>::toVALUE(s.width()));
-            rb_ary_push(l, JavaType<int>::toVALUE(s.height()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.x()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.y()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.width()));
+            rb_ary_push(l, JavaType<int>::toJObject(s.height()));
             return l;
         }
         inline static QRect toVariant(VALUE value) {
@@ -338,16 +290,15 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QRectF>
     {
-        inline static VALUE toVALUE(const QRectF& s) {
+        inline static VALUE toJObject(const QRectF& s) {
             VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toVALUE(s.x()));
-            rb_ary_push(l, JavaType<double>::toVALUE(s.y()));
-            rb_ary_push(l, JavaType<double>::toVALUE(s.width()));
-            rb_ary_push(l, JavaType<double>::toVALUE(s.height()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.x()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.y()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.width()));
+            rb_ary_push(l, JavaType<double>::toJObject(s.height()));
             return l;
         }
         inline static QRectF toVariant(VALUE value) {
@@ -360,26 +311,24 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QUrl>
     {
-        inline static VALUE toVALUE(const QUrl& url) {
-            return JavaType<QString>::toVALUE( url.toString() );
+        inline static VALUE toJObject(const QUrl& url) {
+            return JavaType<QString>::toJObject( url.toString() );
         }
         inline static QUrl toVariant(VALUE value) {
             return QUrl( JavaType<QString>::toVariant(value) );
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QVariantList>
     {
-        inline static VALUE toVALUE(const QVariantList& list) {
+        inline static VALUE toJObject(const QVariantList& list) {
             VALUE l = rb_ary_new();
             foreach(QVariant v, list)
-                rb_ary_push(l, JavaType<QVariant>::toVALUE(v));
+                rb_ary_push(l, JavaType<QVariant>::toJObject(v));
             return l;
         }
         inline static QVariantList toVariant(VALUE value) {
@@ -394,15 +343,14 @@ namespace Kross {
         }
     };
 
-    /// \internal
     template<>
     struct JavaType<QVariantMap>
     {
-        inline static VALUE toVALUE(const QVariantMap& map) {
+        inline static VALUE toJObject(const QVariantMap& map) {
             VALUE h = rb_hash_new();
             QMap<QString, QVariant>::ConstIterator it(map.constBegin()), end(map.end());
             for(; it != end; ++it)
-                rb_hash_aset(h, JavaType<QString>::toVALUE(it.key()), JavaType<QVariant>::toVALUE(it.value()) );
+                rb_hash_aset(h, JavaType<QString>::toJObject(it.key()), JavaType<QVariant>::toJObject(it.value()) );
             return h;
         }
         inline static int convertHash(VALUE key, VALUE value, VALUE  vmap) {
@@ -435,7 +383,6 @@ namespace Kross {
             static MetaType* create(int typeId, int metaTypeId, VALUE valueect = Qnil);
     };
 
-    /// \internal
     template<typename VARIANTTYPE>
     class RubyMetaTypeVariant : public MetaTypeVariant<VARIANTTYPE>
     {

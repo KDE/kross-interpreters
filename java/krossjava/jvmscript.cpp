@@ -78,6 +78,7 @@ void JVMScript::execute()
     //FIXME: this should change when action()->code() becomes QByteArray
     //Right now, the code is wrong (stops at first \0 character)
     jvmi->addClass(classname, QByteArray(action()->code().toAscii()));
+    //jvmi->addClass(classname, action()->code());
 
     jobject scriptweak = jvmi->newObject(classname);
     if (scriptweak == 0) {
