@@ -60,7 +60,9 @@ namespace Kross {
             QObject* object() const;
 
         private:
+            /// \internal d-pointer class.
             class Private;
+            /// \internal d-pointer instance.
             Private * const d;
     };
 

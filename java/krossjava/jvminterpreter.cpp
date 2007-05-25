@@ -131,7 +131,7 @@ JVMInterpreter::~JVMInterpreter()
 {
     krossdebug("JVMInterpreter Dtor");
     if( ! d->finalize() ) {
-        krosswarning("JVMInterpreter Ctor: Failed to finalize");
+        krosswarning("JVMInterpreter Dtor: Failed to finalize");
     }
     delete d;
 }
@@ -149,7 +149,7 @@ JNIEnv* JVMInterpreter::getEnv() const
 
 void JVMInterpreter::addToCP(const QString& path)
 {
-    jstring jpath = JavaType<QString>::toJObject(d->env,path);
+    jstring jpath = JavaType<QString>::toJObject(path,d->env);
     d->env->CallVoidMethod(d->classloader,d->addurl,jpath);
 
     handleException(d->env);
@@ -157,8 +157,8 @@ void JVMInterpreter::addToCP(const QString& path)
 
 bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
 {
-    jstring jname = JavaType<QString>::toJObject(d->env,name);
-    jbyteArray jarray = JavaType<QByteArray>::toJObject(d->env,array);
+    jstring jname = JavaType<QString>::toJObject(name,d->env);
+    jbyteArray jarray = JavaType<QByteArray>::toJObject(array,d->env);
     d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
 
     return !handleException(d->env);
@@ -167,7 +167,7 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
 //TODO: a way to add arguments? Would be hard though.
 jobject JVMInterpreter::newObject(const QString& fullname)
 {
-    jstring jname = JavaType<QString>::toJObject(d->env,fullname);
+    jstring jname = JavaType<QString>::toJObject(fullname,d->env);
     jobject obj = d->env->CallObjectMethod(d->classloader,d->newinst,jname);
 
     if(handleException(d->env)){

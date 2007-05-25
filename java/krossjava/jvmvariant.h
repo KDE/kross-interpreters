@@ -47,15 +47,22 @@ namespace Kross {
     };
 
     template<>
+    struct JavaType<QVariant>
+    {
+        static jvalue toJObject(const QVariant& v, JNIEnv* env);
+        static QVariant toVariant(jvalue value, JNIEnv* env);
+    };
+
+    template<>
     struct JavaType<QString>
     {
-        inline static jstring toJObject(JNIEnv *env, const QString& s) {
+        inline static jstring toJObject(const QString& s, JNIEnv* env) {
             //if( s.isNull() ) return jstring;
             QByteArray ba = s.toUtf8();
             jstring js = env->NewStringUTF(ba.data());
             return js;
         }
-        inline static QString toVariant(JNIEnv *env, jstring value) {
+        inline static QString toVariant(jstring value, JNIEnv* env) {
             const char *str = env->GetStringUTFChars(value, 0);
             QString s = str;
             env->ReleaseStringUTFChars(value, str);
@@ -66,20 +73,20 @@ namespace Kross {
     template<>
     struct JavaType<QStringList>
     {
-        inline static jobjectArray toJObject(JNIEnv *env, const QStringList& list) {
+        inline static jobjectArray toJObject(const QStringList& list, JNIEnv* env) {
             const int count = list.count();
             jobjectArray objarray = env->NewObjectArray(count, env->FindClass("java/lang/String"), env->NewStringUTF(""));
             for(int i = 0; i < count; ++i)
-                env->SetObjectArrayElement(objarray, i, JavaType<QString>::toJObject(env, list[i]));
+                env->SetObjectArrayElement(objarray, i, JavaType<QString>::toJObject(list[i], env));
             return objarray;
         }
-        inline static QStringList toVariant(JNIEnv *env, jobjectArray objarray) {
-            jsize len = env->GetArrayLength(objarray);
-            int count = len;
+        inline static QStringList toVariant(jobjectArray objarray, JNIEnv* env) {
+            const jsize len = env->GetArrayLength(objarray);
+            const int count = len;
             QStringList list;
             for(int i = 0; i < count; i++) {
                 jstring s = (jstring) env->GetObjectArrayElement(objarray, i);
-                list << JavaType<QString>::toVariant(env, s);
+                list << JavaType<QString>::toVariant(s, env);
             }
             return list;
         }
@@ -88,7 +95,7 @@ namespace Kross {
     template<>
     struct JavaType<QByteArray>
     {
-        inline static jbyteArray toJObject(JNIEnv *env, const QByteArray& array) {
+        inline static jbyteArray toJObject(const QByteArray& array, JNIEnv* env) {
             const int count = array.count();
             jbyteArray bytearray = env->NewByteArray(count);
             //TODO: there has to be a better way...
@@ -98,7 +105,7 @@ namespace Kross {
             env->SetByteArrayRegion(bytearray, 0, count, bytes);
             return bytearray;
         }
-        inline static QByteArray toVariant(JNIEnv *env, jbyteArray bytearray) {
+        inline static QByteArray toVariant(jbyteArray bytearray, JNIEnv* env) {
             jsize len = env->GetArrayLength(bytearray);
             int count = len;
             char bytes[count];
@@ -107,60 +114,38 @@ namespace Kross {
         }
     };
 
-#if 0
-    template<>
-    struct JavaType<QVariant>
-    {
-        static jvalue toJObject(const QVariant& v);
-        static QVariant toVariant(jvalue value);
-    };
-#endif
-
     template<>
     struct JavaType<int>
     {
-        inline static jint toJObject(JNIEnv *env, int i) {
+        inline static jint toJObject(int i) {
             return qint32(i); //jint is signed 32 bits
         }
-        inline static int toVariant(JNIEnv *env, jint value) {
+        inline static int toVariant(jint value) {
             return qint32(value);
         }
     };
 
-#if 0
     template<>
     struct JavaType<uint>
     {
-        inline static VALUE toJObject(uint i) {
-            return UINT2NUM(i);
+        inline static jint toJObject(int i) {
+            return quint32(i); //jint is signed 32 bits
         }
-        inline static uint toVariant(VALUE value) {
-            switch( TYPE(value) ) {
-                case T_FIXNUM:
-                    return FIX2UINT(value);
-                case T_BIGNUM:
-                    return rb_big2uint(value);
-                case T_FLOAT:
-                    return (uint)(RFLOAT(value)->value);
-                default:
-                    break;
-            }
-            rb_raise(rb_eTypeError, "Unsigned integer must be a fixed number");
-            return 0;
+        inline static uint toVariant(jint value) {
+            return quint32(value);
         }
     };
 
     template<>
     struct JavaType<double>
     {
-        inline static VALUE toJObject(double d) {
-            return rb_float_new(d);
+        inline static jdouble toJObject(double d) {
+            return d; //64 bits
         }
-        inline static double toVariant(VALUE value) {
-            return NUM2DBL(value);
+        inline static double toVariant(jdouble value) {
+            return value;
         }
     };
-#endif
 
     template<>
     struct JavaType<bool>
@@ -184,18 +169,18 @@ namespace Kross {
         }
     };
 
-#if 0
     template<>
     struct JavaType<qulonglong>
     {
-        inline static VALUE toJObject(qulonglong l) {
-            return UINT2NUM((unsigned long)l);
+        inline static jlong toJObject(qulonglong l) {
+            return quint64(l);
         }
-        inline static qulonglong toVariant(VALUE value) {
-            return NUM2UINT(value);
+        inline static qulonglong toVariant(jlong value) {
+            return quint64(value);
         }
     };
 
+#if 0
     template<>
     struct JavaType<QSize>
     {
@@ -310,18 +295,20 @@ namespace Kross {
                            JavaType<double>::toVariant( rb_ary_entry(value,2) ), JavaType<double>::toVariant( rb_ary_entry(value,3) ) );
         }
     };
+#endif
 
     template<>
     struct JavaType<QUrl>
     {
-        inline static VALUE toJObject(const QUrl& url) {
-            return JavaType<QString>::toJObject( url.toString() );
+        inline static jstring toJObject(const QUrl& url, JNIEnv* env) {
+            return JavaType<QString>::toJObject(url.toString(), env);
         }
-        inline static QUrl toVariant(VALUE value) {
-            return QUrl( JavaType<QString>::toVariant(value) );
+        inline static QUrl toVariant(jstring value, JNIEnv* env) {
+            return QUrl( JavaType<QString>::toVariant(value, env) );
         }
     };
 
+#if 0
     template<>
     struct JavaType<QVariantList>
     {
