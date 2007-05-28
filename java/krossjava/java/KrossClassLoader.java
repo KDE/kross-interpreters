@@ -28,6 +28,42 @@ public class KrossClassLoader extends URLClassLoader {
 		return loadClass(name).newInstance();
 	}
 
+	public Class loadClass(String name, boolean resolve) throws ClassNotFoundException{
+		//First, we see if it's already loaded.
+		Class output = findLoadedClass(name);
+
+		//Next, let's see if it's a custom class.
+		if(output == null){
+			try {
+			output = findClass(name);
+			} catch (ClassNotFoundException e){
+
+			}
+		}
+
+		//All seems to fail, let's try the native classloader.
+		//Exceptions can bubble up from here.
+		if(output == null){
+			ClassLoader par = getParent();
+			if(par == null)
+				output = getSystemClassLoader().loadClass(name);
+			else
+				output = par.loadClass(name);
+		}
+
+		//We had a correct result, see if it must be resolved...
+		if(resolve && output != null){
+			try {
+				resolveClass(output);
+			} catch(NullPointerException e) {
+				//IMPOSSIBLE! (but assertions are java 1.4)
+			}
+			
+		}
+
+		return output;
+	}
+
 	public Class findClass(String name) throws ClassNotFoundException{
 		if(storedClasses.containsKey(name)){
 			return (Class)storedClasses.get(name);

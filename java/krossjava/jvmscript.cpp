@@ -75,8 +75,6 @@ void JVMScript::execute()
     jvmi->addToCP(file.absolutePath());
 
     //Add the code to the classloader, which compiles it if needed
-    //FIXME: this should change when action()->code() becomes QByteArray
-    //Right now, the code is wrong (stops at first \0 character)
     jvmi->addClass(classname, action()->code());
 
     jobject scriptweak = jvmi->newObject(classname);
