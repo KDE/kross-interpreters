@@ -226,7 +226,7 @@ bool PythonScript::initialize()
             //PyCompilerFlags* cf = new PyCompilerFlags;
             //cf->cf_flags |= PyCF_SOURCE_IS_UTF8;
             PyObject* code = Py_CompileString( //Py_CompileStringFlags(
-                (char*) action()->code().toLatin1().data(),
+                (char*) action()->code().data(),
                 (char*) action()->objectName().toLatin1().data(),
                 Py_file_input
                 //,cf
