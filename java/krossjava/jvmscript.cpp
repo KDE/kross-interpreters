@@ -21,6 +21,8 @@
 
 #include "jvmscript.h"
 #include "jvminterpreter.h"
+#include "testobject.h" //testcase
+
 #include <kross/core/action.h>
 
 using namespace Kross;
@@ -45,6 +47,10 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     : Script(interpreter, action), d(new Private())
 {
     krossdebug("JVMScript Ctor");
+
+    //this is a testcase to be able to test the QObject functionality.
+    TestObject* testobject = new TestObject(this, "MyTestObject");
+    action->addObject(testobject, "MyTestObject");
 
     //TODO: multiple scripts can run the same time and each of them would
     //need an own environment. So, probably just move the JNIEnv setup

@@ -3,7 +3,7 @@ include_directories(${KDE4_KDECORE_INCLUDES} ${JAVA_INCLUDE_PATH} ${JAVA_INCLUDE
 
 ########### next target ###############
 
-set(libkrossjava_PART_SRCS jvmvariant.cpp jvmextension.cpp jvmscript.cpp jvminterpreter.cpp)
+set(libkrossjava_PART_SRCS testobject.cpp jvmvariant.cpp jvmextension.cpp jvmscript.cpp jvminterpreter.cpp)
 kde4_automoc(${libkrossjava_PART_SRCS})
 kde4_add_plugin(libkrossjava ${libkrossjava_PART_SRCS})
 
