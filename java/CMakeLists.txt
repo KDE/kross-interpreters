@@ -17,6 +17,8 @@ else(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
     macro_optional_find_package(KrossJNI)
 endif(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
 
+#the JAVA_HOME directory
+message(STATUS "  JAVA_HOME: " $ENV{JAVA_HOME})
 #the path to the jawt library
 message(STATUS "  JAVA_AWT_LIB_PATH: " ${JAVA_AWT_LIB_PATH})
 #the path to the jvm library

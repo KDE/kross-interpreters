@@ -149,6 +149,7 @@ JNIEnv* JVMInterpreter::getEnv() const
 
 void JVMInterpreter::addToCP(const QString& path)
 {
+    Q_ASSERT(d->classloader);
     jstring jpath = JavaType<QString>::toJObject(path,d->env);
     d->env->CallVoidMethod(d->classloader,d->addurl,jpath);
 
