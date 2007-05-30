@@ -37,15 +37,46 @@ namespace Kross {
     class JVMModule;
     class JVMInterpreterPrivate;
 
+    /**
+    * The JVMInterpreter class implements a \a Kross::Interpreter for
+    * the Java backend. At each time there exist exactly one instance
+    * of the interpreter.
+    */
     class JVMInterpreter : public Interpreter
     {
             friend class JVMScript;
         public:
+
+            /**
+            * Constructor.
+            * \param info the \a InterpreterInfo instance the Kross core
+            * uses to provide details about the Java-interpreter without
+            * actualy loading the krossjava library.
+            */
             explicit JVMInterpreter(InterpreterInfo* info);
+
+            /**
+            * Destructor.
+            */
             virtual ~JVMInterpreter();
+
+            /**
+            * Factory method that returns a \a JVMScript instance. There
+            * can be 0..n instances of \a JVMScript around where each of
+            * them represents an independend java project.
+            *
+            * \param action The \a Kross::Action that contains details
+            * about the actual Java code we got e.g. from an application
+            * that uses Kross.
+            * \return The new \a JVMScript instance that implements a
+            * abstract script container for the java language.
+            */
             virtual Script* createScript(Action* action);
+
         private:
+            /// \internal d-pointer class.
             class Private;
+            /// \internal d-pointer instance.
             Private * const d;
 
             //This should probably become a more local class

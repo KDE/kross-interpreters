@@ -27,17 +27,45 @@
 
 namespace Kross {
 
+    /**
+    * The JVMScript class implements the \a Kross::Script class to provide
+    * an abstract script containerfor the java language. 
+    */
     class JVMScript : public Script
     {
         public:
+
+            /**
+            * Constructor.
+            *
+            * \param interpreter The \a JVMInterpreter instance used
+            * to create this JVMScript instance.
+            * \param action The \a Kross::Action that contains details
+            * about the actual Java code we got e.g. from an application
+            * that uses Kross.
+            */
             explicit JVMScript(Interpreter* interpreter, Action* action);
+
+            /**
+            * Destructor.
+            */
             virtual ~JVMScript();
 
+            /**
+            * Execute the java code.
+            */
             virtual void execute();
 
+            /**
+            * Return a list of methodnames the java code provides.
+            */
             virtual QStringList functionNames() {
                 return QStringList();
             }
+
+            /**
+            * Call a method in the java code.
+            */
             virtual QVariant callFunction(const QString& name, const QVariantList& args = QVariantList()) {
                 Q_UNUSED(name);
                 Q_UNUSED(args);
@@ -45,7 +73,9 @@ namespace Kross {
             }
 
         private:
+            /// \internal d-pointer class.
             class Private;
+            /// \internal d-pointer instance.
             Private * const d;
     };
 
