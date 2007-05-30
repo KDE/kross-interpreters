@@ -7,6 +7,6 @@ public class TestObject {
     * however we named our TestObject-instance in
     * the jvmscript.cpp file.
     */
-    native String name();
+    static native String name();
 
 }

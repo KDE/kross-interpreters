@@ -21,6 +21,7 @@
 
 #include "jvmscript.h"
 #include "jvminterpreter.h"
+#include "jvmvariant.h"
 #include "testobject.h" //testcase
 
 #include <kross/core/action.h>
@@ -68,11 +69,30 @@ JVMScript::~JVMScript()
     delete d;
 }
 
+//testcase
+jstring JNICALL nameMethodImpl(JNIEnv *env, jobject self)
+{
+    Q_UNUSED(self);
+
+    //TODO we would need the instance pointer here + it should be generic + move such functionality into JVMExtension
+    //QString s = action()->object("MyTestObject")->name();
+    QString s = "MyTestObject";
+    return JavaType<QString>::toJObject(s, env);
+}
+
 void JVMScript::execute()
 {
     JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
+
+    //testcase
+    jclass clazz = (jclass) jvmi->getEnv()->NewGlobalRef( jvmi->getEnv()->FindClass("TestObject") );
+    JNINativeMethod nativeMethod;
+    nativeMethod.name = "name";
+    nativeMethod.signature = "()Ljava/lang/String;";
+    nativeMethod.fnPtr = (void*) nameMethodImpl;
+    jvmi->getEnv()->RegisterNatives(clazz, &nativeMethod, 1);
 
     QFileInfo file(action()->file());
     //TODO: in some cases, the classname might not be given.
