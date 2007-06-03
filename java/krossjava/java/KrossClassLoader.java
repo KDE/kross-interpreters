@@ -17,6 +17,10 @@ public class KrossClassLoader extends URLClassLoader {
 	public void addClass(String name, byte[] data){
 		//TODO: check difference between compiled
 		//and non-compiled, compile if needed
+		if(!isClassData(data)){
+			//TODO: compile
+			System.out.println("Didn't get a valid classfile!");
+		}
 		//TODO: don't overwrite if name already exists?
 		Class c = defineClass(null, data, 0, data.length);
 		//The passed name may be not the actual classname!
@@ -100,5 +104,13 @@ public class KrossClassLoader extends URLClassLoader {
 		//TODO: perhaps this is not always a file?
 		File f = new File(url);
 		addURL(f.toURI().toURL());
+	}
+
+	public static boolean isClassData(byte[] data){
+		//TODO: endianness?
+		if(data[0] == 0xFE && data[1] == 0xCA &&
+			data[2] == 0xBE && data[3] == 0xBA)
+			return true;
+		return false;
 	}
 }
