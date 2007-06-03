@@ -12,7 +12,7 @@ kde4_add_plugin(libkrossjava ${libkrossjava_PART_SRCS})
 #libjava libjavaplugin_jni
 #target_link_libraries(libkrossjava ${KDE4_KROSSCORE_LIBS} java)
 #target_link_libraries(libkrossjava ${KDE4_KROSSCORE_LIBS} javaplugin_jni)
-target_link_libraries(libkrossjava ${KDE4_KDECORE_LIBS} ${KDE4_KROSSCORE_LIBS} ${JAVA_JVM_LIBRARY})
+target_link_libraries(libkrossjava ${QT_QTCORE_LIBRARY} ${KDE4_KDECORE_LIBS} ${KDE4_KROSSCORE_LIBS} ${JAVA_JVM_LIBRARY})
 
 install(TARGETS libkrossjava DESTINATION ${PLUGIN_INSTALL_DIR})
 install(FILES kross.jar DESTINATION ${PLUGIN_INSTALL_DIR}/kross)
