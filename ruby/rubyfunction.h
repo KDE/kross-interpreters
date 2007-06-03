@@ -113,6 +113,7 @@ namespace Kross {
                 //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
                 //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
                 //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
+                Q_ASSERT( RCLASS(self)->m_tbl );
                 return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
             }
 
