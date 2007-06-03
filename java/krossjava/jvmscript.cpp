@@ -87,7 +87,7 @@ void JVMScript::execute()
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
     //testcase
-    jclass clazz = (jclass) jvmi->getEnv()->NewGlobalRef( jvmi->getEnv()->FindClass("TestObject") );
+    jclass clazz = (jclass) jvmi->getEnv()->NewGlobalRef( jvmi->getEnv()->FindClass("TestObjectImpl") );
     JNINativeMethod nativeMethod;
     nativeMethod.name = "name";
     nativeMethod.signature = "()Ljava/lang/String;";

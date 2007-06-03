@@ -5,10 +5,13 @@ import java.net.*;
 import java.io.File;
 
 public class KrossClassLoader extends URLClassLoader {
+	//This is ugly but I can't think of anything better for static access
+	private static KrossClassLoader kcl = null;
 	private Map storedClasses = new Hashtable();
 
 	public KrossClassLoader(){
 		super(new URL[0], KrossClassLoader.class.getClassLoader());
+		kcl = this;
 	}
 
 	public void addClass(String name, byte[] data){
@@ -25,7 +28,25 @@ public class KrossClassLoader extends URLClassLoader {
 
 	public Object newInstance(String name) throws
 	  ClassNotFoundException, InstantiationException, IllegalAccessException {
-		return loadClass(name).newInstance();
+		Object o = loadClass(name).newInstance();
+		return KrossProxy.newInstance(o);
+	}
+
+	public static Object importModule(String name) {
+		name += "Impl";
+		//TODO: some sort of checking might be nice, and a JavaExtension sort of base-type.
+		if(kcl == null){
+			//TODO: either exception or C++ error handling
+			System.out.println("Oops, KCL not initialized yet!");
+			return null;
+		}
+		try {
+			return kcl.newInstance(name);
+		} catch(Exception e) {
+			//TODO: a bit more fine-grained control here.
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	public Class loadClass(String name, boolean resolve) throws ClassNotFoundException{
@@ -78,6 +99,6 @@ public class KrossClassLoader extends URLClassLoader {
 	public void addURL(String url) throws MalformedURLException{
 		//TODO: perhaps this is not always a file?
 		File f = new File(url);
-		addURL(f.toURL());
+		addURL(f.toURI().toURL());
 	}
 }

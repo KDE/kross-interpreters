@@ -1,4 +1,4 @@
-public interface TestObject {
+public class TestObjectImpl implements TestObject {
 
     /**
     * Returns the objectName of the wrapped QObject.
@@ -7,6 +7,6 @@ public interface TestObject {
     * however we named our TestObject-instance in
     * the jvmscript.cpp file.
     */
-    public String name();
+    public native String name();
 
 }
