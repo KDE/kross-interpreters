@@ -62,7 +62,7 @@ namespace Kross {
                     return false;
 
                 //Create classloader
-                jclass clclass = env->FindClass( "org.kde.kdebindings.java.krossjava.KrossClassLoader" );
+                jclass clclass = env->FindClass( "org/kde/kdebindings/java/krossjava/KrossClassLoader" );
                 if (clclass == 0) {
                   krosswarning( "Class 'KrossClassLoader' not found! Is kross.jar accessible?" );
                   return false;
