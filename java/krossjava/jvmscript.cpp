@@ -86,7 +86,14 @@ void JVMScript::execute()
 
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
-    //testcase
+    QHash<QString, QObject*> objects = action()->objects();
+    QHashIterator<QString, QObject*> i(objects);
+    while (i.hasNext()) {
+        i.next();
+        //TODO: Create a JVMExtension from i.value() (with basename i.key()?)
+    }
+
+    //testcase (TODO: something like this should go into JVMExtension)
     jclass clazz = (jclass) jvmi->getEnv()->NewGlobalRef( jvmi->getEnv()->FindClass("TestObjectImpl") );
     JNINativeMethod nativeMethod;
     nativeMethod.name = "name";
