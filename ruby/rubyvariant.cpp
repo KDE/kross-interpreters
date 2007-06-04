@@ -72,9 +72,9 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
 
         case QVariant::Invalid: {
             #ifdef KROSS_RUBY_VARIANT_DEBUG
-                krossdebug( QString("RubyType<QVariant>::toVALUE variant=%1 is QVariant::Invalid. Returning Py:None.").arg(v.toString()) );
+                krossdebug( QString("RubyType<QVariant>::toVALUE variant=%1 is QVariant::Invalid. Returning Qnil.").arg(v.toString()) );
             #endif
-            //return Py::None();
+            return Qnil;
         } // fall through
 
         case QVariant::UserType: {

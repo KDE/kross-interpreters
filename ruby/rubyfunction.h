@@ -110,11 +110,17 @@ namespace Kross {
                 VALUE self = rb_ary_entry(args, 0);
                 int argsize = FIX2INT( rb_ary_entry(args, 1) );
                 VALUE arguments = rb_ary_entry(args, 2);
+                VALUE* argumentsP = new VALUE[argsize];
+                for(int idx = 0; idx < argsize; idx++)
+                {
+                    argumentsP[idx] = rb_ary_entry(arguments, idx+1);
+                }
                 //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
                 //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
                 //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
-                Q_ASSERT( RCLASS(self)->m_tbl );
-                return rb_funcall2(self, rb_intern("call"), argsize, &arguments);
+                VALUE result = rb_funcall2(self, rb_intern("call"), argsize, argumentsP);
+                delete[] argumentsP;
+                return result;
             }
 
             /**
@@ -134,7 +140,7 @@ namespace Kross {
                             QMetaMethod method = metaObject()->method( metaObject()->indexOfMethod(m_signature) );
                             QList<QByteArray> params = method.parameterTypes();
                             const int argsize = params.size();
-                            VALUE* args = new VALUE[argsize];
+                            VALUE args = rb_ary_new2(argsize);
                             int idx = 1;
                             foreach(QByteArray param, params) {
                                 int tp = QVariant::nameToType( param.constData() );
@@ -148,14 +154,14 @@ namespace Kross {
                                         switch( tp ) {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
-                                                args[ idx-1 ] = RubyExtension::toVALUE( new RubyExtension(obj) );
+                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj) ) );
                                             } break;
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                                args[ idx-1 ] = RubyExtension::toVALUE( new RubyExtension(obj) );
+                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj) ) );
                                             } break;
                                             default: {
-                                                args[ idx-1 ] = Qnil;
+                                                rb_ary_store(args, idx, Qnil);
                                             } break;
                                         }
                                     } break;
@@ -164,7 +170,7 @@ namespace Kross {
                                         #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                             krossdebug( QString("RubyFunction::qt_metacall argument param=%1 typeId=%2").arg(param.constData()).arg(tp) );
                                         #endif
-                                        args[ idx-1 ] = RubyType<QVariant>::toVALUE(v);
+                                        rb_ary_store(args, idx, RubyType<QVariant>::toVALUE(v));
                                     } break;
                                 }
 //rb_gc_register_address(&args[idx-1]);
@@ -179,7 +185,7 @@ namespace Kross {
                             VALUE argarray = rb_ary_new2(3);
                             rb_ary_store(argarray, 0, m_method); //self
                             rb_ary_store(argarray, 1, INT2FIX(argsize));
-                            rb_ary_store(argarray, 2, *args);
+                            rb_ary_store(argarray, 2, args);
                             VALUE result = rb_rescue2((VALUE(*)(...))callFunction, argarray, (VALUE(*)(...))callFunctionException, Qnil, rb_eException, 0);
                             ruby_in_eval--;
 
@@ -193,7 +199,6 @@ namespace Kross {
                             _a[0] = &(m_tmpResult);
 
 //for(int i = 0; i < argsize; ++i) rb_gc_unregister_address(&args[i]);
-                            delete[] args;
                             #ifdef KROSS_RUBY_EXPLICIT_GC
                                 rb_gc();
                             #endif
