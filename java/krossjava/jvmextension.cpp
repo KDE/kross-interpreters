@@ -65,6 +65,17 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     toiface.close();
     toclass.close();
 
+
+/*
+    //this is a testcase
+    QByteArray iface = createInterface();
+    QFile ifacefile( QString("My%1.class").arg(name) );
+    ifacefile.open(QIODevice::WriteOnly);
+    ifacefile.write(iface, iface.length());
+    ifacefile.close();
+*/
+
+
     //TODO what we could do here is to create a class on the fly and register native
     //callbacks using the env->RegisterNatives method to be able to provide a Java
     //wrapper that calls slots and get/set properties fo the QObject.
@@ -115,4 +126,59 @@ JVMExtension::~JVMExtension()
 QObject* JVMExtension::object() const
 {
     return d->m_object;
+}
+
+/*
+ClassFile {
+        u4 magic;
+        u2 minor_version;
+        u2 major_version;
+        u2 constant_pool_count;
+        cp_info constant_pool[constant_pool_count-1];
+        u2 access_flags;
+        u2 this_class;
+        u2 super_class;
+        u2 interfaces_count;
+        u2 interfaces[interfaces_count];
+        u2 fields_count;
+        field_info fields[fields_count];
+        u2 methods_count;
+        method_info methods[methods_count];
+        u2 attributes_count;
+        attribute_info attributes[attributes_count];
+    }
+*/
+QByteArray JVMExtension::createInterface()
+{
+    const QMetaObject* metaobject = d->m_object->metaObject();
+    const int methodCount = metaobject->methodCount();
+
+    QByteArray bytecode;
+    QDataStream data(&bytecode, QIODevice::WriteOnly);
+
+    // The magic item supplies the magic number identifying the class file format; it has the
+    // value 0xCAFEBABE.
+    data << (qint32) 0xCAFEBABE; //magic, u4
+
+    //The values of the minor_version and major_version items are the minor and major version
+    //numbers of this class file.
+    data << (qint16) 1; //major, u2
+    data << (qint16) 6; //minor, u2
+
+    //The value of the constant_pool_count item is equal to the number of entries in the
+    //constant_pool table plus one.
+    data << (qint16) methodCount + 1;
+
+    //The constant_pool is a table of structures representing various string constants, class
+    //and interface names, field names, and other constants that are referred to within the
+    //ClassFile structure and its substructures.
+    for(int i = 0; i < methodCount; ++i) {
+        //The format of each constant_pool table entry is indicated by its first "tag" byte.
+        //http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#20080
+        data << (qint8) 11; //CONSTANT_InterfaceMethodref
+    }
+
+    //TODO
+
+    return bytecode;
 }
