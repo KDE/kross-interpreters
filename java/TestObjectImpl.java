@@ -1,4 +1,10 @@
-public class TestObjectImpl implements TestObject {
+import org.kde.kdebindings.java.krossjava.*;
+
+public class TestObjectImpl extends KrossQExtensionImpl implements TestObject, KrossQExtension {
+
+    public TestObjectImpl(Long p){
+        super(p);
+    }
 
     /**
     * Returns the objectName of the wrapped QObject.
@@ -7,6 +13,6 @@ public class TestObjectImpl implements TestObject {
     * however we named our TestObject-instance in
     * the jvmscript.cpp file.
     */
-    public native String name();
+    public String name(){ return null; }
 
 }

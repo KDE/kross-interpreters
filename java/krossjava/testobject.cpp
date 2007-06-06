@@ -53,6 +53,7 @@ TestObject::~TestObject()
 
 QString TestObject::name()
 {
+    kDebug() << "TestObject::name" << endl;
     return objectName();
 }
 

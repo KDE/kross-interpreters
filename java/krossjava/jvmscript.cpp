@@ -69,17 +69,6 @@ JVMScript::~JVMScript()
     delete d;
 }
 
-//testcase
-jstring JNICALL nameMethodImpl(JNIEnv *env, jobject self)
-{
-    Q_UNUSED(self);
-
-    //TODO we would need the instance pointer here + it should be generic + move such functionality into JVMExtension
-    //QString s = action()->object("MyTestObject")->name();
-    QString s = "MyTestObject";
-    return JavaType<QString>::toJObject(s, env);
-}
-
 void JVMScript::execute()
 {
     JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
@@ -91,15 +80,17 @@ void JVMScript::execute()
     while (i.hasNext()) {
         i.next();
         //TODO: Create a JVMExtension from i.value() (with basename i.key()?)
+        //Also store it in some array-thing so that we might destruct it later on?
     }
 
     //testcase (TODO: something like this should go into JVMExtension)
-    jclass clazz = (jclass) jvmi->getEnv()->NewGlobalRef( jvmi->getEnv()->FindClass("TestObjectImpl") );
-    JNINativeMethod nativeMethod;
-    nativeMethod.name = "name";
-    nativeMethod.signature = "()Ljava/lang/String;";
-    nativeMethod.fnPtr = (void*) nameMethodImpl;
-    jvmi->getEnv()->RegisterNatives(clazz, &nativeMethod, 1);
+    QFile toiface("TestObject.class");
+    QFile toclass("TestObjectImpl.class");
+    toiface.open(QIODevice::ReadOnly);
+    toclass.open(QIODevice::ReadOnly);
+    jvmi->addExtension("TestObject", objects.value("MyTestObject"), toiface.readAll(), toclass.readAll());
+    toiface.close();
+    toclass.close();
 
     QFileInfo file(action()->file());
     //TODO: in some cases, the classname might not be given.

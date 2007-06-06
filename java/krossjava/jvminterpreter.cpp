@@ -37,6 +37,25 @@ using namespace Kross;
 
 namespace Kross {
 
+//TODO: search some fine place for this.
+jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, jobjectArray args)
+{
+    Q_UNUSED(env);
+    Q_UNUSED(self);
+    Q_UNUSED(args);
+
+    //FIXME: same as in addExtension - ugly & move to JavaVariant
+    QObject *obj;
+    memcpy(&obj, &p, sizeof(obj));
+
+    QString mname = JavaType<QString>::toVariant(method,env);
+
+    //TODO: arguments...
+    QMetaObject::invokeMethod(obj, mname.toAscii());
+
+    return 0;
+}
+
     /// \internal
     class JVMInterpreter::Private
     {
@@ -50,6 +69,7 @@ namespace Kross {
             jmethodID addclass;
             jmethodID newinst;
             jmethodID addurl;
+            jmethodID addextension;
 
             explicit Private() : env(0), jvm(0), classloader(0), addclass(0), addurl(0) {
                 vm_args.version  = JNI_VERSION_1_2; /* Specifies the JNI version used */
@@ -70,7 +90,8 @@ namespace Kross {
                 addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
                 newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
                 addurl = env->GetMethodID(clclass, "addURL", "(Ljava/lang/String;)V");
-                if (addclass == 0 || newinst == 0 || addurl == 0) {
+                addextension = env->GetMethodID(clclass, "addExtension", "(Ljava/lang/String;J)V");
+                if (addclass == 0 || newinst == 0 || addurl == 0 || addextension == 0) {
                   krosswarning("Classloader method not found!");
                   return false;
                 }
@@ -85,6 +106,15 @@ namespace Kross {
                   return false;
                 }
                 classloader = env->NewGlobalRef(loaderweak);
+
+                jclass proxy = env->FindClass("org/kde/kdebindings/java/krossjava/KrossProxy");
+                JNINativeMethod nativeMethod;
+                nativeMethod.name = "invokeNative";
+                nativeMethod.signature = "(JLjava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;";
+                nativeMethod.fnPtr = (void*) callQMethod;
+                env->RegisterNatives(proxy, &nativeMethod, 1);
+
+                handleException(env);
 
                 return true;
             }
@@ -161,6 +191,19 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
     jstring jname = JavaType<QString>::toJObject(name,d->env);
     jbyteArray jarray = JavaType<QByteArray>::toJObject(array,d->env);
     d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
+
+    return !handleException(d->env);
+}
+
+bool JVMInterpreter::addExtension(const QString& name, const QObject* obj, const QByteArray& interface, const QByteArray& clazz){
+    addClass(name, interface);
+    addClass(name + "Impl", clazz);
+
+    jstring jname = JavaType<QString>::toJObject(name,d->env);
+    //FIXME: This probably violates all sorts of rules. Also, should it go in JavaVariant somewhere?
+    jlong pointer = 0;
+    memcpy(&pointer, &obj, sizeof(obj));
+    d->env->CallVoidMethod(d->classloader,d->addextension,jname,pointer);
 
     return !handleException(d->env);
 }

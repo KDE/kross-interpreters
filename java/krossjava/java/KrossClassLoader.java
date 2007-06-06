@@ -2,12 +2,14 @@ package org.kde.kdebindings.java.krossjava;
 
 import java.util.*;
 import java.net.*;
+import java.lang.reflect.*;
 import java.io.File;
 
 public class KrossClassLoader extends URLClassLoader {
 	//This is ugly but I can't think of anything better for static access
 	private static KrossClassLoader kcl = null;
 	private Map storedClasses = new Hashtable();
+	private Map extensions = new Hashtable();
 
 	public KrossClassLoader(){
 		super(new URL[0], KrossClassLoader.class.getClassLoader());
@@ -30,25 +32,51 @@ public class KrossClassLoader extends URLClassLoader {
 		storedClasses.put(c.getName(),c);
 	}
 
-	public Object newInstance(String name) throws
-	  ClassNotFoundException, InstantiationException, IllegalAccessException {
-		Object o = loadClass(name).newInstance();
-		return KrossProxy.newInstance(o);
+	//TODO: think about the right exception handling here
+	public void addExtension(String name, long p) throws
+	  ClassNotFoundException, InstantiationException, IllegalAccessException,
+	  NoSuchMethodException, InvocationTargetException {
+		KrossQExtension ext = (KrossQExtension)newInstance(name + "Impl", new Long(p));
+		KrossQExtension extproxy = (KrossQExtension)KrossProxy.newInstance(ext);
+		extensions.put(name, extproxy);
 	}
 
-	public static Object importModule(String name) {
-		name += "Impl";
-		//TODO: some sort of checking might be nice, and a JavaExtension sort of base-type.
+	public Object newInstance(String name) throws
+	  ClassNotFoundException, InstantiationException, IllegalAccessException {
+		return loadClass(name).newInstance();
+	}
+
+	public Object newInstance(String name, Object[] args) throws
+	  ClassNotFoundException, InstantiationException, IllegalAccessException,
+	  NoSuchMethodException, InvocationTargetException {
+		Class c = loadClass(name);
+		Class[] sig = new Class[args.length];
+		for(int i=0;i<args.length;i++) {
+			sig[i] = args[i].getClass();
+		}
+		Constructor con = c.getConstructor(sig);
+		return con.newInstance(args);
+	}
+
+	public Object newInstance(String name, Object arg) throws
+	  ClassNotFoundException, InstantiationException, IllegalAccessException,
+	  NoSuchMethodException, InvocationTargetException {
+		Object[] args = new Object[1];
+		args[0] = arg;
+		return newInstance(name, args);
+	}
+
+	public static KrossQExtension importModule(String name) {
 		if(kcl == null){
 			//TODO: either exception or C++ error handling
 			System.out.println("Oops, KCL not initialized yet!");
 			return null;
 		}
-		try {
-			return kcl.newInstance(name);
-		} catch(Exception e) {
-			//TODO: a bit more fine-grained control here.
-			e.printStackTrace();
+		if(kcl.isLoadedExtension(name)){
+			return kcl.getLoadedExtension(name);
+		} else {
+			//TODO: throw exception
+			System.out.println("Module not found: " + name);
 			return null;
 		}
 	}
@@ -120,5 +148,13 @@ public class KrossClassLoader extends URLClassLoader {
 			value += (b[i] & 0x000000FF) << shift;
 		}
 		return value;
+	}
+
+	public boolean isLoadedExtension(String name){
+		return extensions.containsKey(name);
+	}
+
+	public KrossQExtension getLoadedExtension(String name){
+		return (KrossQExtension)extensions.get(name);
 	}
 }

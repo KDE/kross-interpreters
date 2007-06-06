@@ -84,6 +84,7 @@ namespace Kross {
             bool addClass(const QString& name, const QByteArray& array);
             void addToCP(const QString& path);
             jobject newObject(const QString& name);
+            bool addExtension(const QString& name, const QObject* obj, const QByteArray& interface, const QByteArray& clazz);
             //TODO: would this be the right place?
             static bool handleException(JNIEnv* env);
     };
