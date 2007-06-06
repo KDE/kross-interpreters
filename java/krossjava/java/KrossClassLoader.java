@@ -108,9 +108,17 @@ public class KrossClassLoader extends URLClassLoader {
 
 	public static boolean isClassData(byte[] data){
 		//TODO: endianness?
-		if(data[0] == 0xFE && data[1] == 0xCA &&
-			data[2] == 0xBE && data[3] == 0xBA)
+		if(byteArrayToInt(data) == 0xCAFEBABE)
 			return true;
 		return false;
+	}
+
+	public static int byteArrayToInt(byte[] b) {
+		int value = 0;
+		for (int i = 0; i < 4; i++) {
+			int shift = (4 - 1 - i) * 8;
+			value += (b[i] & 0x000000FF) << shift;
+		}
+		return value;
 	}
 }
