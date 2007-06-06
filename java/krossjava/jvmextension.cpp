@@ -20,11 +20,13 @@
  ***************************************************************************/
 
 #include "jvmextension.h"
+#include "jvminterpreter.h"
 //#include <kross/core/metatype.h>
 
 //#include <QMap>
 #include <QString>
 #include <QPointer>
+#include <QFile>
 //#include <QMetaObject>
 //#include <QMetaMethod>
 //#include <QHash>
@@ -46,7 +48,7 @@ namespace Kross {
 
 }
 
-JVMExtension::JVMExtension(QObject* object)
+JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QObject* object)
     : d(new Private())
 {
     d->m_object = object;
@@ -54,10 +56,18 @@ JVMExtension::JVMExtension(QObject* object)
     d->debuginfo = object ? QString("name=%1 class=%2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
     krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
 
+    //testcase (TODO: something like this should go into JVMExtension)
+    QFile toiface( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
+    QFile toclass( QString("%1Impl.class").arg(name) ); //e.g. "TestObjectImpl.class"
+    toiface.open(QIODevice::ReadOnly);
+    toclass.open(QIODevice::ReadOnly);
+    interpreter->addExtension(name, object, toiface.readAll(), toclass.readAll());
+    toiface.close();
+    toclass.close();
+
     //TODO what we could do here is to create a class on the fly and register native
     //callbacks using the env->RegisterNatives method to be able to provide a Java
     //wrapper that calls slots and get/set properties fo the QObject.
-
     /*
         const QMetaObject* metaobject = d->m_object->metaObject();
 

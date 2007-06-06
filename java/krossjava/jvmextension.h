@@ -30,6 +30,8 @@
 
 namespace Kross {
 
+    class JVMInterpreter;
+
     /**
     * This class wraps a QObject instance into the world of Java. For this, we
     * provide a dynamic created jobject class that provides access to the QObject.
@@ -47,7 +49,7 @@ namespace Kross {
             *
             * @param object The QObject instance this extension provides access to.
             */
-            explicit JVMExtension(QObject* object);
+            JVMExtension(JVMInterpreter* interpreter, const QString& name, QObject* object);
 
             /**
             * Destructor.

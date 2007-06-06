@@ -44,7 +44,6 @@ namespace Kross {
     */
     class JVMInterpreter : public Interpreter
     {
-            friend class JVMScript;
         public:
 
             /**
@@ -73,12 +72,6 @@ namespace Kross {
             */
             virtual Script* createScript(Action* action);
 
-        private:
-            /// \internal d-pointer class.
-            class Private;
-            /// \internal d-pointer instance.
-            Private * const d;
-
             //This should probably become a more local class
             JNIEnv* getEnv() const;
             bool addClass(const QString& name, const QByteArray& array);
@@ -87,6 +80,12 @@ namespace Kross {
             bool addExtension(const QString& name, const QObject* obj, const QByteArray& interface, const QByteArray& clazz);
             //TODO: would this be the right place?
             static bool handleException(JNIEnv* env);
+
+        private:
+            /// \internal d-pointer class.
+            class Private;
+            /// \internal d-pointer instance.
+            Private * const d;
     };
 
 }

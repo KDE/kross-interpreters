@@ -21,7 +21,9 @@
 
 #include "jvmscript.h"
 #include "jvminterpreter.h"
+#include "jvmextension.h"
 #include "jvmvariant.h"
+
 #include "testobject.h" //testcase
 
 #include <kross/core/action.h>
@@ -50,8 +52,8 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     krossdebug("JVMScript Ctor");
 
     //this is a testcase to be able to test the QObject functionality.
-    TestObject* testobject = new TestObject(this, "MyTestObject");
-    action->addObject(testobject, "MyTestObject");
+    TestObject* testobject = new TestObject(this, "TestObject");
+    action->addObject(testobject, "TestObject");
 
     //TODO: multiple scripts can run the same time and each of them would
     //need an own environment. So, probably just move the JNIEnv setup
@@ -76,21 +78,12 @@ void JVMScript::execute()
     krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
 
     QHash<QString, QObject*> objects = action()->objects();
-    QHashIterator<QString, QObject*> i(objects);
-    while (i.hasNext()) {
-        i.next();
-        //TODO: Create a JVMExtension from i.value() (with basename i.key()?)
-        //Also store it in some array-thing so that we might destruct it later on?
+    QHashIterator<QString, QObject*> it(objects);
+    while (it.hasNext()) {
+        it.next();
+        //TODO: store it in some array-thing so that we might destruct it later on?
+        new JVMExtension(jvmi, it.key(), it.value());
     }
-
-    //testcase (TODO: something like this should go into JVMExtension)
-    QFile toiface("TestObject.class");
-    QFile toclass("TestObjectImpl.class");
-    toiface.open(QIODevice::ReadOnly);
-    toclass.open(QIODevice::ReadOnly);
-    jvmi->addExtension("TestObject", objects.value("MyTestObject"), toiface.readAll(), toclass.readAll());
-    toiface.close();
-    toclass.close();
 
     QFileInfo file(action()->file());
     //TODO: in some cases, the classname might not be given.
