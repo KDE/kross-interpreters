@@ -61,13 +61,6 @@ namespace Kross {
             */
             QObject* object() const;
 
-            /**
-            * Creates and returns the Java bytecode for the interface class.
-            *
-            * \see http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
-            */
-            QByteArray createInterface();
-
         private:
             /// \internal d-pointer class.
             class Private;

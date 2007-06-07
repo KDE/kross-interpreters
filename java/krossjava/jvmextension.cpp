@@ -46,6 +46,59 @@ namespace Kross {
             QString debuginfo;
     };
 
+    /**
+    * Writes Java bytecode.
+    *
+    * \see http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html
+    */
+    class ClassFileWriter
+    {
+        public:
+            explicit ClassFileWriter(JVMExtension* extension) : m_extension(extension), m_metaobject(m_extension->object()->metaObject()) {}
+
+            void writeInterface(QDataStream& data)
+            {
+                writeHeader(data);
+                writeConstantPool(data);
+                //TODO
+            }
+
+        private:
+            JVMExtension* m_extension;
+            const QMetaObject* m_metaobject;
+
+            void writeHeader(QDataStream& data)
+            {
+                // The magic item supplies the magic number identifying the class file format; it has the
+                // value 0xCAFEBABE.
+                data << (qint32) 0xCAFEBABE; //magic, u4
+
+                //The values of the minor_version and major_version items are the minor and major version
+                //numbers of this class file.
+                data << (qint16) 1; //major, u2
+                data << (qint16) 6; //minor, u2
+            }
+
+            void writeConstantPool(QDataStream& data)
+            {
+                const int methodCount = m_metaobject->methodCount();
+
+                //The value of the constant_pool_count item is equal to the number of entries in the
+                //constant_pool table plus one.
+                data << (qint16) methodCount + 1;
+
+                //The constant_pool is a table of structures representing various string constants, class
+                //and interface names, field names, and other constants that are referred to within the
+                //ClassFile structure and its substructures.
+                for(int i = 0; i < methodCount; ++i) {
+                    //The format of each constant_pool table entry is indicated by its first "tag" byte.
+                    //http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#20080
+                    data << (qint8) 11; //CONSTANT_InterfaceMethodref
+                    //TODO
+                }
+            }
+    };
+
 }
 
 JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QObject* object)
@@ -65,16 +118,15 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     toiface.close();
     toclass.close();
 
-
 /*
     //this is a testcase
-    QByteArray iface = createInterface();
     QFile ifacefile( QString("My%1.class").arg(name) );
     ifacefile.open(QIODevice::WriteOnly);
-    ifacefile.write(iface, iface.length());
+    QDataStream data(&ifacefile);
+    ClassFileWriter writer(this);
+    writer.writeInterface(data);
     ifacefile.close();
 */
-
 
     //TODO what we could do here is to create a class on the fly and register native
     //callbacks using the env->RegisterNatives method to be able to provide a Java
@@ -148,37 +200,3 @@ ClassFile {
         attribute_info attributes[attributes_count];
     }
 */
-QByteArray JVMExtension::createInterface()
-{
-    const QMetaObject* metaobject = d->m_object->metaObject();
-    const int methodCount = metaobject->methodCount();
-
-    QByteArray bytecode;
-    QDataStream data(&bytecode, QIODevice::WriteOnly);
-
-    // The magic item supplies the magic number identifying the class file format; it has the
-    // value 0xCAFEBABE.
-    data << (qint32) 0xCAFEBABE; //magic, u4
-
-    //The values of the minor_version and major_version items are the minor and major version
-    //numbers of this class file.
-    data << (qint16) 1; //major, u2
-    data << (qint16) 6; //minor, u2
-
-    //The value of the constant_pool_count item is equal to the number of entries in the
-    //constant_pool table plus one.
-    data << (qint16) methodCount + 1;
-
-    //The constant_pool is a table of structures representing various string constants, class
-    //and interface names, field names, and other constants that are referred to within the
-    //ClassFile structure and its substructures.
-    for(int i = 0; i < methodCount; ++i) {
-        //The format of each constant_pool table entry is indicated by its first "tag" byte.
-        //http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#20080
-        data << (qint8) 11; //CONSTANT_InterfaceMethodref
-    }
-
-    //TODO
-
-    return bytecode;
-}
