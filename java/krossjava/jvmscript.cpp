@@ -89,7 +89,7 @@ void JVMScript::execute()
     //TODO: in some cases, the classname might not be given.
     //We need to gather it from the code, then, I think.
     QString classname = file.completeBaseName();
-    jvmi->addToCP(file.absolutePath());
+    jvmi->addToCP(QUrl::fromLocalFile(file.absolutePath()));
 
     //Add the code to the classloader, which compiles it if needed
     jvmi->addClass(classname, action()->code());

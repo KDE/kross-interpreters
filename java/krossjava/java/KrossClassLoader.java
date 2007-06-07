@@ -129,9 +129,7 @@ public class KrossClassLoader extends URLClassLoader {
 	}
 
 	public void addURL(String url) throws MalformedURLException{
-		//TODO: perhaps this is not always a file?
-		File f = new File(url);
-		addURL(f.toURI().toURL());
+		addURL(new URL(url));
 	}
 
 	public static boolean isClassData(byte[] data){

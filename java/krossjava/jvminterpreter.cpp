@@ -177,11 +177,11 @@ JNIEnv* JVMInterpreter::getEnv() const
     return d->env;
 }
 
-void JVMInterpreter::addToCP(const QString& path)
+void JVMInterpreter::addToCP(const QUrl& url)
 {
     Q_ASSERT(d->classloader);
-    jstring jpath = JavaType<QString>::toJObject(path,d->env);
-    d->env->CallVoidMethod(d->classloader,d->addurl,jpath);
+    jstring jurl = JavaType<QUrl>::toJObject(url,d->env);
+    d->env->CallVoidMethod(d->classloader,d->addurl,jurl);
 
     handleException(d->env);
 }

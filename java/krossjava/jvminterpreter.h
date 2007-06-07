@@ -75,7 +75,7 @@ namespace Kross {
             //This should probably become a more local class
             JNIEnv* getEnv() const;
             bool addClass(const QString& name, const QByteArray& array);
-            void addToCP(const QString& path);
+            void addToCP(const QUrl& url);
             jobject newObject(const QString& name);
             bool addExtension(const QString& name, const QObject* obj, const QByteArray& interface, const QByteArray& clazz);
             //TODO: would this be the right place?
