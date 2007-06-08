@@ -336,8 +336,8 @@ void PythonScript::execute()
         if(PyErr_Occurred())
             throw Py::Exception();
 
-        // valgrind complains, let's check it explicit ;)
-        Q_ASSERT( d->m_code->reference_count() == 1 );
+        // while valgrind complains, it's ok to shape references to code here
+        //Q_ASSERT( d->m_code->reference_count() == 1 );
 
         #ifdef KROSS_PYTHON_SCRIPT_EXEC_DEBUG
             krossdebug( QString("PythonScript::execute result=%1").arg(result.as_string().c_str()) );
