@@ -167,7 +167,7 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
         return PythonType<double>::toVariant(obj);
     if(type == &PyBool_Type)
         return PythonType<bool>::toVariant(obj);
-    if(PyType_IsSubtype(type,&PyString_Type))
+    if(obj.isString())
         return PythonType<QString>::toVariant(obj);
     if(type == &PyTuple_Type)
         return PythonType<QVariantList,Py::Tuple>::toVariant(Py::Tuple(obj));
