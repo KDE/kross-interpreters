@@ -205,12 +205,20 @@ namespace Kross {
         }
         inline static QString toVariant(const Py::Object& obj) {
             #ifdef Py_USING_UNICODE
-                PyTypeObject *type = (PyTypeObject*) obj.type().ptr();
-                if(type == &PyUnicode_Type) {
-                    Py::unicodestring u = Py::String(obj).as_unicodestring();
-                    std::string s;
-                    std::copy(u.begin(), u.end(), std::back_inserter(s));
-                    return s.c_str();
+                if(PyUnicode_CheckExact(obj.ptr())) {
+                    Py_UNICODE* t = PyUnicode_AsUnicode(obj.ptr());
+                    QString s;
+                    if(sizeof(Py_UNICODE) == 4) {
+                        quint32* ucs4 = (quint32*) t;
+                        s = "";
+                        while(*ucs4 != 0) {
+                            s += QChar( (quint16) * ucs4 );
+                            ++ucs4;
+                        }
+                    }
+                    else
+                        s.setUtf16( (quint16*)t, sizeof(t) / 4 );
+                    return s;
                 }
             #endif
             return obj.isString() ? Py::String(obj).as_string().c_str() : QString();
