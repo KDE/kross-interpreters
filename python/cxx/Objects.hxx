@@ -1912,7 +1912,14 @@ namespace Py
         {
             if( isUnicode() )
         {
+#ifdef Py_USING_UNICODE
+                Py::unicodestring u = Py::String(ptr()).as_unicodestring();
+                std::string s;
+                std::copy(u.begin(), u.end(), std::back_inserter(s));
+                return s;
+#else
                 throw TypeError("cannot return std::string from Unicode object");
+#endif
         }
             else
         {

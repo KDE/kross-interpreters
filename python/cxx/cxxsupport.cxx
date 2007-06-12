@@ -47,6 +47,10 @@ Type Object::type () const
 
 String Object::str () const
 {
+#ifdef Py_USING_UNICODE
+    if( Py::_Unicode_Check(p) )
+        return String (PyObject_Unicode (p), true);
+#endif
     return String (PyObject_Str (p), true);
 }
 
