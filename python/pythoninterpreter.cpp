@@ -292,7 +292,6 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
     PyErr_Fetch(&type, &value, &traceback);
     Py_FlushLine();
     PyErr_NormalizeException(&type, &value, &traceback);
-
     if(traceback) {
         Py::List tblist;
         try {
@@ -309,7 +308,9 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
         catch(Py::Exception& e) {
             QString err = Py::value(e).as_string().c_str();
             e.clear(); // exception is handled. clear it now.
-            krosswarning( QString("Kross::PythonScript::toException() Failed to fetch a traceback: %1").arg(err) );
+            #ifdef KROSS_PYTHON_EXCEPTION_DEBUG
+                krosswarning( QString("Kross::PythonScript::toException() Failed to fetch a traceback: %1").arg(err) );
+            #endif
         }
 
         PyObject *next;
@@ -346,6 +347,9 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
         }
     }
 
-    krossdebug( QString("PythonInterpreter::extractException: %1").arg( Py::Object(value).as_string().c_str() ) );
+    #ifdef KROSS_PYTHON_EXCEPTION_DEBUG
+        //krossdebug( QString("PythonInterpreter::extractException: %1").arg( Py::Object(value).as_string().c_str() ) );
+        krossdebug( QString("PythonInterpreter::extractException:\n%1").arg( errorlist.join("\n") ) );
+    #endif
     PyErr_Restore(type, value, traceback);
 }
