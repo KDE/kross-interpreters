@@ -305,7 +305,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             if( TYPE(value) == T_NIL ) {
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
                 #endif
                 void* ptr = QMetaType::construct(metaTypeId, 0);
@@ -314,7 +314,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
 
             QVariant v = RubyType<QVariant>::toVariant(value);
             if( v.isValid() ) {
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
                 #endif
                 return new Kross::MetaTypeVariant< QVariant >(v);
