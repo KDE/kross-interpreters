@@ -304,15 +304,19 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                 return new MetaTypeVoidStar( typeId, object, false /*owner*/ );
             }
 
-            /*
             if( TYPE(value) == T_NIL ) {
-                #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
-                #endif
-                void* ptr = QMetaType::construct(metaTypeId, 0);
-                return new MetaTypeVoidStar( metaTypeId, ptr, false );
+                switch(metaTypeId) {
+                    case QMetaType::QObjectStar: // fall through
+                    case QMetaType::QWidgetStar: {
+                        #ifdef KROSS_RUBY_VARIANT_DEBUG
+                            krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                        #endif
+                        void* ptr = QMetaType::construct( metaTypeId, 0 );
+                        return new MetaTypeVoidStar( metaTypeId, ptr, false );
+                    } break;
+                    default: break;
+                }
             }
-            */
 
             QVariant v = RubyType<QVariant>::toVariant(value);
             #ifdef KROSS_RUBY_VARIANT_DEBUG
