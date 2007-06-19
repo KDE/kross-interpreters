@@ -352,6 +352,8 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 }
             }
             */
+
+            /*
             if( object.isNone() ) {
                 int metaid = QMetaType::type(typeName);
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
@@ -360,16 +362,15 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 void* ptr = QMetaType::construct(metaid, 0);
                 return new MetaTypeVoidStar( metaid, ptr, owner );
             }
+            */
 
-            //QVariant v = PythonType<QVariant>::toVariant(object);
-            //krossdebug( QString("PythonVariant::create Converted Py::Object '%1' with type '%2 %3' to QVariant with type '%4 %5'").arg(object.as_string().c_str()).arg(typeName).arg(typeId).arg(v.toString()).arg(v.typeName()) );
-            //if(typeId == QVariant::Invalid) return new PythonVariantImpl<void>();
-            //return new PythonVariantImpl<QVariant>(v);
-
+            QVariant v = PythonType<QVariant>::toVariant(object);
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                krosswarning( QString("PythonMetaTypeFactory::create Not possible to convert the Py::Object '%1' to QVariant with '%2' and metaid '%3'").arg(object.as_string().c_str()).arg(typeName).arg(typeId) );
+                krosswarning( QString("PythonMetaTypeFactory::create Convert Py::Object '%1' to QVariant v.toString='%2' v.typeName='%3' typeName='%4' typeId='%5'").arg(object.as_string().c_str()).arg(v.toString()).arg(v.typeName()).arg(typeName).arg(typeId) );
             #endif
-            throw Py::TypeError( QString("Invalid object \"%1\" for typename \"%2\"").arg(object.as_string().c_str()).arg(typeName).toLatin1().constData() );
+            return new Kross::MetaTypeVariant< QVariant >( v );
+
+            //throw Py::TypeError( QString("Invalid object \"%1\" for typename \"%2\"").arg(object.as_string().c_str()).arg(typeName).toLatin1().constData() );
         } break;
     }
 }
