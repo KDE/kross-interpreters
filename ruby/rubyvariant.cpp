@@ -179,7 +179,7 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug("  VALUE is a T_FIXNUM");
             #endif
-            return RubyType<qlonglong>::toVariant(value);
+            return RubyType<int>::toVariant(value);
         case T_HASH:
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug("  VALUE is a T_HASH");
@@ -312,10 +312,13 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                 return new MetaTypeVoidStar( metaTypeId, ptr, false /*owner*/ );
             }
 
-            //QVariant v = RubyType<QVariant>::toVariant(object);
-            //krossdebug( QString("RubyVariant::create Converted VALUE '%1' with type '%2 %3' to QVariant with type '%4 %5'").arg(object.as_string().c_str()).arg(typeName).arg(typeId).arg(v.toString()).arg(v.typeName()) );
-            //if(typeId == QVariant::Invalid) return new RubyVariantImpl<void>();
-            //return new RubyVariantImpl<QVariant>(v);
+            QVariant v = RubyType<QVariant>::toVariant(value);
+            if( v.isValid() ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
+                #endif
+                return new Kross::MetaTypeVariant< QVariant >(v);
+            }
 
             krosswarning( QString("RubyMetaTypeFactory::create Not possible to convert the VALUE to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
             return 0;
