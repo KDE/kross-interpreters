@@ -353,24 +353,26 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
             }
             */
 
-            /*
             if( object.isNone() ) {
                 int metaid = QMetaType::type(typeName);
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                    krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
-                #endif
-                void* ptr = QMetaType::construct(metaid, 0);
-                return new MetaTypeVoidStar( metaid, ptr, owner );
+                switch(metaid) {
+                    case QMetaType::QObjectStar: // fall through
+                    case QMetaType::QWidgetStar: {
+                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
+                        #endif
+                        void* ptr = QMetaType::construct(metaid, 0);
+                        return new MetaTypeVoidStar( metaid, ptr, owner );
+                    } break;
+                    default: break;
+                }
             }
-            */
 
             QVariant v = PythonType<QVariant>::toVariant(object);
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
                 krosswarning( QString("PythonMetaTypeFactory::create Convert Py::Object '%1' to QVariant v.toString='%2' v.typeName='%3' typeName='%4' typeId='%5'").arg(object.as_string().c_str()).arg(v.toString()).arg(v.typeName()).arg(typeName).arg(typeId) );
             #endif
             return new Kross::MetaTypeVariant< QVariant >( v );
-
-            //throw Py::TypeError( QString("Invalid object \"%1\" for typename \"%2\"").arg(object.as_string().c_str()).arg(typeName).toLatin1().constData() );
         } break;
     }
 }
