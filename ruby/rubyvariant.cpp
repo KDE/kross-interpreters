@@ -304,24 +304,21 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                 return new MetaTypeVoidStar( typeId, object, false /*owner*/ );
             }
 
+            /*
             if( TYPE(value) == T_NIL ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
                 #endif
                 void* ptr = QMetaType::construct(metaTypeId, 0);
-                return new MetaTypeVoidStar( metaTypeId, ptr, false /*owner*/ );
+                return new MetaTypeVoidStar( metaTypeId, ptr, false );
             }
+            */
 
             QVariant v = RubyType<QVariant>::toVariant(value);
-            if( v.isValid() ) {
-                #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
-                #endif
-                return new Kross::MetaTypeVariant< QVariant >(v);
-            }
-
-            krosswarning( QString("RubyMetaTypeFactory::create Not possible to convert the VALUE to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
-            return 0;
+            #ifdef KROSS_RUBY_VARIANT_DEBUG
+                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
+            #endif
+            return new Kross::MetaTypeVariant< QVariant >( v );
         } break;
     }
 }
