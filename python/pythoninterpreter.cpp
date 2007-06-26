@@ -20,6 +20,7 @@
 #include "pythoninterpreter.h"
 #include "pythonscript.h"
 #include "pythonmodule.h"
+#include "pythonvariant.h"
 
 //#include <kglobal.h>
 //#include <kstandarddirs.h>
@@ -78,9 +79,11 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
     Py::Object syspath = sysmoddict.getItem("path");
     if(syspath.isList()) {
         Py::List syspathlist = syspath;
-        for(Py::List::iterator it = syspathlist.begin(); it != syspathlist.end(); ++it)
-            if( (*it).isString() )
-                path.append( QString(Py::String(*it).as_string().c_str()) + PYPATHDELIMITER );
+        for(Py::List::iterator it = syspathlist.begin(); it != syspathlist.end(); ++it) {
+            if( ! (*it).isString() ) continue;
+            QString s = PythonType<QString>::toVariant(*it);
+            path.append( s + PYPATHDELIMITER );
+        }
     }
     else
         path = Py_GetPath();

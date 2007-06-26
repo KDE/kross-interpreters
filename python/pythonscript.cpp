@@ -120,14 +120,15 @@ bool PythonScript::initialize()
         Q_ASSERT( ! action()->objectName().isNull() );
         QFileInfo fi( action()->objectName() );
         QString n = QFileInfo(fi.absolutePath(), fi.baseName()).absoluteFilePath();
-        char* name = n.isNull() ? action()->objectName().toLatin1().data() : n.toLatin1().data();
-        //krossdebug( QString("------------------> %1").arg(name) );
+        QByteArray filename = n.isNull() ? action()->objectName().toLatin1() : n.toLatin1();
+        filename.replace('.','_'); // points are used as module-delimiters
+        const char* name = filename.constData();
 
         { // Each Action uses an own module as scope.
             //PyObject* pymod = PyModule_New(name);
             PyObject* pymod = PyImport_AddModule(name);
             Q_ASSERT(pymod);
-            PyModule_AddStringConstant(pymod, "__file__", name);
+            //PyModule_AddStringConstant(pymod, "__file__", filename.data());
 
             //PyObject* m = PyImport_AddModule(name);
             d->m_module = new Py::Module(pymod, false); //don't take over ownership
@@ -185,9 +186,9 @@ bool PythonScript::initialize()
             // Add the script's directory to the sys.path
             if( ! action()->currentPath().isNull() ) {
                 //FIXME: should we remove the dir again after the job is done?
-                //FIXME: escape the path + propably do it like in pythoninterpreter.cpp?
-                QString s = QString("import sys\nsys.path.append(\"%1\")").arg( action()->currentPath() );
-                PyObject* pyrunsyspath = PyRun_String(s.toLatin1(), Py_file_input, moduledict.ptr(), moduledict.ptr());
+                QString s = QString("import sys\nsys.path.append(r'%1')").arg( action()->currentPath() );
+                QByteArray ba = s.toLatin1();
+                PyObject* pyrunsyspath = PyRun_String(ba.data(), Py_file_input, moduledict.ptr(), moduledict.ptr());
                 if(! pyrunsyspath) throw Py::Exception(); // throw exception
                 Py_XDECREF(pyrunsyspath); // free the reference.
             }
