@@ -122,7 +122,7 @@ bool PythonScript::initialize()
         QString n = QFileInfo(fi.absolutePath(), fi.baseName()).absoluteFilePath();
         QByteArray filename = n.isNull() ? action()->objectName().toLatin1() : n.toLatin1();
         filename.replace('.','_'); // points are used as module-delimiters
-        const char* name = filename.constData();
+        char* name = filename.data();
 
         { // Each Action uses an own module as scope.
             //PyObject* pymod = PyModule_New(name);
