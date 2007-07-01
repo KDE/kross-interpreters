@@ -237,10 +237,6 @@ RubyScript::~RubyScript()
 //qDeleteAll( d->modules.values() );
     rb_gc_unregister_address(&d->m_script);
     delete d;
-
-    #ifdef KROSS_RUBY_EXPLICIT_GC
-        rb_gc();
-    #endif
 }
 
 RubyModule* RubyScript::module(QObject* object, const QString& modname)

@@ -68,10 +68,6 @@ RubyModule::~RubyModule()
     //delete d->extension;
 
     delete d;
-
-    #ifdef KROSS_RUBY_EXPLICIT_GC
-        rb_gc();
-    #endif
 }
 
 VALUE RubyModule::method_missing(int argc, VALUE *argv, VALUE self)
