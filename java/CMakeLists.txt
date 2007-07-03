@@ -8,14 +8,14 @@ include (MacroLibrary)
 include(MacroOptionalAddSubdirectory)
 include_directories (${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
 
-if(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
-    # if already defined, do nothing but try to use them
-    message(STATUS "using defined JAVA_INCLUDE_PATH and JAVA_JVM_LIBRARY")
-else(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
+# if(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
+#     # if already defined, do nothing but try to use them
+#     message(STATUS "using defined JAVA_INCLUDE_PATH and JAVA_JVM_LIBRARY")
+# else(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
     # else we try to detect the jvm
     set(KrossJNI_DIR ${CMAKE_SOURCE_DIR})
     macro_optional_find_package(KrossJNI)
-endif(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
+# endif(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
 
 #the JAVA_HOME directory
 message(STATUS "  JAVA_HOME: " $ENV{JAVA_HOME})
