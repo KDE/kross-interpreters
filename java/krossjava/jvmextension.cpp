@@ -58,12 +58,9 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
 
     //testcase (TODO: something like this should go into JVMExtension)
-    QFile toiface( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
-    QFile toclass( QString("%1Impl.class").arg(name) ); //e.g. "TestObjectImpl.class"
-    toiface.open(QIODevice::ReadOnly);
+    QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
     toclass.open(QIODevice::ReadOnly);
-    interpreter->addExtension(name, object, toiface.readAll(), toclass.readAll());
-    toiface.close();
+    interpreter->addExtension(name, object, toclass.readAll());
     toclass.close();
 
 /*

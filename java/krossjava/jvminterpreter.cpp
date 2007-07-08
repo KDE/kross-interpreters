@@ -103,7 +103,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, 
                 }
                 classloader = env->NewGlobalRef(loaderweak);
 
-                jclass proxy = env->FindClass("org/kde/kdebindings/java/krossjava/KrossProxy");
+                jclass proxy = env->FindClass("org/kde/kdebindings/java/krossjava/KrossQExtension");
                 JNINativeMethod nativeMethod;
                 nativeMethod.name = "invokeNative";
                 nativeMethod.signature = "(JLjava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;";
@@ -191,9 +191,8 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
     return !handleException(d->env);
 }
 
-bool JVMInterpreter::addExtension(const QString& name, const QObject* obj, const QByteArray& interface, const QByteArray& clazz){
-    addClass(name, interface);
-    addClass(name + "Impl", clazz);
+bool JVMInterpreter::addExtension(const QString& name, const QObject* obj, const QByteArray& clazz){
+    addClass(name, clazz);
 
     jstring jname = JavaType<QString>::toJObject(name,d->env);
     jlong pointer = JavaType<QObject*>::toJObject(obj,d->env);

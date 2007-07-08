@@ -36,9 +36,8 @@ public class KrossClassLoader extends URLClassLoader {
 	public void addExtension(String name, long p) throws
 	  ClassNotFoundException, InstantiationException, IllegalAccessException,
 	  NoSuchMethodException, InvocationTargetException {
-		KrossQExtension ext = (KrossQExtension)newInstance(name + "Impl", new Long(p));
-		KrossQExtension extproxy = (KrossQExtension)KrossProxy.newInstance(ext);
-		extensions.put(name, extproxy);
+		KrossQExtension ext = (KrossQExtension)newInstance(name, new Long(p));
+		extensions.put(name, ext);
 	}
 
 	public Object newInstance(String name) throws
