@@ -54,6 +54,24 @@ namespace Kross {
     };
 
     template<>
+    struct JavaType<QObject*>
+    {
+        //TODO: Is memcpy the way to go here?
+        inline static jlong toJObject(const QObject* qobj, JNIEnv* env) {
+            Q_UNUSED(env);
+            jlong pointer = 0;
+            memcpy(&pointer, &qobj, sizeof(qobj));
+            return pointer;
+        }
+        inline static QObject* toVariant(jlong jobj, JNIEnv* env) {
+            Q_UNUSED(env);
+            QObject *qobj;
+            memcpy(&qobj, &jobj, sizeof(qobj));
+            return qobj;
+        }
+    };
+
+    template<>
     struct JavaType<QString>
     {
         inline static jstring toJObject(const QString& s, JNIEnv* env) {

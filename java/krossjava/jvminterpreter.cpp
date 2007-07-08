@@ -40,14 +40,10 @@ namespace Kross {
 //TODO: search some fine place for this.
 jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, jobjectArray args)
 {
-    Q_UNUSED(env);
     Q_UNUSED(self);
     Q_UNUSED(args);
 
-    //FIXME: same as in addExtension - ugly & move to JavaVariant
-    QObject *obj;
-    memcpy(&obj, &p, sizeof(obj));
-
+    QObject* obj = JavaType<QObject*>::toVariant(p,env);
     QString mname = JavaType<QString>::toVariant(method,env);
 
     //TODO: arguments...
@@ -200,9 +196,7 @@ bool JVMInterpreter::addExtension(const QString& name, const QObject* obj, const
     addClass(name + "Impl", clazz);
 
     jstring jname = JavaType<QString>::toJObject(name,d->env);
-    //FIXME: This probably violates all sorts of rules. Also, should it go in JavaVariant somewhere?
-    jlong pointer = 0;
-    memcpy(&pointer, &obj, sizeof(obj));
+    jlong pointer = JavaType<QObject*>::toJObject(obj,d->env);
     d->env->CallVoidMethod(d->classloader,d->addextension,jname,pointer);
 
     return !handleException(d->env);
