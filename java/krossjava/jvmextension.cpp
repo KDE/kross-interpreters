@@ -22,6 +22,7 @@
 #include "jvmextension.h"
 #include "jvminterpreter.h"
 #include "jvmclasswriter.h"
+#include "jvmvariant.h"
 //#include <kross/core/metatype.h>
 
 //#include <QMap>
@@ -123,6 +124,16 @@ JVMExtension::~JVMExtension()
 QObject* JVMExtension::object() const
 {
     return d->m_object;
+}
+
+jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args)
+{
+    QString mname = JavaType<QString>::toVariant(method,env);
+
+    //TODO: arguments...
+    QMetaObject::invokeMethod(d->m_object, mname.toAscii());
+
+    return 0;
 }
 
 /*

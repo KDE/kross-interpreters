@@ -23,7 +23,6 @@
 #define KROSS_JVMINTERPRETER_H
 
 #include "jvmconfig.h"
-#include "jvmextension.h"
 
 #include <kross/core/interpreter.h>
 
@@ -36,6 +35,7 @@ namespace Kross {
     class Action;
     class JVMScript;
     class JVMModule;
+    class JVMExtension;
     class JVMInterpreterPrivate;
 
     /**

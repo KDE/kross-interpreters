@@ -42,15 +42,10 @@ namespace Kross {
 jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, jobjectArray args)
 {
     Q_UNUSED(self);
-    Q_UNUSED(args);
 
     JVMExtension* obj = static_cast<JVMExtension*>(JavaType<void*>::toVariant(p,env));
-    QString mname = JavaType<QString>::toVariant(method,env);
 
-    //TODO: arguments...
-    QMetaObject::invokeMethod(obj->object(), mname.toAscii());
-
-    return 0;
+    return obj->callQMethod(env, method, args);
 }
 
     /// \internal
