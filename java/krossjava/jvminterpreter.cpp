@@ -22,6 +22,7 @@
 #include "jvminterpreter.h"
 #include "jvmscript.h"
 #include "jvmvariant.h"
+#include "jvmextension.h"
 
 #include <kross/core/action.h>
 #include <kross/core/manager.h>
@@ -43,11 +44,11 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, 
     Q_UNUSED(self);
     Q_UNUSED(args);
 
-    QObject* obj = JavaType<QObject*>::toVariant(p,env);
+    JVMExtension* obj = static_cast<JVMExtension*>(JavaType<void*>::toVariant(p,env));
     QString mname = JavaType<QString>::toVariant(method,env);
 
     //TODO: arguments...
-    QMetaObject::invokeMethod(obj, mname.toAscii());
+    QMetaObject::invokeMethod(obj->object(), mname.toAscii());
 
     return 0;
 }
@@ -191,11 +192,11 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
     return !handleException(d->env);
 }
 
-bool JVMInterpreter::addExtension(const QString& name, const QObject* obj, const QByteArray& clazz){
+bool JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz){
     addClass(name, clazz);
 
     jstring jname = JavaType<QString>::toJObject(name,d->env);
-    jlong pointer = JavaType<QObject*>::toJObject(obj,d->env);
+    jlong pointer = JavaType<void*>::toJObject(obj,d->env);
     d->env->CallVoidMethod(d->classloader,d->addextension,jname,pointer);
 
     return !handleException(d->env);

@@ -60,7 +60,7 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     //testcase (TODO: something like this should go into JVMExtension)
     QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
     toclass.open(QIODevice::ReadOnly);
-    interpreter->addExtension(name, object, toclass.readAll());
+    interpreter->addExtension(name, this, toclass.readAll());
     toclass.close();
 
 /*

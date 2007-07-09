@@ -23,6 +23,7 @@
 #define KROSS_JVMINTERPRETER_H
 
 #include "jvmconfig.h"
+#include "jvmextension.h"
 
 #include <kross/core/interpreter.h>
 
@@ -77,7 +78,7 @@ namespace Kross {
             bool addClass(const QString& name, const QByteArray& array);
             void addToCP(const QUrl& url);
             jobject newObject(const QString& name);
-            bool addExtension(const QString& name, const QObject* obj, const QByteArray& clazz);
+            bool addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz);
             //TODO: would this be the right place?
             static bool handleException(JNIEnv* env);
 
