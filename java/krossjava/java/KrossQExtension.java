@@ -3,14 +3,15 @@ package org.kde.kdebindings.java.krossjava;
 public abstract class KrossQExtension {
 	private long p;
 
-	public KrossQExtension(Long p) {
+	protected KrossQExtension(Long p) {
 		this.p = p.longValue();
 	}
 
-	public long getPointer(){
+	private long getPointer(){
 		return p;
 	}
 
+	//TODO: perhaps these should be protected?
 	public Object invoke(String name, Object[] args){
 		return invokeNative(getPointer(), name, args);
 	}
@@ -19,5 +20,5 @@ public abstract class KrossQExtension {
 		return invokeNative(getPointer(), name, null);
 	}
 
-	public native Object invokeNative(long qobjpointer, String name, Object[] args);
+	private native Object invokeNative(long qobjpointer, String name, Object[] args);
 }
