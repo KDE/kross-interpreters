@@ -26,4 +26,6 @@
 // Kross includes
 #include <kross/core/krossconfig.h>
 
+//#define KROSS_JVM_EXTENSION_DEBUG
+
 #endif

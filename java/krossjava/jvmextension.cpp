@@ -189,7 +189,7 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
         }
         else {
             metatypes[0] = QMetaType::Void; //FIXME: disable before release
-            #ifdef KROSS_RUBY_EXTENSION_DEBUG
+            #ifdef KROSS_JVM_EXTENSION_DEBUG
                 krossdebug( QString("JVMExtension::callQMethod return typeName=%1 typeId=%2 (with metatype=QMetaType::Void)").arg(metamethod.typeName()).arg(metatypes[0]) );
             #endif
         }
@@ -225,7 +225,7 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
 
     int argc = (args == NULL) ? 0 : env->GetArrayLength(args);
 
-    #ifdef KROSS_JVM_CALLCACHE_DEBUG
+    #ifdef KROSS_JVM_EXTENSION_DEBUG
         krossdebug( QString("JVMExtension::callQMethod signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(metamethod.signature()).arg(metamethod.typeName()).arg(argc).arg(typelistcount) );
         for(int i = 0; i < types.count(); ++i)
             krossdebug( QString("  argument index=%1 typeId=%2 typeName=%3 metaTypeId=%4").arg(i).arg(types[i]).arg(QVariant::typeToName( (QVariant::Type)types[i] )).arg(metatypes[i]) );
@@ -250,8 +250,8 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
     for(int idx = 1; idx < typelistcount; ++idx)
     {
         //krossdebug( QString("-----------> %1").arg( STR2CSTR( rb_inspect(argv[idx]) ) ) );
-        MetaType* metatype = JVMMetaTypeFactory::create( env, types[idx], metatypes[idx], env->GetObjectArrayElement(args, idx) );
-        if(! metatype) { // Seems JVMMetaTypeFactory::create returned an invalid RubyType.
+        MetaType* metatype = JVMMetaTypeFactory::create( env, types[idx], metatypes[idx], env->GetObjectArrayElement(args, idx - 1) );
+        if(! metatype) { // Seems JVMMetaTypeFactory::create returned an invalid JavaType.
             krosswarning( QString("JVMExtension::callMetaMethod Aborting cause JVMMetaTypeFactory::create returned NULL.") );
             for(int i = 0; i < idx; ++i) // Clear already allocated instances.
                 delete variantargs[i];
@@ -263,7 +263,7 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
 
     // call the method now
     int r = d->m_object->qt_metacall(QMetaObject::InvokeMetaMethod, methodindex, &voidstarargs[0]);
-    #ifdef KROSS_JVM_CALLCACHE_DEBUG
+    #ifdef KROSS_JVM_EXTENSION_DEBUG
         krossdebug( QString("RESULT nr=%1").arg(r) );
     #else
         Q_UNUSED(r);
@@ -279,8 +279,8 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
     if(hasreturnvalue)
     {
         QVariant result(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
-        #ifdef KROSS_JVM_CALLCACHE_DEBUG
-            QMetaMethod metamethod = d->object->metaObject()->method(methodindex);
+        #ifdef KROSS_JVM_EXTENSION_DEBUG
+            QMetaMethod metamethod = d->m_object->metaObject()->method(methodindex);
             krossdebug( QString("JVMExtension::callQMethod Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4").arg(variantargs[0]->typeId()).arg(metamethod.typeName()).arg(result.toString()).arg(result.typeName()) );
         #endif
         // free the return argument
