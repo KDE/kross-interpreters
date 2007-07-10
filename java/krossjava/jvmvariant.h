@@ -28,7 +28,7 @@
 #include <QString>
 #include <QStringList>
 #include <QVariant>
-//#include <QMetaType>
+#include <QMetaType>
 //#include <QSize>
 //#include <QPoint>
 //#include <QRect>
@@ -49,8 +49,8 @@ namespace Kross {
     template<>
     struct JavaType<QVariant>
     {
-        static jvalue toJObject(const QVariant& v, JNIEnv* env);
-        static QVariant toVariant(jvalue value, JNIEnv* env);
+        static jobject toJObject(const QVariant& v, JNIEnv* env);
+        static QVariant toVariant(jobject value, JNIEnv* env);
     };
 
     template<>
@@ -80,10 +80,11 @@ namespace Kross {
             jstring js = env->NewStringUTF(ba.data());
             return js;
         }
-        inline static QString toVariant(jstring value, JNIEnv* env) {
-            const char *str = env->GetStringUTFChars(value, 0);
+        inline static QString toVariant(jobject value, JNIEnv* env) {
+            jstring jstr = static_cast<jstring>(value);
+            const char *str = env->GetStringUTFChars(jstr, 0);
             QString s = str;
-            env->ReleaseStringUTFChars(value, str);
+            env->ReleaseStringUTFChars(jstr, str);
             return s;
         }
     };
@@ -376,32 +377,31 @@ namespace Kross {
             return map;
         }
     };
-
+#endif
     /**
-     * The RubyMetaTypeFactory helper class us used as factory within
-     * \a RubyExtension to translate an argument into a \a MetaType
+     * The JVMMetaTypeFactory helper class us used as factory within
+     * \a JVMExtension to translate an argument into a \a MetaType
      * needed for QGenericArgument's data pointer.
      */
-    class RubyMetaTypeFactory
+    class JVMMetaTypeFactory
     {
         public:
-            static MetaType* create(int typeId, int metaTypeId, VALUE valueect = Qnil);
+            static MetaType* create(JNIEnv *env, int typeId, int metaTypeId, jobject valueect = NULL);
     };
 
     template<typename VARIANTTYPE>
-    class RubyMetaTypeVariant : public MetaTypeVariant<VARIANTTYPE>
+    class JVMMetaTypeVariant : public MetaTypeVariant<VARIANTTYPE>
     {
         public:
-            RubyMetaTypeVariant(VALUE value)
+            JVMMetaTypeVariant(jobject value, JNIEnv* env)
                 : MetaTypeVariant<VARIANTTYPE>(
-                    (TYPE(value) == T_NIL)
+                    (value == NULL)
                         ? QVariant().value<VARIANTTYPE>()
-                        : JavaType<VARIANTTYPE>::toVariant(value)
+                        : JavaType<VARIANTTYPE>::toVariant(value, env)
                 ) {}
 
-            virtual ~RubyMetaTypeVariant() {}
+            virtual ~JVMMetaTypeVariant() {}
     };
-#endif
 
 }
 

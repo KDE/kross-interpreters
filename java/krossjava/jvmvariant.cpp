@@ -24,7 +24,7 @@
 
 using namespace Kross;
 
-jvalue JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
+jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 {
     krossdebug( QString("JavaType<QVariant>::toJObject variant.toString=%1 variant.typeid=%2 variant.typeName=%3").arg(v.toString()).arg(v.type()).arg(v.typeName()) );
     switch( v.type() ) {
@@ -37,8 +37,10 @@ jvalue JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<double>::toJObject(v.toDouble());
         case QVariant::ByteArray:
             return JavaType<QByteArray>::toJObject(v.toByteArray());
+#endif
         case QVariant::String:
-            return JavaType<QString>::toJObject(v.toString());
+            return JavaType<QString>::toJObject(v.toString(), env);
+#if 0
         case QVariant::Bool:
             return JavaType<bool>::toJObject(v.toBool());
         case QVariant::StringList:
@@ -110,12 +112,12 @@ jvalue JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 
             krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a VALUE.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
             JVMException::throwNullPointerException(env);
-            return jvalue();
+            return NULL;
         }
     }
 }
 
-QVariant JavaType<QVariant>::toVariant(jvalue value, JNIEnv* env)
+QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
 {
     krossdebug( QString("JavaType<QVariant>::toVariant") );
 
@@ -126,11 +128,12 @@ QVariant JavaType<QVariant>::toVariant(jvalue value, JNIEnv* env)
     return QVariant();
 }
 
-#if 0
-MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
+
+MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jobject value)
 {
-    krossdebug( QString("RubyMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
+    krossdebug( QString("JVMMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
     switch(typeId) {
+#if 0
         case QVariant::Int:
             return new RubyMetaTypeVariant<int>(value);
         case QVariant::UInt:
@@ -141,8 +144,10 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             return new RubyMetaTypeVariant<bool>(value);
         case QVariant::ByteArray:
             return new RubyMetaTypeVariant<QByteArray>(value);
+#endif
         case QVariant::String:
-            return new RubyMetaTypeVariant<QString>(value);
+            return new JVMMetaTypeVariant<QString>(value, env);
+#if 0
         case QVariant::StringList:
             return new RubyMetaTypeVariant<QStringList>(value);
         case QVariant::Map:
@@ -167,26 +172,28 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             return new RubyMetaTypeVariant<QRect>(value);
         case QVariant::RectF:
             return new RubyMetaTypeVariant<QRectF>(value);
+#endif
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through
         default: {
+#if 0
             if( JVMExtension::isJVMExtension(value) ) {
-                #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krossdebug( QString("RubyMetaTypeFactory::create VALUE with typeId '%1' is a JVMExtension object").arg(typeId) );
+                #ifdef KROSS_JVM_VARIANT_DEBUG
+                    krossdebug( QString("JVMMetaTypeFactory::create VALUE with typeId '%1' is a JVMExtension object").arg(typeId) );
                 #endif
                 JVMExtension* extension;
                 Data_Get_Struct(value, JVMExtension, extension);
                 Q_ASSERT(extension);
                 QObject* object = extension->object();
                 if(! object) {
-                    krosswarning("RubyMetaTypeFactory::create QObject is NULL.");
+                    krosswarning("JVMMetaTypeFactory::create QObject is NULL.");
                     return 0;
                 }
                 return new MetaTypeVoidStar( typeId, object, false );
             }
             if( TYPE(value) == T_NIL ) {
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                    krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                #ifdef KROSS_JVM_VARIANT_DEBUG
+                    krossdebug( QString("JVMMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
                 #endif
                 void* ptr = QMetaType::construct(metaTypeId, 0);
                 return new MetaTypeVoidStar( metaTypeId, ptr, false );
@@ -195,9 +202,9 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             //krossdebug( QString("RubyVariant::create Converted VALUE '%1' with type '%2 %3' to QVariant with type '%4 %5'").arg(object.as_string().c_str()).arg(typeName).arg(typeId).arg(v.toString()).arg(v.typeName()) );
             //if(typeId == QVariant::Invalid) return new RubyVariantImpl<void>();
             //return new RubyVariantImpl<QVariant>(v);
-            krosswarning( QString("RubyMetaTypeFactory::create Not possible to convert the VALUE to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
+#endif
+            krosswarning( QString("JVMMetaTypeFactory::create Not possible to convert the VALUE to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
             return 0;
         } break;
     }
 }
-#endif
