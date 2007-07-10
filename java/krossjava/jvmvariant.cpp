@@ -28,45 +28,45 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 {
     krossdebug( QString("JavaType<QVariant>::toJObject variant.toString=%1 variant.typeid=%2 variant.typeName=%3").arg(v.toString()).arg(v.type()).arg(v.typeName()) );
     switch( v.type() ) {
-#if 0
         case QVariant::Int:
-            return JavaType<int>::toJObject(v.toInt());
+            return JavaType<int>::toJObject(v.toInt(), env);
+#if 0
         case QVariant::UInt:
-            return JavaType<uint>::toJObject(v.toUInt());
+            return JavaType<uint>::toJObject(v.toUInt(), env);
         case QVariant::Double:
-            return JavaType<double>::toJObject(v.toDouble());
+            return JavaType<double>::toJObject(v.toDouble(), env);
         case QVariant::ByteArray:
-            return JavaType<QByteArray>::toJObject(v.toByteArray());
+            return JavaType<QByteArray>::toJObject(v.toByteArray(), env);
 #endif
         case QVariant::String:
             return JavaType<QString>::toJObject(v.toString(), env);
 #if 0
         case QVariant::Bool:
-            return JavaType<bool>::toJObject(v.toBool());
+            return JavaType<bool>::toJObject(v.toBool(), env);
         case QVariant::StringList:
-            return JavaType<QStringList>::toJObject(v.toStringList());
+            return JavaType<QStringList>::toJObject(v.toStringList(), env);
         case QVariant::Map:
-            return JavaType<QVariantMap>::toJObject(v.toMap());
+            return JavaType<QVariantMap>::toJObject(v.toMap(), env);
         case QVariant::List:
-            return JavaType<QVariantList>::toJObject(v.toList());
+            return JavaType<QVariantList>::toJObject(v.toList(), env);
         case QVariant::LongLong:
-            return JavaType<qlonglong>::toJObject(v.toLongLong());
+            return JavaType<qlonglong>::toJObject(v.toLongLong(), env);
         case QVariant::ULongLong:
-            return JavaType<qlonglong>::toJObject(v.toULongLong());
+            return JavaType<qlonglong>::toJObject(v.toULongLong(), env);
         case QVariant::Url:
-            return JavaType<QUrl>::toJObject(v.toUrl());
+            return JavaType<QUrl>::toJObject(v.toUrl(), env);
         case QVariant::Size:
-            return JavaType<QSize>::toJObject(v.toSize());
+            return JavaType<QSize>::toJObject(v.toSize(), env);
         case QVariant::SizeF:
-            return JavaType<QSizeF>::toJObject(v.toSizeF());
+            return JavaType<QSizeF>::toJObject(v.toSizeF(), env);
         case QVariant::Point:
-            return JavaType<QPoint>::toJObject(v.toPoint());
+            return JavaType<QPoint>::toJObject(v.toPoint(), env);
         case QVariant::PointF:
-            return JavaType<QPointF>::toJObject(v.toPointF());
+            return JavaType<QPointF>::toJObject(v.toPointF(), env);
         case QVariant::Rect:
-            return JavaType<QRect>::toJObject(v.toRect());
+            return JavaType<QRect>::toJObject(v.toRect(), env);
         case QVariant::RectF:
-            return JavaType<QRectF>::toJObject(v.toRectF());
+            return JavaType<QRectF>::toJObject(v.toRectF(), env);
 #endif
         case QVariant::Invalid: {
             krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::Invalid. Returning Py:None.").arg(v.toString()) );
@@ -110,7 +110,7 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
             //PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) variantargs[0]->toVoidStar() );
 
-            krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a VALUE.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
+            krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a jobject.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
             JVMException::throwNullPointerException(env);
             return NULL;
         }
@@ -133,45 +133,45 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
 {
     krossdebug( QString("JVMMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
     switch(typeId) {
-#if 0
         case QVariant::Int:
-            return new RubyMetaTypeVariant<int>(value);
+            return new JVMMetaTypeVariant<int>(value, env);
+#if 0
         case QVariant::UInt:
-            return new RubyMetaTypeVariant<uint>(value);
+            return new JVMMetaTypeVariant<uint>(value, env);
         case QVariant::Double:
-            return new RubyMetaTypeVariant<double>(value);
+            return new JVMMetaTypeVariant<double>(value, env);
         case QVariant::Bool:
-            return new RubyMetaTypeVariant<bool>(value);
+            return new JVMMetaTypeVariant<bool>(value, env);
         case QVariant::ByteArray:
-            return new RubyMetaTypeVariant<QByteArray>(value);
+            return new JVMMetaTypeVariant<QByteArray>(value, env);
 #endif
         case QVariant::String:
             return new JVMMetaTypeVariant<QString>(value, env);
 #if 0
         case QVariant::StringList:
-            return new RubyMetaTypeVariant<QStringList>(value);
+            return new JVMMetaTypeVariant<QStringList>(value, env);
         case QVariant::Map:
-            return new RubyMetaTypeVariant<QVariantMap>(value);
+            return new JVMMetaTypeVariant<QVariantMap>(value, env);
         case QVariant::List:
-            return new RubyMetaTypeVariant<QVariantList>(value);
+            return new JVMMetaTypeVariant<QVariantList>(value, env);
         case QVariant::LongLong:
-            return new RubyMetaTypeVariant<qlonglong>(value);
+            return new JVMMetaTypeVariant<qlonglong>(value, env);
         case QVariant::ULongLong:
-            return new RubyMetaTypeVariant<qulonglong>(value);
+            return new JVMMetaTypeVariant<qulonglong>(value, env);
         case QVariant::Url:
-            return new RubyMetaTypeVariant<QUrl>(value);
+            return new JVMMetaTypeVariant<QUrl>(value, env);
         case QVariant::Size:
-            return new RubyMetaTypeVariant<QSize>(value);
+            return new JVMMetaTypeVariant<QSize>(value, env);
         case QVariant::SizeF:
-            return new RubyMetaTypeVariant<QSizeF>(value);
+            return new JVMMetaTypeVariant<QSizeF>(value, env);
         case QVariant::Point:
-            return new RubyMetaTypeVariant<QPoint>(value);
+            return new JVMMetaTypeVariant<QPoint>(value, env);
         case QVariant::PointF:
-            return new RubyMetaTypeVariant<QPointF>(value);
+            return new JVMMetaTypeVariant<QPointF>(value, env);
         case QVariant::Rect:
-            return new RubyMetaTypeVariant<QRect>(value);
+            return new JVMMetaTypeVariant<QRect>(value, env);
         case QVariant::RectF:
-            return new RubyMetaTypeVariant<QRectF>(value);
+            return new JVMMetaTypeVariant<QRectF>(value, env);
 #endif
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through

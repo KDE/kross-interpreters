@@ -136,21 +136,26 @@ namespace Kross {
     template<>
     struct JavaType<int>
     {
-        inline static jint toJObject(int i) {
-            return qint32(i); //jint is signed 32 bits
+        inline static jobject toJObject(int i, JNIEnv* env) {
+            jclass cl = env->FindClass("java/lang/Integer");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(I)V");
+            return env->NewObject(cl, ctor, i);
         }
-        inline static int toVariant(jint value) {
-            return qint32(value);
+        inline static int toVariant(jobject value, JNIEnv* env) {
+            jclass cl = env->FindClass("java/lang/Integer");
+            jmethodID getval = env->GetMethodID(cl, "intValue", "()I");
+            return qint32(env->CallIntMethod(value, getval));
         }
     };
 
+#if 0
     template<>
     struct JavaType<uint>
     {
-        inline static jint toJObject(int i) {
+        inline static jobject toJObject(int i, JNIEnv* env) {
             return quint32(i); //jint is signed 32 bits
         }
-        inline static uint toVariant(jint value) {
+        inline static uint toVariant(jobject value, JNIEnv* env) {
             return quint32(value);
         }
     };
@@ -158,10 +163,10 @@ namespace Kross {
     template<>
     struct JavaType<double>
     {
-        inline static jdouble toJObject(double d) {
+        inline static jobject toJObject(double d, JNIEnv* env) {
             return d; //64 bits
         }
-        inline static double toVariant(jdouble value) {
+        inline static double toVariant(jobject value, JNIEnv* env) {
             return value;
         }
     };
@@ -169,10 +174,10 @@ namespace Kross {
     template<>
     struct JavaType<bool>
     {
-        inline static jboolean toJObject(bool b) {
+        inline static jobject toJObject(bool b, JNIEnv* env) {
             return b ? JNI_TRUE : JNI_FALSE;
         }
-        inline static bool toVariant(jboolean value) {
+        inline static bool toVariant(jobject value, JNIEnv* env) {
             return value == JNI_TRUE;
         }
     };
@@ -180,10 +185,10 @@ namespace Kross {
     template<>
     struct JavaType<qlonglong>
     {
-        inline static jlong toJObject(qlonglong l) {
+        inline static jobject toJObject(qlonglong l, JNIEnv* env) {
             return qint64(l); //jlong is a signed 64 bits
         }
-        inline static qlonglong toVariant(jlong value) {
+        inline static qlonglong toVariant(jobject value, JNIEnv* env) {
             return qint64(value);
         }
     };
@@ -191,15 +196,14 @@ namespace Kross {
     template<>
     struct JavaType<qulonglong>
     {
-        inline static jlong toJObject(qulonglong l) {
+        inline static jobject toJObject(qulonglong l, JNIEnv* env) {
             return quint64(l);
         }
-        inline static qulonglong toVariant(jlong value) {
+        inline static qulonglong toVariant(jobject value, JNIEnv* env) {
             return quint64(value);
         }
     };
 
-#if 0
     template<>
     struct JavaType<QSize>
     {
