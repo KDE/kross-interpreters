@@ -13,7 +13,7 @@ public class Test {
         testString();
         testBool();
         testDouble();
-        testByteArray();  //TODO: this doesn't pass yet
+        testByteArray();
     }
 
     public void setUp() {

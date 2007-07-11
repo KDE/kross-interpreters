@@ -132,7 +132,7 @@ namespace Kross {
             int count = len;
             char bytes[count];
             env->GetByteArrayRegion(bytearray, 0, len, (jbyte*)bytes);
-            return QByteArray(bytes);
+            return QByteArray(bytes, count);
         }
     };
 
