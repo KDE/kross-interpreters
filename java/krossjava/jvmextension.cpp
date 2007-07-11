@@ -165,7 +165,7 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
 }
 #endif
 
-jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args)
+jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject args[])
 {
     QByteArray mname = JavaType<QString>::toVariant(method,env).toLatin1();
     int methodindex = d->m_methods[mname];
@@ -223,8 +223,6 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
     QVarLengthArray<MetaType*> variantargs( typelistcount );
     QVarLengthArray<void*> voidstarargs( typelistcount );
 
-    int argc = (args == NULL) ? 0 : env->GetArrayLength(args);
-
     #ifdef KROSS_JVM_EXTENSION_DEBUG
         krossdebug( QString("JVMExtension::callQMethod signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(metamethod.signature()).arg(metamethod.typeName()).arg(argc).arg(typelistcount) );
         for(int i = 0; i < types.count(); ++i)
@@ -250,7 +248,7 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args
     for(int idx = 1; idx < typelistcount; ++idx)
     {
         //krossdebug( QString("-----------> %1").arg( STR2CSTR( rb_inspect(argv[idx]) ) ) );
-        MetaType* metatype = JVMMetaTypeFactory::create( env, types[idx], metatypes[idx], env->GetObjectArrayElement(args, idx - 1) );
+        MetaType* metatype = JVMMetaTypeFactory::create( env, types[idx], metatypes[idx], args[idx - 1] );
         if(! metatype) { // Seems JVMMetaTypeFactory::create returned an invalid JavaType.
             krosswarning( QString("JVMExtension::callMetaMethod Aborting cause JVMMetaTypeFactory::create returned NULL.") );
             for(int i = 0; i < idx; ++i) // Clear already allocated instances.

@@ -64,7 +64,7 @@ namespace Kross {
             /**
             * Handle a QObject function call.
             */
-            jobject callQMethod(JNIEnv *env, jstring method, jobjectArray args);
+            jobject callQMethod(JNIEnv *env, jstring method, int numargs, jobject args[]);
 
         private:
             /// \internal d-pointer class.

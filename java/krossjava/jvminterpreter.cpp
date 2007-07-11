@@ -39,13 +39,42 @@ using namespace Kross;
 namespace Kross {
 
 //TODO: search some fine place for this.
-jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, jobjectArray args)
+jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
+  jint argc, jobject arg0, jobject arg1, jobject arg2, jobject arg3, jobject arg4,
+  jobject arg5, jobject arg6, jobject arg7, jobject arg8, jobject arg9)
 {
     Q_UNUSED(self);
 
     JVMExtension* obj = static_cast<JVMExtension*>(JavaType<void*>::toVariant(p,env));
 
-    return obj->callQMethod(env, method, args);
+    int numargs = argc;
+    jobject args[numargs];
+
+    switch(numargs) {
+        case 10:
+            args[9] = arg9; //all this is fallthrough
+        case 9:
+            args[8] = arg8;
+        case 8:
+            args[7] = arg7;
+        case 7:
+            args[6] = arg6;
+        case 6:
+            args[5] = arg5;
+        case 5:
+            args[4] = arg4;
+        case 4:
+            args[3] = arg3;
+        case 3:
+            args[2] = arg2;
+        case 2:
+            args[1] = arg1;
+        case 1:
+            args[0] = arg0;
+    }
+
+    //TODO: spread the multiargs infection
+    return obj->callQMethod(env, method, numargs, args);
 }
 
     /// \internal
@@ -102,7 +131,9 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method, 
                 jclass proxy = env->FindClass("org/kde/kdebindings/java/krossjava/KrossQExtension");
                 JNINativeMethod nativeMethod;
                 nativeMethod.name = "invokeNative";
-                nativeMethod.signature = "(JLjava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;";
+                nativeMethod.signature = "(JLjava/lang/String;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;"
+                                          "Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;"
+                                          "Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
                 nativeMethod.fnPtr = (void*) callQMethod;
                 env->RegisterNatives(proxy, &nativeMethod, 1);
 
