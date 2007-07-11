@@ -81,6 +81,7 @@ namespace Kross {
             return js;
         }
         inline static QString toVariant(jobject value, JNIEnv* env) {
+            //TODO: the static_casting is unfortunate... Is there another way?
             jstring jstr = static_cast<jstring>(value);
             const char *str = env->GetStringUTFChars(jstr, 0);
             QString s = str;
@@ -99,7 +100,8 @@ namespace Kross {
                 env->SetObjectArrayElement(objarray, i, JavaType<QString>::toJObject(list[i], env));
             return objarray;
         }
-        inline static QStringList toVariant(jobjectArray objarray, JNIEnv* env) {
+        inline static QStringList toVariant(jobject value, JNIEnv* env) {
+            jobjectArray objarray = static_cast<jobjectArray>(value);
             const jsize len = env->GetArrayLength(objarray);
             const int count = len;
             QStringList list;
@@ -124,7 +126,8 @@ namespace Kross {
             env->SetByteArrayRegion(bytearray, 0, count, bytes);
             return bytearray;
         }
-        inline static QByteArray toVariant(jbyteArray bytearray, JNIEnv* env) {
+        inline static QByteArray toVariant(jobject value, JNIEnv* env) {
+            jbyteArray bytearray = static_cast<jbyteArray>(value);
             jsize len = env->GetArrayLength(bytearray);
             int count = len;
             char bytes[count];
@@ -148,15 +151,18 @@ namespace Kross {
         }
     };
 
-#if 0
     template<>
     struct JavaType<uint>
     {
         inline static jobject toJObject(int i, JNIEnv* env) {
-            return quint32(i); //jint is signed 32 bits
+            jclass cl = env->FindClass("java/lang/Integer");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(I)V");
+            return env->NewObject(cl, ctor, quint32(i));
         }
         inline static uint toVariant(jobject value, JNIEnv* env) {
-            return quint32(value);
+            jclass cl = env->FindClass("java/lang/Integer");
+            jmethodID getval = env->GetMethodID(cl, "intValue", "()I");
+            return qint32(env->CallIntMethod(value, getval));
         }
     };
 
@@ -164,10 +170,14 @@ namespace Kross {
     struct JavaType<double>
     {
         inline static jobject toJObject(double d, JNIEnv* env) {
-            return d; //64 bits
+            jclass cl = env->FindClass("java/lang/Double");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(D)V");
+            return env->NewObject(cl, ctor, d);
         }
         inline static double toVariant(jobject value, JNIEnv* env) {
-            return value;
+            jclass cl = env->FindClass("java/lang/Double");
+            jmethodID getval = env->GetMethodID(cl, "doubleValue", "()D");
+            return qint32(env->CallDoubleMethod(value, getval));
         }
     };
 
@@ -175,13 +185,17 @@ namespace Kross {
     struct JavaType<bool>
     {
         inline static jobject toJObject(bool b, JNIEnv* env) {
-            return b ? JNI_TRUE : JNI_FALSE;
+            jclass cl = env->FindClass("java/lang/Boolean");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(Z)V");
+            return env->NewObject(cl, ctor, b);
         }
         inline static bool toVariant(jobject value, JNIEnv* env) {
-            return value == JNI_TRUE;
+            jclass cl = env->FindClass("java/lang/Boolean");
+            jmethodID getval = env->GetMethodID(cl, "booleanValue", "()Z");
+            return env->CallBooleanMethod(value, getval);
         }
     };
-
+#if 0
     template<>
     struct JavaType<qlonglong>
     {

@@ -1,4 +1,6 @@
 import org.kde.kdebindings.java.krossjava.*;
+import java.lang.*;
+import java.util.*;
 
 public class TestObject extends KrossQExtension {
 
@@ -22,20 +24,18 @@ public class TestObject extends KrossQExtension {
     // are not able to handle more then 9 anyway + we would work around the rather expensive
     // list packing/unpacking.
 
-    //public boolean func_bool_bool(boolean b){ return (boolean)invoke("func_bool_bool", b); }
+    public Boolean func_bool_bool(Boolean b){ return (Boolean)invoke("func_bool_bool", b); }
     public Integer func_int_int(Integer i){
-        Object[] oa = {i};
-        return (Integer)invoke("func_int_int", oa);
+        return (Integer)invoke("func_int_int", i);
     }
-    //public int func_uint_uint(int i){ return (int)invoke("func_uint_uint", i); }
-    //public double func_double_double(double d){ return (double)invoke("func_double_double", d); }
-    //public Byte[] func_qbytearray_qbytearray(Byte[] b){ return (Byte[])invoke("func_qbytearray_qbytearray", b); }
+    public Integer func_uint_uint(Integer i){ return (Integer)invoke("func_uint_uint", i); }
+    public Double func_double_double(Double d){ return (Double)invoke("func_double_double", d); }
+    public byte[] func_qbytearray_qbytearray(byte[] b){ return (byte[])invoke("func_qbytearray_qbytearray", b); }
     public String func_qstring_qstring(String s) {
-        Object[] oa = {s};
-        return (String)invoke("func_qstring_qstring", oa);
+        return (String)invoke("func_qstring_qstring", s);
     }
-    //public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
-    //public ArrayList func_qvariantlist_qvariantlist(ArrayList l){ return (ArrayList)invoke("func_qvariantlist_qvariantlist", l); }
-    //public Map func_qvariantmap_qvariantmap(Map m){ return (Map)invoke("func_qvariantmap_qvariantmap", m); }
+    public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
+    public ArrayList func_qvariantlist_qvariantlist(ArrayList l){ return (ArrayList)invoke("func_qvariantlist_qvariantlist", l); }
+    public Map func_qvariantmap_qvariantmap(Map m){ return (Map)invoke("func_qvariantmap_qvariantmap", m); }
 
 }

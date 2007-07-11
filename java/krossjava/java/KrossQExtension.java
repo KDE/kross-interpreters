@@ -20,5 +20,10 @@ public abstract class KrossQExtension {
 		return invokeNative(getPointer(), name, null);
 	}
 
+	public Object invoke(String name, Object arg){
+		Object[] oa = {arg};
+		return invokeNative(getPointer(), name, oa);
+	}
+
 	private native Object invokeNative(long qobjpointer, String name, Object[] args);
 }

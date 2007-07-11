@@ -30,19 +30,17 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
     switch( v.type() ) {
         case QVariant::Int:
             return JavaType<int>::toJObject(v.toInt(), env);
-#if 0
         case QVariant::UInt:
             return JavaType<uint>::toJObject(v.toUInt(), env);
         case QVariant::Double:
             return JavaType<double>::toJObject(v.toDouble(), env);
         case QVariant::ByteArray:
             return JavaType<QByteArray>::toJObject(v.toByteArray(), env);
-#endif
         case QVariant::String:
             return JavaType<QString>::toJObject(v.toString(), env);
-#if 0
         case QVariant::Bool:
             return JavaType<bool>::toJObject(v.toBool(), env);
+#if 0
         case QVariant::StringList:
             return JavaType<QStringList>::toJObject(v.toStringList(), env);
         case QVariant::Map:
@@ -135,7 +133,6 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
     switch(typeId) {
         case QVariant::Int:
             return new JVMMetaTypeVariant<int>(value, env);
-#if 0
         case QVariant::UInt:
             return new JVMMetaTypeVariant<uint>(value, env);
         case QVariant::Double:
@@ -144,7 +141,6 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<bool>(value, env);
         case QVariant::ByteArray:
             return new JVMMetaTypeVariant<QByteArray>(value, env);
-#endif
         case QVariant::String:
             return new JVMMetaTypeVariant<QString>(value, env);
 #if 0
@@ -179,7 +175,7 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
 #if 0
             if( JVMExtension::isJVMExtension(value) ) {
                 #ifdef KROSS_JVM_VARIANT_DEBUG
-                    krossdebug( QString("JVMMetaTypeFactory::create VALUE with typeId '%1' is a JVMExtension object").arg(typeId) );
+                    krossdebug( QString("JVMMetaTypeFactory::create jobject with typeId '%1' is a JVMExtension object").arg(typeId) );
                 #endif
                 JVMExtension* extension;
                 Data_Get_Struct(value, JVMExtension, extension);
@@ -203,7 +199,7 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             //if(typeId == QVariant::Invalid) return new RubyVariantImpl<void>();
             //return new RubyVariantImpl<QVariant>(v);
 #endif
-            krosswarning( QString("JVMMetaTypeFactory::create Not possible to convert the VALUE to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
+            krosswarning( QString("JVMMetaTypeFactory::create Not possible to convert the jobject to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
             return 0;
         } break;
     }
