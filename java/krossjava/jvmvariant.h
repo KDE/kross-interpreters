@@ -75,12 +75,13 @@ namespace Kross {
     struct JavaType<QString>
     {
         inline static jstring toJObject(const QString& s, JNIEnv* env) {
-            //if( s.isNull() ) return jstring;
+            if( s.isNull() ) return NULL;
             QByteArray ba = s.toUtf8();
             jstring js = env->NewStringUTF(ba.data());
             return js;
         }
         inline static QString toVariant(jobject value, JNIEnv* env) {
+            if(value == NULL) return QString();
             //TODO: the static_casting is unfortunate... Is there another way?
             jstring jstr = static_cast<jstring>(value);
             const char *str = env->GetStringUTFChars(jstr, 0);

@@ -187,9 +187,10 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
                 }
                 return new MetaTypeVoidStar( typeId, object, false );
             }
-            if( TYPE(value) == T_NIL ) {
+#endif
+            if( value == NULL ) {
                 #ifdef KROSS_JVM_VARIANT_DEBUG
-                    krossdebug( QString("JVMMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                    krossdebug( QString("JVMMetaTypeFactory::create jobject is NULL. Create empty type '%1'").arg(metaTypeId) );
                 #endif
                 void* ptr = QMetaType::construct(metaTypeId, 0);
                 return new MetaTypeVoidStar( metaTypeId, ptr, false );
@@ -198,7 +199,6 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             //krossdebug( QString("RubyVariant::create Converted VALUE '%1' with type '%2 %3' to QVariant with type '%4 %5'").arg(object.as_string().c_str()).arg(typeName).arg(typeId).arg(v.toString()).arg(v.typeName()) );
             //if(typeId == QVariant::Invalid) return new RubyVariantImpl<void>();
             //return new RubyVariantImpl<QVariant>(v);
-#endif
             krosswarning( QString("JVMMetaTypeFactory::create Not possible to convert the jobject to QVariant with '%1' and metaid '%2'").arg(QVariant::typeToName((QVariant::Type)typeId)).arg(typeId) );
             return 0;
         } break;

@@ -1,4 +1,5 @@
 import org.kde.kdebindings.java.krossjava.KrossClassLoader;
+import java.util.*;
 
 public class Test {
 
@@ -15,6 +16,9 @@ public class Test {
         testDouble();
         testByteArray();
         testStringList();
+        //testArrayList();
+        //testGenericArrayList();
+        //testMap();
     }
 
     public void setUp() {
@@ -58,8 +62,34 @@ public class Test {
     }
 
     public void testStringList() {
-        String[] in = {"Lorem", "", "ipsum"};
+        String[] in = {"Lorem", null, "ipsum"};
         String[] out = to.func_qstringlist_qstringlist(in);
         System.out.println("TestObject.func_qstringlist_qstringlist=(" + out[0] + "," + out[1] + "," + out[2] + ")");
+    }
+
+    public void testArrayList() {
+        ArrayList in = new ArrayList();
+        in.add(new Double(5.4));
+        in.add(null);
+        in.add(new Double(3.2));
+        ArrayList out = to.func_qvariantlist_qvariantlist(in);
+        System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+    }
+
+    public void testGenericArrayList() {
+        ArrayList<Double> in = new ArrayList<Double>();
+        in.add(new Double(5.4));
+        in.add(null);
+        in.add(new Double(3.2));
+        ArrayList out = to.func_qvariantlist_qvariantlist(in);
+        System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+    }
+
+    public void testMap() {
+        Map in = new HashMap();
+        in.put("a", 5);
+        in.put("c", 4);
+        Map out = to.func_qvariantmap_qvariantmap(in);
+        System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
     }
 }
