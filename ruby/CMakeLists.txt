@@ -9,7 +9,6 @@ set(krossruby_PART_SRCS
    rubycallcache.cpp
    )
 
-kde4_automoc(${krossruby_PART_SRCS})
 kde4_add_plugin(krossruby ${krossruby_PART_SRCS})
 target_link_libraries(krossruby ${QT_QTCORE_LIBRARY} ${KDE4_KROSSCORE_LIBS} ${RUBY_LIBRARY})
 install(TARGETS krossruby  DESTINATION ${PLUGIN_INSTALL_DIR})
