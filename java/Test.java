@@ -12,8 +12,8 @@ public class Test {
         testUInt();
         testString();
         testBool();
-        testDouble();  //TODO: this doesn't pass yet
-        testByteArray();  //TODO: this neither
+        testDouble();
+        testByteArray();  //TODO: this doesn't pass yet
     }
 
     public void setUp() {
@@ -42,7 +42,6 @@ public class Test {
     }
 
     public void testDouble() {
-        //TODO: this returns 3.0 instead of 3.14
         System.out.println("TestObject.func_double_double(3.14)=" + to.func_double_double(3.14));
     }
 

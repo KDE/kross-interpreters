@@ -177,7 +177,7 @@ namespace Kross {
         inline static double toVariant(jobject value, JNIEnv* env) {
             jclass cl = env->FindClass("java/lang/Double");
             jmethodID getval = env->GetMethodID(cl, "doubleValue", "()D");
-            return qint32(env->CallDoubleMethod(value, getval));
+            return env->CallDoubleMethod(value, getval);
         }
     };
 
