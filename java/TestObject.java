@@ -25,15 +25,11 @@ public class TestObject extends KrossQExtension {
     // list packing/unpacking.
 
     public Boolean func_bool_bool(Boolean b){ return (Boolean)invoke("func_bool_bool", b); }
-    public Integer func_int_int(Integer i){
-        return (Integer)invoke("func_int_int", i);
-    }
+    public Integer func_int_int(Integer i){ return (Integer)invoke("func_int_int", i); }
     public Integer func_uint_uint(Integer i){ return (Integer)invoke("func_uint_uint", i); }
     public Double func_double_double(Double d){ return (Double)invoke("func_double_double", d); }
     public byte[] func_qbytearray_qbytearray(byte[] b){ return (byte[])invoke("func_qbytearray_qbytearray", b); }
-    public String func_qstring_qstring(String s) {
-        return (String)invoke("func_qstring_qstring", s);
-    }
+    public String func_qstring_qstring(String s) { return (String)invoke("func_qstring_qstring", s); }
     public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
     public ArrayList func_qvariantlist_qvariantlist(ArrayList l){ return (ArrayList)invoke("func_qvariantlist_qvariantlist", l); }
     public Map func_qvariantmap_qvariantmap(Map m){ return (Map)invoke("func_qvariantmap_qvariantmap", m); }

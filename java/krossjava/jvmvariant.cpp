@@ -40,9 +40,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QString>::toJObject(v.toString(), env);
         case QVariant::Bool:
             return JavaType<bool>::toJObject(v.toBool(), env);
-#if 0
         case QVariant::StringList:
             return JavaType<QStringList>::toJObject(v.toStringList(), env);
+#if 0
         case QVariant::Map:
             return JavaType<QVariantMap>::toJObject(v.toMap(), env);
         case QVariant::List:
@@ -143,9 +143,9 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<QByteArray>(value, env);
         case QVariant::String:
             return new JVMMetaTypeVariant<QString>(value, env);
-#if 0
         case QVariant::StringList:
             return new JVMMetaTypeVariant<QStringList>(value, env);
+#if 0
         case QVariant::Map:
             return new JVMMetaTypeVariant<QVariantMap>(value, env);
         case QVariant::List:

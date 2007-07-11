@@ -95,6 +95,7 @@ namespace Kross {
     {
         inline static jobjectArray toJObject(const QStringList& list, JNIEnv* env) {
             const int count = list.count();
+            krossdebug( QString("Size of incoming QStringlist: %1").arg(count));
             jobjectArray objarray = env->NewObjectArray(count, env->FindClass("java/lang/String"), env->NewStringUTF(""));
             for(int i = 0; i < count; ++i)
                 env->SetObjectArrayElement(objarray, i, JavaType<QString>::toJObject(list[i], env));
@@ -104,6 +105,8 @@ namespace Kross {
             jobjectArray objarray = static_cast<jobjectArray>(value);
             const jsize len = env->GetArrayLength(objarray);
             const int count = len;
+            krossdebug( QString("Size of incoming jobjectarray: %1").arg(count));
+            Q_ASSERT(count >= 0);
             QStringList list;
             for(int i = 0; i < count; i++) {
                 jstring s = (jstring) env->GetObjectArrayElement(objarray, i);

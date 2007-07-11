@@ -14,6 +14,7 @@ public class Test {
         testBool();
         testDouble();
         testByteArray();
+        testStringList();
     }
 
     public void setUp() {
@@ -54,5 +55,11 @@ public class Test {
         byte[] in = {65, 0, 66};
         byte[] out = to.func_qbytearray_qbytearray(in);
         System.out.println("TestObject.func_qbytearray_qbytearray=(" + out[0] + "," + out[1] + "," + out[2] + ")");
+    }
+
+    public void testStringList() {
+        String[] in = {"Lorem", "", "ipsum"};
+        String[] out = to.func_qstringlist_qstringlist(in);
+        System.out.println("TestObject.func_qstringlist_qstringlist=(" + out[0] + "," + out[1] + "," + out[2] + ")");
     }
 }
