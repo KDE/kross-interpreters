@@ -1,5 +1,6 @@
 import org.kde.kdebindings.java.krossjava.KrossClassLoader;
 import java.util.*;
+import java.net.*;
 
 public class Test {
 
@@ -19,6 +20,7 @@ public class Test {
         testArrayList();
         testGenericArrayList();
         testMap();
+        testURL();
     }
 
     public void setUp() {
@@ -91,5 +93,14 @@ public class Test {
         in.put("c", new Integer(4));
         Map out = to.func_qvariantmap_qvariantmap(in);
         System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
+    }
+
+    public void testURL() {
+        try {
+            URL out = to.func_qurl_qurl(new URL("http://kross.dipe.org"));
+            System.out.println("TestObject.func_qurl_qurl=" + out.toString());
+        } catch(MalformedURLException e) {
+            System.out.println("Meh.");
+        }
     }
 }

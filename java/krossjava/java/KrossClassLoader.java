@@ -127,10 +127,6 @@ public class KrossClassLoader extends URLClassLoader {
 		super.addURL(url);
 	}
 
-	public void addURL(String url) throws MalformedURLException{
-		addURL(new URL(url));
-	}
-
 	public static boolean isClassData(byte[] data){
 		//TODO: endianness?
 		if(byteArrayToInt(data) == 0xCAFEBABE)

@@ -1,6 +1,6 @@
 import org.kde.kdebindings.java.krossjava.*;
-import java.lang.*;
 import java.util.*;
+import java.net.URL;
 
 public class TestObject extends KrossQExtension {
 
@@ -33,5 +33,6 @@ public class TestObject extends KrossQExtension {
     public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
     public ArrayList func_qvariantlist_qvariantlist(ArrayList l){ return (ArrayList)invoke("func_qvariantlist_qvariantlist", l); }
     public Map func_qvariantmap_qvariantmap(Map m){ return (Map)invoke("func_qvariantmap_qvariantmap", m); }
+    public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
 
 }

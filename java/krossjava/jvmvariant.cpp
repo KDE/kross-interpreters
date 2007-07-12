@@ -55,8 +55,10 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<qlonglong>::toJObject(v.toLongLong(), env);
         case QVariant::ULongLong:
             return JavaType<qlonglong>::toJObject(v.toULongLong(), env);
+#endif
         case QVariant::Url:
             return JavaType<QUrl>::toJObject(v.toUrl(), env);
+#if 0
         case QVariant::Size:
             return JavaType<QSize>::toJObject(v.toSize(), env);
         case QVariant::SizeF:
@@ -171,6 +173,10 @@ QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
     if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
         return JavaType<QVariantMap>::toVariant(value, env);
 
+    other = env->FindClass("java/net/URL");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<QUrl>::toVariant(value, env);
+
     #ifdef KROSS_JVM_VARIANT_DEBUG
         krossdebug( "Could not convert the jobject to a known QVariant, returning null." );
     #endif
@@ -207,8 +213,10 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<qlonglong>(value, env);
         case QVariant::ULongLong:
             return new JVMMetaTypeVariant<qulonglong>(value, env);
+#endif
         case QVariant::Url:
             return new JVMMetaTypeVariant<QUrl>(value, env);
+#if 0
         case QVariant::Size:
             return new JVMMetaTypeVariant<QSize>(value, env);
         case QVariant::SizeF:

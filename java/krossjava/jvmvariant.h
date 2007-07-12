@@ -339,11 +339,16 @@ namespace Kross {
     template<>
     struct JavaType<QUrl>
     {
-        inline static jstring toJObject(const QUrl& url, JNIEnv* env) {
-            return JavaType<QString>::toJObject(url.toString(), env);
+        inline static jobject toJObject(const QUrl& url, JNIEnv* env) {
+            jclass cl = env->FindClass("java/net/URL");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(Ljava/lang/String;)V");
+            return env->NewObject(cl, ctor, JavaType<QString>::toJObject(url.toString(), env));
         }
-        inline static QUrl toVariant(jstring value, JNIEnv* env) {
-            return QUrl( JavaType<QString>::toVariant(value, env) );
+        inline static QUrl toVariant(jobject value, JNIEnv* env) {
+            jclass cl = env->FindClass("java/net/URL");
+            jmethodID getval = env->GetMethodID(cl, "toString", "()Ljava/lang/String;");
+            jobject str = env->CallObjectMethod(value, getval);
+            return QUrl( JavaType<QString>::toVariant(str, env) );
         }
     };
 

@@ -112,7 +112,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
                 }
                 addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
                 newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
-                addurl = env->GetMethodID(clclass, "addURL", "(Ljava/lang/String;)V");
+                addurl = env->GetMethodID(clclass, "addURL", "(Ljava/net/URL;)V");
                 addextension = env->GetMethodID(clclass, "addExtension", "(Ljava/lang/String;J)V");
                 if (addclass == 0 || newinst == 0 || addurl == 0 || addextension == 0) {
                   krosswarning("Classloader method not found!");
@@ -209,7 +209,7 @@ JNIEnv* JVMInterpreter::getEnv() const
 void JVMInterpreter::addToCP(const QUrl& url)
 {
     Q_ASSERT(d->classloader);
-    jstring jurl = JavaType<QUrl>::toJObject(url,d->env);
+    jobject jurl = JavaType<QUrl>::toJObject(url,d->env);
     d->env->CallVoidMethod(d->classloader,d->addurl,jurl);
 
     handleException(d->env);
