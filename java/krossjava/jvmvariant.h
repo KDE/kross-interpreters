@@ -197,18 +197,23 @@ namespace Kross {
             return env->CallBooleanMethod(value, getval);
         }
     };
-#if 0
+
     template<>
     struct JavaType<qlonglong>
     {
         inline static jobject toJObject(qlonglong l, JNIEnv* env) {
-            return qint64(l); //jlong is a signed 64 bits
+            jclass cl = env->FindClass("java/lang/Long");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(J)V");
+            return env->NewObject(cl, ctor, l);
         }
         inline static qlonglong toVariant(jobject value, JNIEnv* env) {
-            return qint64(value);
+            jclass cl = env->FindClass("java/lang/Long");
+            jmethodID getval = env->GetMethodID(cl, "longValue", "()J");
+            return env->CallLongMethod(value, getval);
         }
     };
 
+#if 0
     template<>
     struct JavaType<qulonglong>
     {

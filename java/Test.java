@@ -15,6 +15,7 @@ public class Test {
         testString();
         testBool();
         testDouble();
+        testLong();
         testByteArray();
         testStringList();
         testArrayList();
@@ -50,6 +51,10 @@ public class Test {
 
     public void testDouble() {
         System.out.println("TestObject.func_double_double(3.14)=" + to.func_double_double(3.14));
+    }
+
+    public void testLong() {
+        System.out.println("TestObject.func_qlonglong_qlonglong(1234567890123456L)=" + to.func_qlonglong_qlonglong(1234567890123456L));
     }
 
     public void testByteArray() {

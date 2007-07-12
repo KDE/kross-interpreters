@@ -50,9 +50,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QVariantMap>::toJObject(v.toMap(), env);
         case QVariant::List:
             return JavaType<QVariantList>::toJObject(v.toList(), env);
-#if 0
         case QVariant::LongLong:
             return JavaType<qlonglong>::toJObject(v.toLongLong(), env);
+#if 0
         case QVariant::ULongLong:
             return JavaType<qlonglong>::toJObject(v.toULongLong(), env);
 #endif
@@ -167,6 +167,10 @@ QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
     if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
         return JavaType<QVariantList>::toVariant(value, env);
 
+    other = env->FindClass("java/lang/Long");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<qlonglong>::toVariant(value, env);
+
     //TODO: Stringlist... Other arrays...
 
     other = env->FindClass("java/util/Map");
@@ -208,9 +212,9 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<QVariantMap>(value, env);
         case QVariant::List:
             return new JVMMetaTypeVariant<QVariantList>(value, env);
-#if 0
         case QVariant::LongLong:
             return new JVMMetaTypeVariant<qlonglong>(value, env);
+#if 0
         case QVariant::ULongLong:
             return new JVMMetaTypeVariant<qulonglong>(value, env);
 #endif
