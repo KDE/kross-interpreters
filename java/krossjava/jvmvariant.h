@@ -367,36 +367,50 @@ namespace Kross {
             return l;
         }
     };
-
+#endif
     template<>
     struct JavaType<QVariantMap>
     {
-        inline static VALUE toJObject(const QVariantMap& map) {
-            VALUE h = rb_hash_new();
+        inline static jobject toJObject(const QVariantMap& map, JNIEnv* env) {
+            jclass cl = env->FindClass("java/util/HashMap");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "()V");
+            jobject h = env->NewObject(cl, ctor);
             QMap<QString, QVariant>::ConstIterator it(map.constBegin()), end(map.end());
+            jmethodID put = env->GetMethodID(cl, "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;");
             for(; it != end; ++it)
-                rb_hash_aset(h, JavaType<QString>::toJObject(it.key()), JavaType<QVariant>::toJObject(it.value()) );
+                env->CallObjectMethod(h, put, JavaType<QString>::toJObject(it.key(), env), JavaType<QVariant>::toJObject(it.value(), env) );
             return h;
         }
-        inline static int convertHash(VALUE key, VALUE value, VALUE  vmap) {
-            QVariantMap* map; 
-            Data_Get_Struct(vmap, QVariantMap, map);
-            if (key != Qundef)
-                map->insert(STR2CSTR(key), JavaType<QVariant>::toVariant(value));
-            return ST_CONTINUE;
-        }
-        inline static QVariantMap toVariant(VALUE value) {
-            if( TYPE(value) != T_HASH ) {
-                rb_raise(rb_eTypeError, "QVariantMap must be a hash");
-                return QVariantMap();
-            }
+        inline static QVariantMap toVariant(jobject value, JNIEnv* env) {
+            //if( TYPE(value) != T_HASH ) {
+            //    rb_raise(rb_eTypeError, "QVariantMap must be a hash");
+            //    return QVariantMap();
+            //}
             QVariantMap map;
-            VALUE vmap = Data_Wrap_Struct(rb_cObject, 0,0, &map);
-            rb_hash_foreach(value, (int (*)(...))convertHash, vmap);
+            //Admire...
+            jclass hmcl = env->FindClass("java/util/HashMap");
+            jclass setcl = env->FindClass("java/util/Set");
+            jclass itcl = env->FindClass("java/util/Iterator");
+            jclass entrycl = env->FindClass("java/util/Map$Entry");
+            jmethodID getentryset = env->GetMethodID(hmcl, "entrySet", "()Ljava/util/Set;");
+            jmethodID getit = env->GetMethodID(setcl, "iterator", "()Ljava/util/Iterator;");
+            jmethodID hasnext = env->GetMethodID(itcl, "hasNext", "()Z");
+            jmethodID next = env->GetMethodID(itcl, "next", "()Ljava/lang/Object;");
+            jmethodID getkey = env->GetMethodID(entrycl, "getKey", "()Ljava/lang/Object;");
+            jmethodID getval = env->GetMethodID(entrycl, "getValue", "()Ljava/lang/Object;");
+            jobject set = env->CallObjectMethod(value, getentryset);
+            jobject it = env->CallObjectMethod(set, getit);
+
+            while(env->CallBooleanMethod(it, hasnext) == JNI_TRUE) {
+                jobject entry = env->CallObjectMethod(it, next);
+                jobject key = env->CallObjectMethod(entry, getkey);
+                jobject value = env->CallObjectMethod(entry, getval);
+                map.insert(JavaType<QString>::toVariant(key, env), JavaType<QVariant>::toVariant(value, env));
+            }
             return map;
         }
     };
-#endif
+
     /**
      * The JVMMetaTypeFactory helper class us used as factory within
      * \a JVMExtension to translate an argument into a \a MetaType
