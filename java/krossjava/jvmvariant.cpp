@@ -28,7 +28,9 @@ using namespace Kross;
 
 jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 {
-    krossdebug( QString("JavaType<QVariant>::toJObject variant.toString=%1 variant.typeid=%2 variant.typeName=%3").arg(v.toString()).arg(v.type()).arg(v.typeName()) );
+    #ifdef KROSS_JVM_VARIANT_DEBUG
+        krossdebug( QString("JavaType<QVariant>::toJObject variant.toString=%1 variant.typeid=%2 variant.typeName=%3").arg(v.toString()).arg(v.type()).arg(v.typeName()) );
+    #endif
     switch( v.type() ) {
         case QVariant::Int:
             return JavaType<int>::toJObject(v.toInt(), env);
@@ -70,11 +72,15 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 #endif
         case QVariant::Invalid: {
             //TODO: I don't see a problem with this, someone else?
-            krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::Invalid. Returning NULL.").arg(v.toString()) );
+            #ifdef KROSS_JVM_VARIANT_DEBUG
+                krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::Invalid. Returning NULL.").arg(v.toString()) );
+            #endif
             return NULL;
         }
         case QVariant::UserType: {
-            krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::UserType. Trying to cast now.").arg(v.toString()) );
+            #ifdef KROSS_JVM_VARIANT_DEBUG
+                krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::UserType. Trying to cast now.").arg(v.toString()) );
+            #endif
         } // fall through
         default: {
 #if 0
@@ -84,7 +90,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 #endif
 
             if( qVariantCanConvert< QWidget* >(v) ) {
-                krossdebug( QString("JavaType<QVariant>::toJObject Casting '%1' to QWidget").arg(v.typeName()) );
+                #ifdef KROSS_JVM_VARIANT_DEBUG
+                    krossdebug( QString("JavaType<QVariant>::toJObject Casting '%1' to QWidget").arg(v.typeName()) );
+                #endif
 #if 0
                 QWidget* widget = qvariant_cast< QWidget* >(v);
                 if(! widget) {
@@ -96,7 +104,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             }
 
             if( qVariantCanConvert< QObject* >(v) ) {
-                krossdebug( QString("JavaType<QVariant>::toJObject Casting '%1' to QObject").arg(v.typeName()) );
+                #ifdef KROSS_JVM_VARIANT_DEBUG
+                    krossdebug( QString("JavaType<QVariant>::toJObject Casting '%1' to QObject").arg(v.typeName()) );
+                #endif
 #if 0
                 QObject* obj = qvariant_cast< QObject* >(v);
                 if(! obj) {
@@ -111,8 +121,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
             //PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) variantargs[0]->toVoidStar() );
-
-            krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a jobject.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
+            #ifdef KROSS_JVM_VARIANT_DEBUG
+                krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a jobject.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
+            #endif
             JVMException::throwNullPointerException(env);
             return NULL;
         }
@@ -121,7 +132,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 
 QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
 {
-    krossdebug( QString("JavaType<QVariant>::toVariant") );
+    #ifdef KROSS_JVM_VARIANT_DEBUG
+        krossdebug( QString("JavaType<QVariant>::toVariant") );
+    #endif
     if(value == NULL)
         return QVariant();
 
@@ -158,14 +171,18 @@ QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
     if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
         return JavaType<QVariantMap>::toVariant(value, env);
 
-    krossdebug( "Could not convert the jobject to a known QVariant, returning null." );
+    #ifdef KROSS_JVM_VARIANT_DEBUG
+        krossdebug( "Could not convert the jobject to a known QVariant, returning null." );
+    #endif
     return QVariant();
 }
 
 
 MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jobject value)
 {
-    krossdebug( QString("JVMMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
+    #ifdef KROSS_JVM_VARIANT_DEBUG
+        krossdebug( QString("JVMMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
+    #endif
     switch(typeId) {
         case QVariant::Int:
             return new JVMMetaTypeVariant<int>(value, env);

@@ -63,7 +63,9 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     d->m_object = object;
 
     d->debuginfo = object ? QString("name=%1 class=%2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
-    krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
+    #ifdef KROSS_JVM_EXTENSION_DEBUG
+        krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
+    #endif
 
     //testcase (TODO: something like this should go into JVMExtension)
     QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
@@ -123,7 +125,9 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
 
 JVMExtension::~JVMExtension()
 {
-    krossdebug( QString("JVMExtension Dtor %1").arg(d->debuginfo) );
+    #ifdef KROSS_JVM_EXTENSION_DEBUG
+        krossdebug( QString("JVMExtension Dtor %1").arg(d->debuginfo) );
+    #endif
     delete d;
 }
 
@@ -131,39 +135,6 @@ QObject* JVMExtension::object() const
 {
     return d->m_object;
 }
-#if 0
-jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, jobjectArray args)
-{
-    //TODO: copy-pasting krossruby code will be easier :)
-    QByteArray mname = JavaType<QString>::toVariant(method,env).toLatin1();
-    int methodindex = d->m_methods[mname];
-    QMetaMethod metamethod = d->m_object->metaObject()->method(methodindex);
-
-    QList<QByteArray> typelist = metamethod.parameterTypes();
-    int returntype = QVariant::nameToType( metamethod.typeName() );
-
-    int typelistcount = typelists.count();
-    QVarLengthArray<MetaType*> variantargs( typelistcount );
-    QVarLengthArray<void*> voidstarargs( typelistcount );
-
-    if(d->hasreturnvalue)
-    {
-        MetaType* returntype = RubyMetaTypeFactory::create( d->types[0], d->metatypes[0] );
-        variantargs[0] = returntype;
-        voidstarargs[0] = returntype->toVoidStar();
-    }
-    else
-    {
-        variantargs[0] = 0;
-        voidstarargs[0] = (void*)0;
-    }
-
-    //TODO: arguments & return value
-    QMetaObject::invokeMethod(d->m_object, mname);
-
-    return 0;
-}
-#endif
 
 jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject args[])
 {

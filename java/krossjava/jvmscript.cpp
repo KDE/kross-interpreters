@@ -49,7 +49,9 @@ namespace Kross {
 JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     : Script(interpreter, action), d(new Private())
 {
-    krossdebug("JVMScript Ctor");
+    #ifdef KROSS_JVM_SCRIPT_DEBUG
+        krossdebug("JVMScript Ctor");
+    #endif
 
     //this is a testcase to be able to test the QObject functionality.
     TestObject* testobject = new TestObject(this, "TestObject");
@@ -63,7 +65,9 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
 
 JVMScript::~JVMScript()
 {
-    krossdebug("JVMScript Dtor");
+    #ifdef KROSS_JVM_SCRIPT_DEBUG
+        krossdebug("JVMScript Dtor");
+    #endif
     if(d->env && d->scriptobj){
          d->env->DeleteGlobalRef(d->scriptobj);
          d->scriptobj = 0;
@@ -75,7 +79,9 @@ void JVMScript::execute()
 {
     JVMInterpreter* jvmi = static_cast< JVMInterpreter* >( interpreter() );
 
-    krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
+    #ifdef KROSS_JVM_SCRIPT_DEBUG
+        krossdebug( QString("JVMScript executing file: %1").arg(action()->file()) );
+    #endif
 
     QHash<QString, QObject*> objects = action()->objects();
     QHashIterator<QString, QObject*> it(objects);

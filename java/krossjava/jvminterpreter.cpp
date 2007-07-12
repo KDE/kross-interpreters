@@ -97,7 +97,9 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
                 vm_args.ignoreUnrecognized = JNI_TRUE; /* JNI won't complain about unrecognized options */
             }
             bool initialize() {
-                krossdebug("JVMInterpreter initialize");
+                #ifdef KROSS_JVM_INTERPRETER_DEBUG
+                    krossdebug("JVMInterpreter initialize");
+                #endif
                 jint res = JNI_CreateJavaVM( &jvm, (void **)&env, &vm_args );
                 if(res < 0)
                     return false;
@@ -154,7 +156,9 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
 JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     : Interpreter(info), d(new Private())
 {
-    krossdebug("JVMInterpreter Ctor");
+    #ifdef KROSS_JVM_INTERPRETER_DEBUG
+        krossdebug("JVMInterpreter Ctor");
+    #endif
 
     //Construct classpath
     QString cp = "-Djava.class.path=";
@@ -182,7 +186,9 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
 
 JVMInterpreter::~JVMInterpreter()
 {
-    krossdebug("JVMInterpreter Dtor");
+    #ifdef KROSS_JVM_INTERPRETER_DEBUG
+        krossdebug("JVMInterpreter Dtor");
+    #endif
     if( ! d->finalize() ) {
         krosswarning("JVMInterpreter Dtor: Failed to finalize");
     }
