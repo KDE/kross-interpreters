@@ -147,9 +147,9 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<QStringList>(value, env);
         case QVariant::Map:
             return new JVMMetaTypeVariant<QVariantMap>(value, env);
-#if 0
         case QVariant::List:
             return new JVMMetaTypeVariant<QVariantList>(value, env);
+#if 0
         case QVariant::LongLong:
             return new JVMMetaTypeVariant<qlonglong>(value, env);
         case QVariant::ULongLong:

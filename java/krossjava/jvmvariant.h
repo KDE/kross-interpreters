@@ -346,28 +346,35 @@ namespace Kross {
         }
     };
 
-#if 0
     template<>
     struct JavaType<QVariantList>
     {
-        inline static VALUE toJObject(const QVariantList& list) {
-            VALUE l = rb_ary_new();
+        inline static jobject toJObject(const QVariantList& list, JNIEnv* env) {
+            jclass cl = env->FindClass("java/util/ArrayList");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "()V");
+            jobject a = env->NewObject(cl, ctor);
+            jmethodID add = env->GetMethodID(cl, "add", "(Ljava/lang/Object;)Z");
             foreach(QVariant v, list)
-                rb_ary_push(l, JavaType<QVariant>::toJObject(v));
-            return l;
+                env->CallObjectMethod(a, add, JavaType<QVariant>::toJObject(v, env) );
+            return a;
         }
-        inline static QVariantList toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY ) {
-                rb_raise(rb_eTypeError, "QVariantList must be an array");
-                return QVariantList();
+        inline static QVariantList toVariant(jobject value, JNIEnv* env) {
+            //if( TYPE(value) != T_ARRAY ) {
+            //    rb_raise(rb_eTypeError, "QVariantList must be an array");
+            //    return QVariantList();
+            //}
+            jobjectArray objarray = static_cast<jobjectArray>(value);
+            const jsize len = env->GetArrayLength(objarray);
+            const int count = len;
+            QVariantList list;
+            for(int i = 0; i < count; i++) {
+                jobject s = env->GetObjectArrayElement(objarray, i);
+                list << JavaType<QVariant>::toVariant(s, env);
             }
-            QVariantList l;
-            for(int i = 0; i < RARRAY(value)->len; i++)
-                l.append( JavaType<QVariant>::toVariant( rb_ary_entry(value, i) ) );
-            return l;
+            return list;
         }
     };
-#endif
+
     template<>
     struct JavaType<QVariantMap>
     {

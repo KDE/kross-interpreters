@@ -16,9 +16,9 @@ public class Test {
         testDouble();
         testByteArray();
         testStringList();
-        //testArrayList();
+        testArrayList();
         //testGenericArrayList();
-        //testMap();
+        //testMap();  //TODO: this needs work in JVMVariant<QVariant>::toVariant
     }
 
     public void setUp() {
@@ -87,8 +87,8 @@ public class Test {
 
     public void testMap() {
         Map in = new HashMap();
-        in.put("a", 5);
-        in.put("c", 4);
+        in.put("a", new Integer(5));
+        in.put("c", new Integer(4));
         Map out = to.func_qvariantmap_qvariantmap(in);
         System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
     }
