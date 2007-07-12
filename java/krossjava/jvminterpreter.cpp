@@ -248,5 +248,27 @@ bool JVMInterpreter::handleException(JNIEnv* env)
         env->ExceptionClear();
         return true;
     }
+
     return false;
 }
+
+#ifdef KROSS_JVM_INTERPRETER_DEBUG
+void JVMInterpreter::showDebugInfo(jobject obj, JNIEnv* env)
+{
+    if(obj == NULL){
+        krossdebug("Object is NULL!");
+        return;
+    }
+    jclass objectcl = env->FindClass("java/lang/Object");
+    jclass classcl = env->FindClass("java/lang/Class");
+    jmethodID getclass = env->GetMethodID(objectcl, "getClass", "()Ljava/lang/Class;");
+    jmethodID getname = env->GetMethodID(classcl, "getName", "()Ljava/lang/String;");
+    jmethodID tostr = env->GetMethodID(objectcl, "toString", "()Ljava/lang/String;");
+    jobject classobj = env->CallObjectMethod(obj, getclass);
+    jobject classname = env->CallObjectMethod(classobj, getname);
+    jobject objectstring = env->CallObjectMethod(obj, tostr);
+
+    krossdebug(QString("Object stringified: %1").arg(JavaType<QString>::toVariant(objectstring, env)) );
+    krossdebug(QString("Object is of class: %1").arg(JavaType<QString>::toVariant(classname, env)) );
+}
+#endif

@@ -81,6 +81,9 @@ namespace Kross {
             bool addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz);
             //TODO: would this be the right place?
             static bool handleException(JNIEnv* env);
+#ifdef KROSS_JVM_INTERPRETER_DEBUG
+            static void showDebugInfo(jobject obj, JNIEnv* env);
+#endif
 
         private:
             /// \internal d-pointer class.

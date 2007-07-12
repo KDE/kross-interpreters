@@ -17,8 +17,8 @@ public class Test {
         testByteArray();
         testStringList();
         testArrayList();
-        //testGenericArrayList();
-        //testMap();  //TODO: this needs work in JVMVariant<QVariant>::toVariant
+        testGenericArrayList();
+        testMap();
     }
 
     public void setUp() {

@@ -22,6 +22,8 @@
 #include "jvmvariant.h"
 #include "jvmexception.h"
 
+#include "jvminterpreter.h"
+
 using namespace Kross;
 
 jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
@@ -44,9 +46,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QStringList>::toJObject(v.toStringList(), env);
         case QVariant::Map:
             return JavaType<QVariantMap>::toJObject(v.toMap(), env);
-#if 0
         case QVariant::List:
             return JavaType<QVariantList>::toJObject(v.toList(), env);
+#if 0
         case QVariant::LongLong:
             return JavaType<qlonglong>::toJObject(v.toLongLong(), env);
         case QVariant::ULongLong:
@@ -67,8 +69,10 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QRectF>::toJObject(v.toRectF(), env);
 #endif
         case QVariant::Invalid: {
-            krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::Invalid. Returning Py:None.").arg(v.toString()) );
-        } // fall through
+            //TODO: I don't see a problem with this, someone else?
+            krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::Invalid. Returning NULL.").arg(v.toString()) );
+            return NULL;
+        }
         case QVariant::UserType: {
             krossdebug( QString("JavaType<QVariant>::toJObject variant=%1 is QVariant::UserType. Trying to cast now.").arg(v.toString()) );
         } // fall through
@@ -118,11 +122,43 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
 {
     krossdebug( QString("JavaType<QVariant>::toVariant") );
+    if(value == NULL)
+        return QVariant();
 
-    //TODO JNIType
-    Q_UNUSED(value);
-    Q_UNUSED(env);
+    jclass cl = env->GetObjectClass(value);
+    jclass other;
 
+    other = env->FindClass("java/lang/Integer");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<int>::toVariant(value, env);
+
+    //TODO: UInt?
+
+    other = env->FindClass("java/lang/Double");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<double>::toVariant(value, env);
+
+    other = env->FindClass("java/lang/String");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<QString>::toVariant(value, env);
+
+    //TODO: Bytearray?
+
+    other = env->FindClass("java/lang/Boolean");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<bool>::toVariant(value, env);
+
+    other = env->FindClass("java/util/ArrayList");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<QVariantList>::toVariant(value, env);
+
+    //TODO: Stringlist... Other arrays...
+
+    other = env->FindClass("java/util/Map");
+    if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
+        return JavaType<QVariantMap>::toVariant(value, env);
+
+    krossdebug( "Could not convert the jobject to a known QVariant, returning null." );
     return QVariant();
 }
 

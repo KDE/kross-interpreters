@@ -23,6 +23,7 @@
 #define KROSS_JVMVARIANT_H
 
 #include "jvmconfig.h"
+#include "jvminterpreter.h"  //FIXME: debugging
 #include <kross/core/metatype.h>
 
 #include <QString>
@@ -363,12 +364,15 @@ namespace Kross {
             //    rb_raise(rb_eTypeError, "QVariantList must be an array");
             //    return QVariantList();
             //}
-            jobjectArray objarray = static_cast<jobjectArray>(value);
-            const jsize len = env->GetArrayLength(objarray);
-            const int count = len;
             QVariantList list;
+
+            jclass al = env->FindClass("java/util/ArrayList");
+            jmethodID size = env->GetMethodID(al, "size", "()I");
+            jmethodID get = env->GetMethodID(al, "get", "(I)Ljava/lang/Object;");
+            int count = env->CallIntMethod(value, size);
+
             for(int i = 0; i < count; i++) {
-                jobject s = env->GetObjectArrayElement(objarray, i);
+                jobject s = env->CallObjectMethod(value, get, i);
                 list << JavaType<QVariant>::toVariant(s, env);
             }
             return list;
