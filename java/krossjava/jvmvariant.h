@@ -23,7 +23,7 @@
 #define KROSS_JVMVARIANT_H
 
 #include "jvmconfig.h"
-#include "jvminterpreter.h"  //FIXME: debugging
+#include "jvmexception.h"
 #include <kross/core/metatype.h>
 
 #include <QString>
@@ -233,44 +233,49 @@ namespace Kross {
         }
     };
 
-#if 0
     template<>
     struct JavaType<QSize>
     {
-        inline static VALUE toJObject(const QSize& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toJObject(s.width()));
-            rb_ary_push(l, JavaType<int>::toJObject(s.height()));
-            return l;
+        inline static jobject toJObject(const QSize& s, JNIEnv* env) {
+            jintArray intarray = env->NewIntArray(2);
+            jint content[2] = {s.width(), s.height()};
+            env->SetIntArrayRegion(intarray, 0, 2, content);
+            return intarray;
         }
-        inline static QSize toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
-                rb_raise(rb_eTypeError, "QSize must be an array with 2 elements");
-                return QSize();
+        inline static QSize toVariant(jobject value, JNIEnv* env) {
+            jintArray intarray = static_cast<jintArray>(value);
+            if(env->GetArrayLength(intarray) != 2) {
+               JVMException::throwIllegalArgumentException(env);
+               return QSize();
             }
-            return QSize( JavaType<int>::toVariant( rb_ary_entry(value,0) ), JavaType<int>::toVariant( rb_ary_entry(value,1) ) );
+            int content[2];
+            env->GetIntArrayRegion(intarray, 0, 2, (jint*)content);
+            return QSize(content[0], content[1]);
         }
     };
 
     template<>
     struct JavaType<QSizeF>
     {
-        inline static VALUE toJObject(const QSizeF& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toJObject(s.width()));
-            rb_ary_push(l, JavaType<double>::toJObject(s.height()));
-            return l;
+        inline static jobject toJObject(const QSizeF& s, JNIEnv* env) {
+            jdoubleArray doublearray = env->NewDoubleArray(2);
+            jdouble content[2] = {s.width(), s.height()};
+            env->SetDoubleArrayRegion(doublearray, 0, 2, content);
+            return doublearray;
         }
-        inline static QSizeF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
-                rb_raise(rb_eTypeError, "QSizeF must be an array with 2 elements");
-                return QSizeF();
+        inline static QSizeF toVariant(jobject value, JNIEnv* env) {
+            jdoubleArray doublearray = static_cast<jdoubleArray>(value);
+            if(env->GetArrayLength(doublearray) != 2) {
+               JVMException::throwIllegalArgumentException(env);
+               return QSizeF();
             }
-            return QSizeF( JavaType<double>::toVariant( rb_ary_entry(value,0) ), JavaType<double>::toVariant( rb_ary_entry(value,1) ) );
-
+            double content[2];
+            env->GetDoubleArrayRegion(doublearray, 0, 2, (jdouble*)content);
+            return QSizeF(content[0], content[1]);
         }
     };
 
+#if 0
     template<>
     struct JavaType<QPoint>
     {

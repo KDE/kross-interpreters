@@ -35,6 +35,8 @@ public class TestObject extends KrossQExtension {
     public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
     public ArrayList func_qvariantlist_qvariantlist(ArrayList l){ return (ArrayList)invoke("func_qvariantlist_qvariantlist", l); }
     public Map func_qvariantmap_qvariantmap(Map m){ return (Map)invoke("func_qvariantmap_qvariantmap", m); }
+    public int[] func_qsize_qsize(int[] i){ return (int[])invoke("func_qsize_qsize", i); }
+    public double[] func_qsizef_qsizef(double[] i){ return (double[])invoke("func_qsizef_qsizef", i); }
     public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
 
 }

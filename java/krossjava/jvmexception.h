@@ -61,6 +61,12 @@ namespace Kross {
                 env->Throw(throwObj);
             }
 
+            static void throwIllegalArgumentException(JNIEnv *env) {
+                jclass clazz = env->FindClass("java/lang/IllegalArgumentException");
+                jmethodID method = env->GetMethodID(clazz, "<init>", "()V");
+                jthrowable throwObj = (jthrowable) env->NewObject(clazz, method);
+                env->Throw(throwObj);
+            }
     };
 
 }

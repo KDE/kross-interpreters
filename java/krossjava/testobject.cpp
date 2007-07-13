@@ -150,8 +150,16 @@ QVariantMap TestObject::func_qvariantmap_qvariantmap(QVariantMap vm)
     return vm;
 }
 
-QSize TestObject::func_qsize_qsize(const QSize& s) { return s; }
-QSizeF TestObject::func_qsizef_qsizef(const QSizeF& s) { return s; }
+QSize TestObject::func_qsize_qsize(const QSize& s)
+{
+    kDebug() << "TestObject::func_qsize_qsize s.width=" << s.width() << " s.height=" << s.height() << endl;
+    return s;
+}
+QSizeF TestObject::func_qsizef_qsizef(const QSizeF& s)
+{
+    kDebug() << "TestObject::func_qsizef_qsizef s.width=" << s.width() << " s.height=" << s.height() << endl;
+    return s;
+}
 QPoint TestObject::func_qpoint_qpoint(const QPoint& p) { return p; }
 QPointF TestObject::func_qpointf_qpointf(const QPointF& p) { return p; }
 QRect TestObject::func_qrect_qrect(const QRect& r) { return r; }

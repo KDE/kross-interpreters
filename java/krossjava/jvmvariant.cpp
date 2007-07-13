@@ -56,11 +56,11 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<qlonglong>::toJObject(v.toULongLong(), env);
         case QVariant::Url:
             return JavaType<QUrl>::toJObject(v.toUrl(), env);
-#if 0
         case QVariant::Size:
             return JavaType<QSize>::toJObject(v.toSize(), env);
         case QVariant::SizeF:
             return JavaType<QSizeF>::toJObject(v.toSizeF(), env);
+#if 0
         case QVariant::Point:
             return JavaType<QPoint>::toJObject(v.toPoint(), env);
         case QVariant::PointF:
@@ -218,11 +218,11 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<qulonglong>(value, env);
         case QVariant::Url:
             return new JVMMetaTypeVariant<QUrl>(value, env);
-#if 0
         case QVariant::Size:
             return new JVMMetaTypeVariant<QSize>(value, env);
         case QVariant::SizeF:
             return new JVMMetaTypeVariant<QSizeF>(value, env);
+#if 0
         case QVariant::Point:
             return new JVMMetaTypeVariant<QPoint>(value, env);
         case QVariant::PointF:

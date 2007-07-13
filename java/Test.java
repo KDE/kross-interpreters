@@ -22,6 +22,9 @@ public class Test {
         testArrayList();
         testGenericArrayList();
         testMap();
+        testSize();
+        testIllegalSize();
+        testSizef();
         testURL();
     }
 
@@ -103,6 +106,28 @@ public class Test {
         in.put("c", new Integer(4));
         Map out = to.func_qvariantmap_qvariantmap(in);
         System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
+    }
+
+    public void testSize() {
+        int[] in = {5,4};
+        int[] out = to.func_qsize_qsize(in);
+        System.out.println("TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
+    }
+
+    public void testIllegalSize() {
+        int[] in = {5,4,3};
+        try {
+            int[] out = to.func_qsize_qsize(in);
+            System.out.println("TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
+        } catch(IllegalArgumentException e) {
+            System.out.println("TestObject.func_qsize_qsize({5,4,3}) exception caught, okay.");
+        }
+    }
+
+    public void testSizef() {
+        double[] in = {16.1803,10.0};
+        double[] out = to.func_qsizef_qsizef(in);
+        System.out.println("TestObject.func_qsizef_qsizef=(" + out[0] + "," + out[1] + ")");
     }
 
     public void testURL() {
