@@ -9,6 +9,7 @@ public class Test {
     public Test() {
         System.out.println("Hello World !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         setUp();
+        testVoid();
         testName();
         testMultiArgs();
         testInt();
@@ -31,6 +32,7 @@ public class Test {
         testRect();
         testRectf();
         testURL();
+        testQObject();
     }
 
     public void setUp() {
@@ -40,6 +42,11 @@ public class Test {
     public void testName() {
         String name = to.name();
         System.out.println("TestObject name=" + name);
+    }
+
+    public void testVoid(){
+        to.func_void();
+        System.out.println("TestObject.func_void");
     }
 
     public void testMultiArgs() {
@@ -173,5 +180,9 @@ public class Test {
         } catch(MalformedURLException e) {
             System.out.println("Meh.");
         }
+    }
+
+    public void testQObject() {
+        System.out.println("TestObject.func_qobject_qobject(to [" + to + "])=" + to.func_qobject_qobject(to));
     }
 }

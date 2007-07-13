@@ -24,6 +24,7 @@ public class TestObject extends KrossQExtension {
     // are not able to handle more then 9 anyway + we would work around the rather expensive
     // list packing/unpacking.
 
+    public void func_void(){ invoke("func_void"); }
     public Boolean func_bool_bool(Boolean b){ return (Boolean)invoke("func_bool_bool", b); }
     public Integer func_int_int(Integer i){ return (Integer)invoke("func_int_int", i); }
     public Integer func_uint_uint(Integer i){ return (Integer)invoke("func_uint_uint", i); }
@@ -43,5 +44,5 @@ public class TestObject extends KrossQExtension {
     public int[] func_qrect_qrect(int[] i){ return (int[])invoke("func_qrect_qrect", i); }
     public double[] func_qrectf_qrectf(double[] i){ return (double[])invoke("func_qrectf_qrectf", i); }
     public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
-    //public KrossQExtension func_qobject_qobject(KrossQExtension obj){ return (KrossQExtension)invoke("func_qobject_qobject", obj) }
+    public KrossQExtension func_qobject_qobject(KrossQExtension obj){ return (KrossQExtension)invoke("func_qobject_qobject", obj); }
 }

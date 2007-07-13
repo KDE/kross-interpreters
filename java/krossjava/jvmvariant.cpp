@@ -21,8 +21,7 @@
 
 #include "jvmvariant.h"
 #include "jvmexception.h"
-
-#include "jvminterpreter.h"
+#include "jvmextension.h"
 
 using namespace Kross;
 
@@ -119,9 +118,7 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
             //PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) variantargs[0]->toVoidStar() );
-            #ifdef KROSS_JVM_VARIANT_DEBUG
-                krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a jobject.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
-            #endif
+            krosswarning( QString("JavaType<QVariant>::toJObject Not possible to convert the QVariant '%1' with type '%2' (%3) to a jobject.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
             JVMException::throwNullPointerException(env);
             return NULL;
         }
@@ -231,13 +228,17 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through
         default: {
-#if 0
-            if( JVMExtension::isJVMExtension(value) ) {
+            if( JVMExtension::isJVMExtension(value, env) ) {
                 #ifdef KROSS_JVM_VARIANT_DEBUG
                     krossdebug( QString("JVMMetaTypeFactory::create jobject with typeId '%1' is a JVMExtension object").arg(typeId) );
                 #endif
                 JVMExtension* extension;
-                Data_Get_Struct(value, JVMExtension, extension);
+
+                jclass KQExt = env->FindClass("org/kde/kdebindings/java/krossjava/KrossQExtension");
+                jmethodID getpoint = env->GetMethodID(KQExt, "getPointer", "()J");
+                jlong p = env->CallLongMethod(value, getpoint);
+                extension = (JVMExtension*)JavaType<void*>::toVariant(p, env);
+
                 Q_ASSERT(extension);
                 QObject* object = extension->object();
                 if(! object) {
@@ -246,7 +247,7 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
                 }
                 return new MetaTypeVoidStar( typeId, object, false );
             }
-#endif
+
             if( value == NULL ) {
                 #ifdef KROSS_JVM_VARIANT_DEBUG
                     krossdebug( QString("JVMMetaTypeFactory::create jobject is NULL. Create empty type '%1'").arg(metaTypeId) );

@@ -260,6 +260,14 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject
     return 0;
 }
 
+bool JVMExtension::isJVMExtension(jobject obj, JNIEnv* env){
+    if(obj == NULL)
+        return false;
+    jclass cl = env->GetObjectClass(obj);
+    jclass KQExt = env->FindClass("org/kde/kdebindings/java/krossjava/KrossQExtension");
+    return (env->IsAssignableFrom(cl, KQExt) == JNI_TRUE);
+}
+
 /*
 ClassFile {
         u4 magic;

@@ -66,6 +66,11 @@ namespace Kross {
             */
             jobject callQMethod(JNIEnv *env, jstring method, int numargs, jobject args[]);
 
+            /**
+            * \return true if the given jobject is not NULL and a subclass of KrossQExtension, false otherwise.
+            */
+            static bool isJVMExtension(jobject obj, JNIEnv* env);
+
         private:
             /// \internal d-pointer class.
             class Private;
