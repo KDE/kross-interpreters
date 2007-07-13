@@ -29,6 +29,7 @@ public class TestObject extends KrossQExtension {
     public Integer func_uint_uint(Integer i){ return (Integer)invoke("func_uint_uint", i); }
     public Double func_double_double(Double d){ return (Double)invoke("func_double_double", d); }
     public Long func_qlonglong_qlonglong(Long l){ return (Long)invoke("func_qlonglong_qlonglong", l); }
+    public Long func_qulonglong_qulonglong(Long l){ return (Long)invoke("func_qulonglong_qulonglong", l); }
     public byte[] func_qbytearray_qbytearray(byte[] b){ return (byte[])invoke("func_qbytearray_qbytearray", b); }
     public String func_qstring_qstring(String s) { return (String)invoke("func_qstring_qstring", s); }
     public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }

@@ -52,10 +52,8 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QVariantList>::toJObject(v.toList(), env);
         case QVariant::LongLong:
             return JavaType<qlonglong>::toJObject(v.toLongLong(), env);
-#if 0
         case QVariant::ULongLong:
             return JavaType<qlonglong>::toJObject(v.toULongLong(), env);
-#endif
         case QVariant::Url:
             return JavaType<QUrl>::toJObject(v.toUrl(), env);
 #if 0
@@ -147,7 +145,9 @@ QVariant JavaType<QVariant>::toVariant(jobject value, JNIEnv* env)
     if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
         return JavaType<int>::toVariant(value, env);
 
-    //TODO: UInt?
+    //uint and ulonglong are impossible to do in this direction,
+    //because it makes more sense to cast Integer and Long
+    //to int and longlong respectively.
 
     other = env->FindClass("java/lang/Double");
     if(env->IsAssignableFrom(cl, other) == JNI_TRUE)
@@ -214,10 +214,8 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<QVariantList>(value, env);
         case QVariant::LongLong:
             return new JVMMetaTypeVariant<qlonglong>(value, env);
-#if 0
         case QVariant::ULongLong:
             return new JVMMetaTypeVariant<qulonglong>(value, env);
-#endif
         case QVariant::Url:
             return new JVMMetaTypeVariant<QUrl>(value, env);
 #if 0

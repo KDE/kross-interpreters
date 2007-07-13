@@ -153,6 +153,8 @@ namespace Kross {
         }
     };
 
+    //This gets casted to a Java Integer. Values >2^31 might be wrong.
+    //Take care on usage.
     template<>
     struct JavaType<uint>
     {
@@ -213,18 +215,25 @@ namespace Kross {
         }
     };
 
-#if 0
+    //This is unsafe, as there is no Java object that can handle
+    //such numbers. There might be overflow for values >2^63.
+    //Take care on usage.
     template<>
     struct JavaType<qulonglong>
     {
         inline static jobject toJObject(qulonglong l, JNIEnv* env) {
-            return quint64(l);
+            jclass cl = env->FindClass("java/lang/Long");
+            jmethodID ctor = env->GetMethodID(cl, "<init>", "(J)V");
+            return env->NewObject(cl, ctor, l);
         }
         inline static qulonglong toVariant(jobject value, JNIEnv* env) {
-            return quint64(value);
+            jclass cl = env->FindClass("java/lang/Long");
+            jmethodID getval = env->GetMethodID(cl, "longValue", "()J");
+            return env->CallLongMethod(value, getval);
         }
     };
 
+#if 0
     template<>
     struct JavaType<QSize>
     {
