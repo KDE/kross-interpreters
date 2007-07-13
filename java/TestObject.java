@@ -39,6 +39,8 @@ public class TestObject extends KrossQExtension {
     public double[] func_qsizef_qsizef(double[] i){ return (double[])invoke("func_qsizef_qsizef", i); }
     public int[] func_qpoint_qpoint(int[] i){ return (int[])invoke("func_qpoint_qpoint", i); }
     public double[] func_qpointf_qpointf(double[] i){ return (double[])invoke("func_qpointf_qpointf", i); }
+    public int[] func_qrect_qrect(int[] i){ return (int[])invoke("func_qrect_qrect", i); }
+    public double[] func_qrectf_qrectf(double[] i){ return (double[])invoke("func_qrectf_qrectf", i); }
     public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
 
 }

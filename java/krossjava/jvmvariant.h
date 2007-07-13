@@ -274,6 +274,7 @@ namespace Kross {
             return QSizeF(content[0], content[1]);
         }
     };
+
     template<>
     struct JavaType<QPoint>
     {
@@ -316,49 +317,47 @@ namespace Kross {
         }
     };
 
-#if 0
     template<>
     struct JavaType<QRect>
     {
-        inline static VALUE toJObject(const QRect& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toJObject(s.x()));
-            rb_ary_push(l, JavaType<int>::toJObject(s.y()));
-            rb_ary_push(l, JavaType<int>::toJObject(s.width()));
-            rb_ary_push(l, JavaType<int>::toJObject(s.height()));
-            return l;
+        inline static jobject toJObject(const QRect& r, JNIEnv* env) {
+            jintArray intarray = env->NewIntArray(4);
+            jint content[4] = {r.x(), r.y(), r.width(), r.height()};
+            env->SetIntArrayRegion(intarray, 0, 4, content);
+            return intarray;
         }
-        inline static QRect toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 4 ) {
-                rb_raise(rb_eTypeError, "QRect must be an array with 4 elements");
-                return QRect();
+        inline static QRect toVariant(jobject value, JNIEnv* env) {
+            jintArray intarray = static_cast<jintArray>(value);
+            if(env->GetArrayLength(intarray) != 4) {
+               JVMException::throwIllegalArgumentException(env);
+               return QRect();
             }
-            return QRect( JavaType<int>::toVariant( rb_ary_entry(value,0) ), JavaType<int>::toVariant( rb_ary_entry(value,1) ),
-                           JavaType<int>::toVariant( rb_ary_entry(value,2) ), JavaType<int>::toVariant( rb_ary_entry(value,3) ) );
+            int content[4];
+            env->GetIntArrayRegion(intarray, 0, 4, (jint*)content);
+            return QRect(content[0], content[1], content[2], content[3]);
         }
     };
 
     template<>
     struct JavaType<QRectF>
     {
-        inline static VALUE toJObject(const QRectF& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toJObject(s.x()));
-            rb_ary_push(l, JavaType<double>::toJObject(s.y()));
-            rb_ary_push(l, JavaType<double>::toJObject(s.width()));
-            rb_ary_push(l, JavaType<double>::toJObject(s.height()));
-            return l;
+        inline static jobject toJObject(const QRectF& r, JNIEnv* env) {
+            jdoubleArray doublearray = env->NewDoubleArray(4);
+            jdouble content[4] = {r.x(), r.y(), r.width(), r.height()};
+            env->SetDoubleArrayRegion(doublearray, 0, 4, content);
+            return doublearray;
         }
-        inline static QRectF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 4 ) {
-                rb_raise(rb_eTypeError, "QRectF must be an array with 4 elements");
-                return QRectF();
+        inline static QRectF toVariant(jobject value, JNIEnv* env) {
+            jdoubleArray doublearray = static_cast<jdoubleArray>(value);
+            if(env->GetArrayLength(doublearray) != 4) {
+               JVMException::throwIllegalArgumentException(env);
+               return QRectF();
             }
-            return QRectF( JavaType<double>::toVariant( rb_ary_entry(value,0) ), JavaType<double>::toVariant( rb_ary_entry(value,1) ),
-                           JavaType<double>::toVariant( rb_ary_entry(value,2) ), JavaType<double>::toVariant( rb_ary_entry(value,3) ) );
+            double content[4];
+            env->GetDoubleArrayRegion(doublearray, 0, 4, (jdouble*)content);
+            return QRectF(content[0], content[1], content[2], content[3]);
         }
     };
-#endif
 
     template<>
     struct JavaType<QUrl>

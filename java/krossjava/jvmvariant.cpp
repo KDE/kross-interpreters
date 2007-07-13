@@ -64,12 +64,10 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
             return JavaType<QPoint>::toJObject(v.toPoint(), env);
         case QVariant::PointF:
             return JavaType<QPointF>::toJObject(v.toPointF(), env);
-#if 0
         case QVariant::Rect:
             return JavaType<QRect>::toJObject(v.toRect(), env);
         case QVariant::RectF:
             return JavaType<QRectF>::toJObject(v.toRectF(), env);
-#endif
         case QVariant::Invalid: {
             //TODO: I don't see a problem with this, someone else?
             #ifdef KROSS_JVM_VARIANT_DEBUG
@@ -226,12 +224,10 @@ MetaType* JVMMetaTypeFactory::create(JNIEnv* env, int typeId, int metaTypeId, jo
             return new JVMMetaTypeVariant<QPoint>(value, env);
         case QVariant::PointF:
             return new JVMMetaTypeVariant<QPointF>(value, env);
-#if 0
         case QVariant::Rect:
             return new JVMMetaTypeVariant<QRect>(value, env);
         case QVariant::RectF:
             return new JVMMetaTypeVariant<QRectF>(value, env);
-#endif
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through
         default: {

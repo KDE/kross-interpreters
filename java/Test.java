@@ -27,6 +27,8 @@ public class Test {
         testSizef();
         testPoint();
         testPointf();
+        testRect();
+        testRectf();
         testURL();
     }
 
@@ -143,6 +145,19 @@ public class Test {
         double[] out = to.func_qpointf_qpointf(in);
         System.out.println("TestObject.func_qpointf_qpointf=(" + out[0] + "," + out[1] + ")");
     }
+
+    public void testRect() {
+        int[] in = {1,1,5,4};
+        int[] out = to.func_qrect_qrect(in);
+        System.out.println("TestObject.func_qrect_qrect=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+    }
+
+    public void testRectf() {
+        double[] in = {0.1, 2.3, 4.5, 6.7};
+        double[] out = to.func_qrectf_qrectf(in);
+        System.out.println("TestObject.func_qrectf_qrectf=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+    }
+
     public void testURL() {
         try {
             URL out = to.func_qurl_qurl(new URL("http://kross.dipe.org"));

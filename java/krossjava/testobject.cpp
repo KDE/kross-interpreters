@@ -168,8 +168,16 @@ QPointF TestObject::func_qpointf_qpointf(const QPointF& p){
     kDebug() << "TestObject::func_qpointf_qpointf p.x=" << p.x() << " p.y=" << p.y() << endl;
     return p;
 }
-QRect TestObject::func_qrect_qrect(const QRect& r) { return r; }
-QRectF TestObject::func_qrectf_qrectf(const QRectF& r) { return r; }
+QRect TestObject::func_qrect_qrect(const QRect& r)
+{
+    kDebug() << "TestObject::func_qrect_qrect r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
+    return r;
+}
+QRectF TestObject::func_qrectf_qrectf(const QRectF& r)
+{
+    kDebug() << "TestObject::func_qrectf_qrectf r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
+    return r;
+}
 QUrl TestObject::func_qurl_qurl(const QUrl& u)
 {
     kDebug() << "TestObject::func_qurl_qurl u.toString=" << u.toString() << endl;
