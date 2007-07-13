@@ -30,6 +30,7 @@ public class TestObject extends KrossQExtension {
     public Double func_double_double(Double d){ return (Double)invoke("func_double_double", d); }
     public Long func_qlonglong_qlonglong(Long l){ return (Long)invoke("func_qlonglong_qlonglong", l); }
     public Long func_qulonglong_qulonglong(Long l){ return (Long)invoke("func_qulonglong_qulonglong", l); }
+    public String func_qstring_qstring_int(String str, Integer i){ return (String)invoke("func_qstring_qstring_int", str, i); }
     public byte[] func_qbytearray_qbytearray(byte[] b){ return (byte[])invoke("func_qbytearray_qbytearray", b); }
     public String func_qstring_qstring(String s) { return (String)invoke("func_qstring_qstring", s); }
     public String[] func_qstringlist_qstringlist(String[] s){ return (String[])invoke("func_qstringlist_qstringlist", s); }
@@ -42,5 +43,5 @@ public class TestObject extends KrossQExtension {
     public int[] func_qrect_qrect(int[] i){ return (int[])invoke("func_qrect_qrect", i); }
     public double[] func_qrectf_qrectf(double[] i){ return (double[])invoke("func_qrectf_qrectf", i); }
     public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
-
+    //public KrossQExtension func_qobject_qobject(KrossQExtension obj){ return (KrossQExtension)invoke("func_qobject_qobject", obj) }
 }

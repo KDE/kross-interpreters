@@ -10,6 +10,7 @@ public class Test {
         System.out.println("Hello World !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
         setUp();
         testName();
+        testMultiArgs();
         testInt();
         testUInt();
         testString();
@@ -39,6 +40,13 @@ public class Test {
     public void testName() {
         String name = to.name();
         System.out.println("TestObject name=" + name);
+    }
+
+    public void testMultiArgs() {
+        String str = "1 + 2 = ";
+        int num = 1+2;
+        String result = to.func_qstring_qstring_int(str, num);
+        System.out.println("TestObject.func_qstring_qstring_int=" + result);
     }
 
     public void testInt() {
