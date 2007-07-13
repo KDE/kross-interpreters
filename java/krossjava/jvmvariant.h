@@ -274,44 +274,49 @@ namespace Kross {
             return QSizeF(content[0], content[1]);
         }
     };
-
-#if 0
     template<>
     struct JavaType<QPoint>
     {
-        inline static VALUE toJObject(const QPoint& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<int>::toJObject(s.x()));
-            rb_ary_push(l, JavaType<int>::toJObject(s.y()));
-            return l;
+        inline static jobject toJObject(const QPoint& p, JNIEnv* env) {
+            jintArray intarray = env->NewIntArray(2);
+            jint content[2] = {p.x(), p.y()};
+            env->SetIntArrayRegion(intarray, 0, 2, content);
+            return intarray;
         }
-        inline static QPoint toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
-                rb_raise(rb_eTypeError, "QPoint must be an array with 2 elements");
-                return QPoint();
+        inline static QPoint toVariant(jobject value, JNIEnv* env) {
+            jintArray intarray = static_cast<jintArray>(value);
+            if(env->GetArrayLength(intarray) != 2) {
+               JVMException::throwIllegalArgumentException(env);
+               return QPoint();
             }
-            return QPoint( JavaType<int>::toVariant( rb_ary_entry(value,0) ), JavaType<int>::toVariant( rb_ary_entry(value,1) ) );
+            int content[2];
+            env->GetIntArrayRegion(intarray, 0, 2, (jint*)content);
+            return QPoint(content[0], content[1]);
         }
     };
 
     template<>
     struct JavaType<QPointF>
     {
-        inline static VALUE toJObject(const QPointF& s) {
-            VALUE l = rb_ary_new();
-            rb_ary_push(l, JavaType<double>::toJObject(s.x()));
-            rb_ary_push(l, JavaType<double>::toJObject(s.y()));
-            return l;
+        inline static jobject toJObject(const QPointF& p, JNIEnv* env) {
+            jdoubleArray doublearray = env->NewDoubleArray(2);
+            jdouble content[2] = {p.x(), p.y()};
+            env->SetDoubleArrayRegion(doublearray, 0, 2, content);
+            return doublearray;
         }
-        inline static QPointF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
-                rb_raise(rb_eTypeError, "QPointF must be an array with 2 elements");
-                return QPointF();
+        inline static QPointF toVariant(jobject value, JNIEnv* env) {
+            jdoubleArray doublearray = static_cast<jdoubleArray>(value);
+            if(env->GetArrayLength(doublearray) != 2) {
+               JVMException::throwIllegalArgumentException(env);
+               return QPointF();
             }
-            return QPointF( JavaType<double>::toVariant( rb_ary_entry(value,0) ), JavaType<double>::toVariant( rb_ary_entry(value,1) ) );
+            double content[2];
+            env->GetDoubleArrayRegion(doublearray, 0, 2, (jdouble*)content);
+            return QPointF(content[0], content[1]);
         }
     };
 
+#if 0
     template<>
     struct JavaType<QRect>
     {
