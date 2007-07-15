@@ -37,13 +37,6 @@ public class Test {
 
     public void assertEquals(Object actual, Object expected) {
         String n = actual.getClass().getName();
-//         if( n.equals("java.lang.String") )
-//             ok = actual.equals(expected);
-//         if( n.equals("java.lang.Integer") )
-//             ok = (  );
-//         else
-//             ok = ( actual == expected );
-
         if( actual.equals(expected) )
             System.out.println("passed type=" + n + " expected=" + expected);
         else
