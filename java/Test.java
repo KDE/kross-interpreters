@@ -44,17 +44,17 @@ public class Test {
     }
 
     public void assertEquals(Object[] actual, Object[] expected) {
-        if(actual.length != expected.length)
+        if(actual.length != expected.length) {
             System.out.println("FAILED actual.length=" + actual.length + " expected.length=" + expected.length);
-        else {
-            for(int i = 0; i < actual.length; i++) {
-                if(actual[i] == null && expected[i] == null)
-                    continue;
-                if( actual[i].equals( expected[i] ) )
-                    continue;
-                System.out.println("FAILED type=" + actual[i].getClass().getName() + " actual=" + actual[i] + " expected=" + expected[i]);
-                return;
-            }
+            return;
+        }
+        for(int i = 0; i < actual.length; i++) {
+            if(actual[i] == null && expected[i] == null)
+                continue;
+            if( actual[i].equals( expected[i] ) )
+                continue;
+            System.out.println("FAILED type=" + actual[i].getClass().getName() + " actual=" + actual[i] + " expected=" + expected[i]);
+            return;
         }
         System.out.println("passed expected=" + expected);
     }
