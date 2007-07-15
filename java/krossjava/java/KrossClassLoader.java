@@ -23,21 +23,28 @@ public class KrossClassLoader extends URLClassLoader {
 			//TODO: compile
 			System.out.println("Didn't get a valid classfile!");
 		}
-		//TODO: don't overwrite if name already exists?
-		Class c = defineClass(null, data, 0, data.length);
-		//The passed name may be not the actual classname!
-		//We allow both ways of access here.
-		if(name != null && !name.equals(""))
-			storedClasses.put(name,c);
-		storedClasses.put(c.getName(),c);
+		//TODO: a better way would be to check whether the class is already defined
+		//This might require some byte[] manipulations, though.
+		try {
+			Class c = defineClass(null, data, 0, data.length);
+			//The passed name may be not the actual classname!
+			//We allow both ways of access here.
+			if(name != null && !name.equals(""))
+				storedClasses.put(name,c);
+			storedClasses.put(c.getName(),c);
+		} catch (LinkageError e) {
+			System.out.println("Class probably already defined! Trying to continue.");
+		}
+
 	}
 
 	//TODO: think about the right exception handling here
-	public void addExtension(String name, long p) throws
+	public KrossQExtension addExtension(String name, long p) throws
 	  ClassNotFoundException, InstantiationException, IllegalAccessException,
 	  NoSuchMethodException, InvocationTargetException {
 		KrossQExtension ext = (KrossQExtension)newInstance(name, new Long(p));
 		extensions.put(name, ext);
+		return ext;
 	}
 
 	public Object newInstance(String name) throws
@@ -128,6 +135,8 @@ public class KrossClassLoader extends URLClassLoader {
 	}
 
 	public static boolean isClassData(byte[] data){
+		if(data == null || data.length < 4)
+			return false;
 		//TODO: endianness?
 		if(byteArrayToInt(data) == 0xCAFEBABE)
 			return true;

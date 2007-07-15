@@ -44,6 +44,9 @@ namespace Kross {
             /// The wrapped QObject.
             QPointer<QObject> m_object;
 
+            /// The provided Java Object
+            jobject javaobj;
+
             /// For debugging.
             QString debuginfo;
 
@@ -57,12 +60,14 @@ namespace Kross {
 
 }
 
-JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QObject* object)
+JVMExtension::JVMExtension(QObject* object)
     : d(new Private())
 {
     d->m_object = object;
 
-    d->debuginfo = object ? QString("name=%1 class=%2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
+    QString name = object->objectName();
+
+    d->debuginfo = object ? QString("name=%1 class=%2").arg(name).arg(object->metaObject()->className()) : "NULL";
     #ifdef KROSS_JVM_EXTENSION_DEBUG
         krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
     #endif
@@ -70,7 +75,7 @@ JVMExtension::JVMExtension(JVMInterpreter* interpreter, const QString& name, QOb
     //testcase (TODO: something like this should go into JVMExtension)
     QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
     toclass.open(QIODevice::ReadOnly);
-    interpreter->addExtension(name, this, toclass.readAll());
+    d->javaobj = JVMInterpreter::addExtension(name, this, toclass.readAll());
     toclass.close();
 
 /*
@@ -134,6 +139,11 @@ JVMExtension::~JVMExtension()
 QObject* JVMExtension::object() const
 {
     return d->m_object;
+}
+
+jobject JVMExtension::javaobject() const
+{
+    return d->javaobj;
 }
 
 jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject args[])

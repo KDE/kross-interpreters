@@ -113,7 +113,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
                 addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
                 newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
                 addurl = env->GetMethodID(clclass, "addURL", "(Ljava/net/URL;)V");
-                addextension = env->GetMethodID(clclass, "addExtension", "(Ljava/lang/String;J)V");
+                addextension = env->GetMethodID(clclass, "addExtension", "(Ljava/lang/String;J)Lorg/kde/kdebindings/java/krossjava/KrossQExtension;");
                 if (addclass == 0 || newinst == 0 || addurl == 0 || addextension == 0) {
                   krosswarning("Classloader method not found!");
                   return false;
@@ -139,7 +139,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
                 nativeMethod.fnPtr = (void*) callQMethod;
                 env->RegisterNatives(proxy, &nativeMethod, 1);
 
-                handleException(env);
+                handleException();
 
                 return true;
             }
@@ -153,8 +153,10 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
 
 }
 
+JVMInterpreter::Private* const JVMInterpreter::d = new JVMInterpreter::Private();
+
 JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
-    : Interpreter(info), d(new Private())
+    : Interpreter(info)
 {
     #ifdef KROSS_JVM_INTERPRETER_DEBUG
         krossdebug("JVMInterpreter Ctor");
@@ -201,7 +203,7 @@ Script* JVMInterpreter::createScript(Action* action)
     return new JVMScript(this, action);
 }
 
-JNIEnv* JVMInterpreter::getEnv() const
+JNIEnv* JVMInterpreter::getEnv()
 {
     return d->env;
 }
@@ -212,7 +214,7 @@ void JVMInterpreter::addToCP(const QUrl& url)
     jobject jurl = JavaType<QUrl>::toJObject(url,d->env);
     d->env->CallVoidMethod(d->classloader,d->addurl,jurl);
 
-    handleException(d->env);
+    handleException();
 }
 
 bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
@@ -221,17 +223,19 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
     jbyteArray jarray = JavaType<QByteArray>::toJObject(array,d->env);
     d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
 
-    return !handleException(d->env);
+    return !handleException();
 }
 
-bool JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz){
+jobject JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz){
     addClass(name, clazz);
 
     jstring jname = JavaType<QString>::toJObject(name,d->env);
     jlong pointer = JavaType<void*>::toJObject(obj,d->env);
-    d->env->CallVoidMethod(d->classloader,d->addextension,jname,pointer);
+    jobject jobj = d->env->CallObjectMethod(d->classloader,d->addextension,jname,pointer);
 
-    return !handleException(d->env);
+    handleException();
+
+    return jobj;
 }
 
 //TODO: a way to add arguments? Would be hard though.
@@ -240,18 +244,18 @@ jobject JVMInterpreter::newObject(const QString& fullname)
     jstring jname = JavaType<QString>::toJObject(fullname,d->env);
     jobject obj = d->env->CallObjectMethod(d->classloader,d->newinst,jname);
 
-    if(handleException(d->env)){
+    if(handleException()){
         return 0;
     }
     return obj;
 }
 
-bool JVMInterpreter::handleException(JNIEnv* env)
+bool JVMInterpreter::handleException()
 {
-    if(/*jthrowable exc = */env->ExceptionOccurred()){
+    if(/*jthrowable exc = */d->env->ExceptionOccurred()){
         //TODO: do this with krosswarning()
-        env->ExceptionDescribe();
-        env->ExceptionClear();
+        d->env->ExceptionDescribe();
+        d->env->ExceptionClear();
         return true;
     }
 
@@ -259,12 +263,13 @@ bool JVMInterpreter::handleException(JNIEnv* env)
 }
 
 #ifdef KROSS_JVM_INTERPRETER_DEBUG
-void JVMInterpreter::showDebugInfo(jobject obj, JNIEnv* env)
+void JVMInterpreter::showDebugInfo(jobject obj)
 {
     if(obj == NULL){
         krossdebug("Object is NULL!");
         return;
     }
+    JNIEnv* env = d->env;
     jclass objectcl = env->FindClass("java/lang/Object");
     jclass classcl = env->FindClass("java/lang/Class");
     jmethodID getclass = env->GetMethodID(objectcl, "getClass", "()Ljava/lang/Class;");

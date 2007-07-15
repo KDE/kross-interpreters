@@ -104,16 +104,15 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
                 #ifdef KROSS_JVM_VARIANT_DEBUG
                     krossdebug( QString("JavaType<QVariant>::toJObject Casting '%1' to QObject").arg(v.typeName()) );
                 #endif
-#if 0
                 QObject* obj = qvariant_cast< QObject* >(v);
                 if(! obj) {
-                    #ifdef KROSS_RUBY_VARIANT_DEBUG
+                    #ifdef KROSS_JVM_VARIANT_DEBUG
                         krosswarning( QString("JavaType<QVariant>::toJObject To QObject casted '%1' is NULL").arg(v.typeName()) );
                     #endif
                     return 0;
                 }
-                return JVMExtension::toJObject( new JVMExtension(obj) );
-#endif
+                JVMExtension* ext = new JVMExtension(obj);
+                return ext->javaobject();
             }
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));

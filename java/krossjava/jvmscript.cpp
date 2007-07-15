@@ -60,7 +60,7 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     //TODO: multiple scripts can run the same time and each of them would
     //need an own environment. So, probably just move the JNIEnv setup
     //to the JVMScript class?
-    d->env = static_cast< JVMInterpreter* >( interpreter )->getEnv();
+    d->env = JVMInterpreter::getEnv();
 }
 
 JVMScript::~JVMScript()
@@ -88,7 +88,7 @@ void JVMScript::execute()
     while (it.hasNext()) {
         it.next();
         //TODO: store it in some array-thing so that we might destruct it later on?
-        new JVMExtension(jvmi, it.key(), it.value());
+        new JVMExtension(it.value());
     }
 
     QFileInfo file(action()->file());

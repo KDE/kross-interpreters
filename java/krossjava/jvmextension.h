@@ -49,7 +49,7 @@ namespace Kross {
             *
             * @param object The QObject instance this extension provides access to.
             */
-            JVMExtension(JVMInterpreter* interpreter, const QString& name, QObject* object);
+            JVMExtension(QObject* object);
 
             /**
             * Destructor.
@@ -62,12 +62,17 @@ namespace Kross {
             QObject* object() const;
 
             /**
+            * \return the Java Object this \a JVMExtension provides.
+            */
+            jobject javaobject() const;
+
+            /**
             * Handle a QObject function call.
             */
             jobject callQMethod(JNIEnv *env, jstring method, int numargs, jobject args[]);
 
             /**
-            * \return true if the given jobject is not NULL and a subclass of KrossQExtension, false otherwise.
+            * \return true if the given jobject is a subclass of KrossQExtension and not NULL, false otherwise.
             */
             static bool isJVMExtension(jobject obj, JNIEnv* env);
 

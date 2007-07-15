@@ -74,22 +74,25 @@ namespace Kross {
             virtual Script* createScript(Action* action);
 
             //This should probably become a more local class
-            JNIEnv* getEnv() const;
-            bool addClass(const QString& name, const QByteArray& array);
-            void addToCP(const QUrl& url);
-            jobject newObject(const QString& name);
-            bool addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz);
+            static JNIEnv* getEnv();
+            static bool addClass(const QString& name, const QByteArray& array);
+            static void addToCP(const QUrl& url);
+            static jobject newObject(const QString& name);
+            static jobject addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz);
             //TODO: would this be the right place?
-            static bool handleException(JNIEnv* env);
+            static bool handleException();
 #ifdef KROSS_JVM_INTERPRETER_DEBUG
-            static void showDebugInfo(jobject obj, JNIEnv* env);
+            static void showDebugInfo(jobject obj);
 #endif
 
         private:
             /// \internal d-pointer class.
             class Private;
+
+            //TODO: is it okay for a d-pointer to be static?
+
             /// \internal d-pointer instance.
-            Private * const d;
+            static Private * const d;
     };
 
 }
