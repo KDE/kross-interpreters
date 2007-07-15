@@ -53,13 +53,13 @@ TestObject::~TestObject()
 
 QString TestObject::name()
 {
-    kDebug() << "TestObject::name" << endl;
+    //kDebug() << "TestObject::name" << endl;
     return objectName();
 }
 
 void TestObject::func_void()
 {
-    kDebug() << "TestObject::func_void" << endl;
+    //kDebug() << "TestObject::func_void" << endl;
 }
 
 void TestObject::func_void_int(int i)
@@ -69,37 +69,37 @@ void TestObject::func_void_int(int i)
 
 int TestObject::func_int_int(int i)
 {
-    kDebug() << "TestObject::func_int_int i=" << i << endl;
+    //kDebug() << "TestObject::func_int_int i=" << i << endl;
     return i;
 }
 
 bool TestObject::func_bool_bool(bool b)
 {
-    kDebug() << "TestObject::func_bool_bool b=" << b << endl;
+    //kDebug() << "TestObject::func_bool_bool b=" << b << endl;
     return b;
 }
 
 uint TestObject::func_uint_uint(uint i)
 {
-    kDebug() << "TestObject::func_uint_uint i=" << i << endl;
+    //kDebug() << "TestObject::func_uint_uint i=" << i << endl;
     return i;
 }
 
 double TestObject::func_double_double(double d)
 {
-    kDebug() << "TestObject::func_double_double d=" << d << endl;
+    //kDebug() << "TestObject::func_double_double d=" << d << endl;
     return d;
 }
 
 qlonglong TestObject::func_qlonglong_qlonglong(qlonglong l)
 {
-    kDebug() << "TestObject::func_qlonglong_qlonglong l=" << l << endl;
+    //kDebug() << "TestObject::func_qlonglong_qlonglong l=" << l << endl;
     return l;
 }
 
 qulonglong TestObject::func_qulonglong_qulonglong(qulonglong l)
 {
-    kDebug() << "TestObject::func_qulonglong_qulonglong l=" << l << endl;
+    //kDebug() << "TestObject::func_qulonglong_qulonglong l=" << l << endl;
     return l;
 }
 
@@ -116,7 +116,7 @@ void TestObject::func_void_qstringlist(QStringList sl)
 QString TestObject::func_qstring_qstring_int(QString s, int i)
 {
     QString r = QString("%1,%2").arg(s).arg(i);
-    kDebug() << "TestObject::func_void_qstring_int s=" << s << " i=" << i << " returnvalue=" << r << endl;
+    //kDebug() << "TestObject::func_qstring_qstring_int s=" << s << " i=" << i << " returnvalue=" << r << endl;
     return r;
 }
 
@@ -128,13 +128,13 @@ QByteArray TestObject::func_qbytearray_qbytearray(QByteArray ba)
 
 QString TestObject::func_qstring_qstring(const QString& s)
 {
-    kDebug() << "TestObject::func_qstring_qstring s=" << s << endl;
+    //kDebug() << "TestObject::func_qstring_qstring s=" << s << endl;
     return s;
 }
 
 QStringList TestObject::func_qstringlist_qstringlist(QStringList sl)
 {
-    kDebug() << "TestObject::func_qstringlist_qstringlist sl=" << sl.join(",") << endl;
+    //kDebug() << "TestObject::func_qstringlist_qstringlist sl=" << sl.join(",") << endl;
     return sl;
 }
 
