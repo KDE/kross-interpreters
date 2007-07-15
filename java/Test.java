@@ -35,13 +35,29 @@ public class Test {
         testQObject();
     }
 
+    public void assertEquals(Object actual, Object expected) {
+        String n = actual.getClass().getName();
+//         if( n.equals("java.lang.String") )
+//             ok = actual.equals(expected);
+//         if( n.equals("java.lang.Integer") )
+//             ok = (  );
+//         else
+//             ok = ( actual == expected );
+
+        if( actual.equals(expected) )
+            System.out.println("passed type=" + n + " expected=" + expected);
+        else
+            System.out.println("FAILED type=" + n + " actual=" + actual + " expected=" + expected);
+    }
+
     public void setUp() {
         to = (TestObject)(KrossClassLoader.importModule("TestObject"));
     }
 
     public void testName() {
         String name = to.name();
-        System.out.println("TestObject name=" + name);
+        //System.out.println("TestObject name=" + name);
+        assertEquals(name, "TestObject");
     }
 
     public void testVoid(){
@@ -53,35 +69,49 @@ public class Test {
         String str = "1 + 2 = ";
         int num = 1+2;
         String result = to.func_qstring_qstring_int(str, num);
-        System.out.println("TestObject.func_qstring_qstring_int=" + result);
+        //System.out.println("TestObject.func_qstring_qstring_int=" + result);
+        assertEquals(result, str + ",3");
     }
 
     public void testInt() {
-        System.out.println("TestObject.func_int_int(5)=" + to.func_int_int(5));
+        //System.out.println("# TestObject.func_int_int(5)=" + to.func_int_int(5));
+        assertEquals(to.func_int_int(0), 0);
+        assertEquals(to.func_int_int(5), 5);
+        assertEquals(to.func_int_int(-423), -423);
     }
 
     public void testUInt() {
-        System.out.println("TestObject.func_uint_uint(5)=" + to.func_uint_uint(5));
+        //System.out.println("TestObject.func_uint_uint(5)=" + to.func_uint_uint(5));
+        assertEquals(to.func_int_int(0), 0);
+        assertEquals(to.func_int_int(8692631), 8692631);
     }
 
     public void testString() {
-        System.out.println("TestObject.func_qstring_qstring(\"Kross Power!\")=" + to.func_qstring_qstring("Kross Power!"));
+        //System.out.println("TestObject.func_qstring_qstring(\"Kross Power!\")=" + to.func_qstring_qstring("Kross Power!"));
+        assertEquals(to.func_qstring_qstring(""), "");
+        assertEquals(to.func_qstring_qstring("Kross Power!"), "Kross Power!");
     }
 
     public void testBool() {
-        System.out.println("TestObject.func_bool_bool(true)=" + to.func_bool_bool(true));
+        //System.out.println("TestObject.func_bool_bool(true)=" + to.func_bool_bool(true));
+        assertEquals(to.func_bool_bool(true), true);
+        assertEquals(to.func_bool_bool(false), false);
     }
 
     public void testDouble() {
-        System.out.println("TestObject.func_double_double(3.14)=" + to.func_double_double(3.14));
+        //System.out.println("TestObject.func_double_double(3.14)=" + to.func_double_double(3.14));
+        assertEquals(to.func_double_double(3.14), 3.14);
+        assertEquals(to.func_double_double(-3.14), -3.14);
     }
 
     public void testLong() {
-        System.out.println("TestObject.func_qlonglong_qlonglong(1234567890123456L)=" + to.func_qlonglong_qlonglong(1234567890123456L));
+        //System.out.println("TestObject.func_qlonglong_qlonglong(1234567890123456L)=" + to.func_qlonglong_qlonglong(1234567890123456L));
+        assertEquals(to.func_qlonglong_qlonglong(1234567890123456L), 1234567890123456L);
     }
 
     public void testULong() {
-        System.out.println("TestObject.func_qulonglong_qulonglong(1234567890123456L)=" + to.func_qulonglong_qulonglong(1234567890123456L));
+        //System.out.println("TestObject.func_qulonglong_qulonglong(1234567890123456L)=" + to.func_qulonglong_qulonglong(1234567890123456L));
+        assertEquals(to.func_qulonglong_qulonglong(1234567890123456L), 1234567890123456L);
     }
 
     public void testByteArray() {
