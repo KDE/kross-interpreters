@@ -37,10 +37,26 @@ public class Test {
 
     public void assertEquals(Object actual, Object expected) {
         String n = actual.getClass().getName();
-        if( actual.equals(expected) )
+        if( (actual == null && expected == null) || actual.equals(expected) )
             System.out.println("passed type=" + n + " expected=" + expected);
         else
             System.out.println("FAILED type=" + n + " actual=" + actual + " expected=" + expected);
+    }
+
+    public void assertEquals(Object[] actual, Object[] expected) {
+        if(actual.length != expected.length)
+            System.out.println("FAILED actual.length=" + actual.length + " expected.length=" + expected.length);
+        else {
+            for(int i = 0; i < actual.length; i++) {
+                if(actual[i] == null && expected[i] == null)
+                    continue;
+                if( actual[i].equals( expected[i] ) )
+                    continue;
+                System.out.println("FAILED type=" + actual[i].getClass().getName() + " actual=" + actual[i] + " expected=" + expected[i]);
+                return;
+            }
+        }
+        System.out.println("passed expected=" + expected);
     }
 
     public void setUp() {
@@ -121,7 +137,8 @@ public class Test {
     public void testStringList() {
         String[] in = {"Lorem", null, "ipsum"};
         String[] out = to.func_qstringlist_qstringlist(in);
-        System.out.println("TestObject.func_qstringlist_qstringlist=(" + out[0] + "," + out[1] + "," + out[2] + ")");
+        //System.out.println("TestObject.func_qstringlist_qstringlist=(" + out[0] + "," + out[1] + "," + out[2] + ")");
+        assertEquals(in,out);
     }
 
     public void testArrayList() {
@@ -130,7 +147,8 @@ public class Test {
         in.add(null);
         in.add(new Double(3.2));
         ArrayList out = to.func_qvariantlist_qvariantlist(in);
-        System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+        //System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+        assertEquals(in,out);
     }
 
     public void testGenericArrayList() {
@@ -139,7 +157,8 @@ public class Test {
         in.add(null);
         in.add(new Double(3.2));
         ArrayList out = to.func_qvariantlist_qvariantlist(in);
-        System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+        //System.out.println("TestObject.func_qvariantlist_qvariantlist=(" + out.get(0) + "," + out.get(1) + "," + out.get(2) + ")");
+        assertEquals(in,out);
     }
 
     public void testMap() {
