@@ -175,7 +175,6 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     QByteArray ba( cp.toAscii() );
 
     JavaVMOption    options[2];
-    //TODO: should the separator be ";" on Windows?
     options[0].optionString = ba.data();
     options[1].optionString = "-Djava.library.path=.:/myLibDir";
     d->vm_args.options  = options;
