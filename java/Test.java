@@ -59,6 +59,28 @@ public class Test {
         System.out.println("passed expected=" + expected);
     }
 
+    public void assertEquals(Map actual, Map expected) {
+        if(actual.size() != expected.size()) {
+            System.out.println("FAILED actual.size=" + actual.size() + " expected.size=" + expected.size());
+            return;
+        }
+        Iterator it = expected.entrySet().iterator();
+        while(it.hasNext()) {
+            Map.Entry pairs = (Map.Entry)it.next();
+            if( ! actual.containsKey(pairs.getKey()) ) {
+                System.out.println("FAILED expected key=" + pairs.getKey());
+                return;
+            }
+            Object expectedValue = pairs.getValue();
+            Object actualValue = actual.get( pairs.getKey() );
+            if( ! actualValue.equals(expectedValue) ) {
+                System.out.println("FAILED actual.value=" + actualValue + " expected.value=" + expectedValue);
+                return;
+            }
+        }
+        System.out.println("passed expected=" + expected);
+    }
+
     public void setUp() {
         to = (TestObject)(KrossClassLoader.importModule("TestObject"));
     }
@@ -166,7 +188,8 @@ public class Test {
         in.put("a", new Integer(5));
         in.put("c", new Integer(4));
         Map out = to.func_qvariantmap_qvariantmap(in);
-        System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
+        //System.out.println("TestObject.func_qvariantmap_qvariantmap=(" + out.get("a") + "," + out.get("c") + ")");
+        assertEquals(in,out);
     }
 
     public void testSize() {
