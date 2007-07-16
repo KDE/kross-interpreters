@@ -75,7 +75,7 @@ JVMExtension::JVMExtension(QObject* object)
     //testcase (TODO: something like this should go into JVMExtension)
     QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
     toclass.open(QIODevice::ReadOnly);
-    d->javaobj = JVMInterpreter::addExtension(name, this, toclass.readAll());
+    d->javaobj = JVMInterpreter::addExtension(name, this, toclass.readAll(), object);
     toclass.close();
 
 /*

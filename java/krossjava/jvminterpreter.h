@@ -78,7 +78,8 @@ namespace Kross {
             static bool addClass(const QString& name, const QByteArray& array);
             static void addToCP(const QUrl& url);
             static jobject newObject(const QString& name);
-            static jobject addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz);
+            static jobject addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz, const QObject* wrapped);
+            static const JVMExtension* extension(const QObject* obj);
             //TODO: would this be the right place?
             static bool handleException();
 #ifdef KROSS_JVM_INTERPRETER_DEBUG

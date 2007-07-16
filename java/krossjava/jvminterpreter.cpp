@@ -73,7 +73,6 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
             args[0] = arg0;
     }
 
-    //TODO: spread the multiargs infection
     return obj->callQMethod(env, method, numargs, args);
 }
 
@@ -86,6 +85,9 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
             JavaVMInitArgs vm_args;
             jobject classloader;
             jclass clclass;
+
+            //List of running JVMExtensions we know about, indexed with the wrapped QObject*
+            QHash<const QObject*, const JVMExtension*> runningExtensions;
 
             jmethodID addclass;
             jmethodID newinst;
@@ -225,7 +227,7 @@ bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
     return !handleException();
 }
 
-jobject JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz){
+jobject JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz, const QObject* wrapped){
     addClass(name, clazz);
 
     jstring jname = JavaType<QString>::toJObject(name,d->env);
@@ -234,7 +236,13 @@ jobject JVMInterpreter::addExtension(const QString& name, const JVMExtension* ob
 
     handleException();
 
+    d->runningExtensions.insert(wrapped, obj);
+
     return jobj;
+}
+
+const JVMExtension* JVMInterpreter::extension(const QObject* obj){
+    return d->runningExtensions.value(obj);
 }
 
 //TODO: a way to add arguments? Would be hard though.

@@ -22,6 +22,7 @@
 #include "jvmvariant.h"
 #include "jvmexception.h"
 #include "jvmextension.h"
+#include "jvminterpreter.h"
 
 using namespace Kross;
 
@@ -111,7 +112,9 @@ jobject JavaType<QVariant>::toJObject(const QVariant& v, JNIEnv* env)
                     #endif
                     return 0;
                 }
-                JVMExtension* ext = new JVMExtension(obj);
+                const JVMExtension* ext = JVMInterpreter::extension(obj);
+                if(ext == 0)
+                    ext = new JVMExtension(obj);
                 return ext->javaobject();
             }
 
