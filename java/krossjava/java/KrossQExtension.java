@@ -11,7 +11,6 @@ public abstract class KrossQExtension {
 		return p;
 	}
 
-	//TODO: perhaps these should be protected?
 	public Object invoke(String name){
 		return invokeNative(getPointer(), name, 0, null, null, null, null,
 			null, null, null, null, null, null);
