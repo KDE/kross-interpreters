@@ -195,47 +195,53 @@ public class Test {
     public void testSize() {
         int[] in = {5,4};
         int[] out = to.func_qsize_qsize(in);
-        System.out.println("TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
+        //System.out.println("TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
+        assertEquals(new Integer[]{in[0],in[1]}, new Integer[]{out[0],out[1]});
     }
 
     public void testIllegalSize() {
-        int[] in = {5,4,3};
         try {
+            int[] in = {5,4,3};
             int[] out = to.func_qsize_qsize(in);
-            System.out.println("TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
+            System.out.println("FAILED expected exception but got TestObject.func_qsize_qsize=(" + out[0] + "," + out[1] + ")");
         } catch(IllegalArgumentException e) {
-            System.out.println("TestObject.func_qsize_qsize({5,4,3}) exception caught, okay.");
+            System.out.println("passed TestObject.func_qsize_qsize({5,4,3}) exception caught, okay.");
         }
     }
 
     public void testSizef() {
         double[] in = {16.1803,10.0};
         double[] out = to.func_qsizef_qsizef(in);
-        System.out.println("TestObject.func_qsizef_qsizef=(" + out[0] + "," + out[1] + ")");
+        //System.out.println("TestObject.func_qsizef_qsizef=(" + out[0] + "," + out[1] + ")");
+        assertEquals(new Double[]{in[0],in[1]}, new Double[]{out[0],out[1]});
     }
 
     public void testPoint() {
         int[] in = {7,11};
         int[] out = to.func_qpoint_qpoint(in);
-        System.out.println("TestObject.func_qpoint_qpoint=(" + out[0] + "," + out[1] + ")");
+        //System.out.println("TestObject.func_qpoint_qpoint=(" + out[0] + "," + out[1] + ")");
+        assertEquals(new Integer[]{in[0],in[1]}, new Integer[]{out[0],out[1]});
     }
 
     public void testPointf() {
         double[] in = {465458641.1534, 7894231.1654};
         double[] out = to.func_qpointf_qpointf(in);
-        System.out.println("TestObject.func_qpointf_qpointf=(" + out[0] + "," + out[1] + ")");
+        //System.out.println("TestObject.func_qpointf_qpointf=(" + out[0] + "," + out[1] + ")");
+        assertEquals(new Double[]{in[0],in[1]}, new Double[]{out[0],out[1]});
     }
 
     public void testRect() {
         int[] in = {1,1,5,4};
         int[] out = to.func_qrect_qrect(in);
-        System.out.println("TestObject.func_qrect_qrect=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+        //System.out.println("TestObject.func_qrect_qrect=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+        assertEquals(new Integer[]{in[0],in[1],in[2],in[3]}, new Integer[]{out[0],out[1],out[2],out[3]});
     }
 
     public void testRectf() {
         double[] in = {0.1, 2.3, 4.5, 6.7};
         double[] out = to.func_qrectf_qrectf(in);
-        System.out.println("TestObject.func_qrectf_qrectf=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+        //System.out.println("TestObject.func_qrectf_qrectf=(" + out[0] + "," + out[1] + "," + out[2] + "," + out[3] + ")");
+        assertEquals(new Double[]{in[0],in[1],in[2],in[3]}, new Double[]{out[0],out[1],out[2],out[3]});
     }
 
     public void testURL() {

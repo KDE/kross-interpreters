@@ -152,30 +152,30 @@ QVariantMap TestObject::func_qvariantmap_qvariantmap(QVariantMap vm)
 
 QSize TestObject::func_qsize_qsize(const QSize& s)
 {
-    kDebug() << "TestObject::func_qsize_qsize s.width=" << s.width() << " s.height=" << s.height() << endl;
+    //kDebug() << "TestObject::func_qsize_qsize s.width=" << s.width() << " s.height=" << s.height() << endl;
     return s;
 }
 QSizeF TestObject::func_qsizef_qsizef(const QSizeF& s)
 {
-    kDebug() << "TestObject::func_qsizef_qsizef s.width=" << s.width() << " s.height=" << s.height() << endl;
+    //kDebug() << "TestObject::func_qsizef_qsizef s.width=" << s.width() << " s.height=" << s.height() << endl;
     return s;
 }
 QPoint TestObject::func_qpoint_qpoint(const QPoint& p){
-    kDebug() << "TestObject::func_qpoint_qpoint p.x=" << p.x() << " p.y=" << p.y() << endl;
+    //kDebug() << "TestObject::func_qpoint_qpoint p.x=" << p.x() << " p.y=" << p.y() << endl;
     return p;
 }
 QPointF TestObject::func_qpointf_qpointf(const QPointF& p){
-    kDebug() << "TestObject::func_qpointf_qpointf p.x=" << p.x() << " p.y=" << p.y() << endl;
+    //kDebug() << "TestObject::func_qpointf_qpointf p.x=" << p.x() << " p.y=" << p.y() << endl;
     return p;
 }
 QRect TestObject::func_qrect_qrect(const QRect& r)
 {
-    kDebug() << "TestObject::func_qrect_qrect r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
+    //kDebug() << "TestObject::func_qrect_qrect r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
     return r;
 }
 QRectF TestObject::func_qrectf_qrectf(const QRectF& r)
 {
-    kDebug() << "TestObject::func_qrectf_qrectf r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
+    //kDebug() << "TestObject::func_qrectf_qrectf r.right=" << r.right() << " r.bottom=" << r.bottom() << endl;
     return r;
 }
 QUrl TestObject::func_qurl_qurl(const QUrl& u)
