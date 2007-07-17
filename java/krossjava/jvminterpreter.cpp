@@ -30,6 +30,12 @@
 #include <kglobal.h>
 #include <kstandarddirs.h>
 
+#ifdef Q_WS_WIN
+    #define KROSS_JVM_PATHSEPARATOR ';'
+#else
+    #define KROSS_JVM_PATHSEPARATOR ':'
+#endif
+
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::JVMInterpreter instances.
 KROSS_EXPORT_INTERPRETER( Kross::JVMInterpreter )
@@ -173,7 +179,10 @@ JVMInterpreter::JVMInterpreter(InterpreterInfo* info)
     }
     cp += jarlocation;
     //Add other dirs - probably use KGlobal::dirs() here too?
-    cp += ":.:/myClassDir";
+    cp += KROSS_JVM_PATHSEPARATOR;
+    cp += '.';
+    cp += KROSS_JVM_PATHSEPARATOR;
+    cp += "/myClassDir";
     QByteArray ba( cp.toAscii() );
 
     JavaVMOption    options[2];
