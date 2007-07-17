@@ -91,6 +91,11 @@ namespace Kross {
             class Private;
 
             //TODO: is it okay for a d-pointer to be static?
+            //sebsauer: normaly it isn't since if there are multiple instances of the JVMInterpreter
+            //          around they would need to share it. While in our case the JVMInterpreter class
+            //          is a singleton and therefore static should be ok, it may better to use
+            //          K_GLOBAL_STATIC ( http://www.englishbreakfastnetwork.org/apidocs/apidox-kde-4.0/kdelibs-apidocs/kdecore/html/group__KDEMacros.html#g75ca0c60b03dc5e4f9427263bf4043c7 )
+            //          but JNIEnv* shouldn't be static anyway.
 
             /// \internal d-pointer instance.
             static Private * const d;
