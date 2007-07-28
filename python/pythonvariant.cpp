@@ -77,10 +77,13 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
             return PythonType<QColor>::toPyObject( v.value<QColor>() );
         case QVariant::Brush:
         case QVariant::Font:
-        case QVariant::Date:
-        case QVariant::Time:
-        case QVariant::DateTime:
 */
+        case QVariant::Date:
+            return PythonType<QDate>::toPyObject( v.value<QDate>() );
+        case QVariant::Time:
+            return PythonType<QTime>::toPyObject( v.value<QTime>() );
+        case QVariant::DateTime:
+            return PythonType<QDateTime>::toPyObject( v.value<QDateTime>() );
 
         case QVariant::Invalid: {
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
@@ -323,11 +326,15 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
             return new PythonMetaTypeVariant<QBrush>(object);
         case QVariant::Font:
             return new PythonMetaTypeVariant<QFont>(object);
+*/
+
         case QVariant::Date:
+            return new PythonMetaTypeVariant<QDate>(object);
         case QVariant::Time:
+            return new PythonMetaTypeVariant<QTime>(object);
         case QVariant::DateTime:
             return new PythonMetaTypeVariant<QDateTime>(object);
-*/
+
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through
         default: {

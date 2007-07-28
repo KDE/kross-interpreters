@@ -58,6 +58,9 @@ namespace Kross {
      *   \li QVariant::PointF
      *   \li QVariant::Rect
      *   \li QVariant::RectF
+     *   \li QVariant::Date
+     *   \li QVariant::Time
+     *   \li QVariant::DateTime
      *   \li QVariant::String
      *   \li QVariant::StringList
      *   \li QVariant::Url
@@ -66,9 +69,6 @@ namespace Kross {
      *
      * Following QVariant::Type's are unimplemented yet (do we need them anyways?);
      *   \li QVariant::BitArray
-     *   \li QVariant::Date
-     *   \li QVariant::Time
-     *   \li QVariant::DateTime
      *   \li QVariant::Bitmap
      *   \li QVariant::Brush
      *   \li QVariant::Char
@@ -444,7 +444,7 @@ namespace Kross {
         }
     };
 
-#if 0
+    /*
     // this is a testcase and not activly used yet cause there seems to be still some
     // open issues. Please see also the unittest.py which contains tests for all cases.
     /// \internal
@@ -467,16 +467,17 @@ namespace Kross {
             //TODO
         }
     };
+    */
 
     /// \internal
     template<>
     struct PythonType<QDateTime>
     {
-        inline static Py::Object toPyObject(const QDateTime& font) {
-            //TODO
+        inline static Py::Object toPyObject(const QDateTime& datetime) {
+            return PythonType<QString>::toPyObject( datetime.toString(Qt::ISODate) );
         }
         inline static QDateTime toVariant(const Py::Object& obj) {
-            //TODO
+            return QDateTime::fromString(PythonType<QString>::toVariant(obj), Qt::ISODate);
         }
     };
 
@@ -484,11 +485,11 @@ namespace Kross {
     template<>
     struct PythonType<QTime>
     {
-        inline static Py::Object toPyObject(const QTime& font) {
-            //TODO
+        inline static Py::Object toPyObject(const QTime& time) {
+            return PythonType<QString>::toPyObject( time.toString(Qt::ISODate) );
         }
         inline static QTime toVariant(const Py::Object& obj) {
-            //TODO
+            return QTime::fromString(PythonType<QString>::toVariant(obj), Qt::ISODate);
         }
     };
 
@@ -496,11 +497,11 @@ namespace Kross {
     template<>
     struct PythonType<QDate>
     {
-        inline static Py::Object toPyObject(const QDate& font) {
-            //TODO
+        inline static Py::Object toPyObject(const QDate& date) {
+            return PythonType<QString>::toPyObject( date.toString(Qt::ISODate) );
         }
         inline static QDate toVariant(const Py::Object& obj) {
-            //TODO
+            return QDate::fromString(PythonType<QString>::toVariant(obj), Qt::ISODate);
         }
     };
 
@@ -549,7 +550,6 @@ namespace Kross {
         }
     };
     */
-#endif
 
     /*
     /// \internal
