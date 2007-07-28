@@ -83,8 +83,11 @@ static VALUE callExecute(VALUE args)
     #endif
     Q_ASSERT( TYPE(args) == T_ARRAY );
     VALUE self = rb_ary_entry(args, 0);
+    Q_ASSERT( ! NIL_P(self) );
     VALUE src = rb_ary_entry(args, 1);
+    Q_ASSERT( ! NIL_P(src) );
     VALUE fileName = rb_ary_entry(args, 2);
+    Q_ASSERT( ! NIL_P(fileName) && TYPE(fileName) == T_STRING );
     //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
     //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
     //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));

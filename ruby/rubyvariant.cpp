@@ -70,6 +70,13 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
         case QVariant::RectF:
             return RubyType<QRectF>::toVALUE(v.toRectF());
 
+        case QVariant::Date:
+            return RubyType<QDate>::toVALUE( v.value<QDate>() );
+        case QVariant::Time:
+            return RubyType<QTime>::toVALUE( v.value<QTime>() );
+        case QVariant::DateTime:
+            return RubyType<QDateTime>::toVALUE( v.value<QDateTime>() );
+
         case QVariant::Invalid: {
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug( QString("RubyType<QVariant>::toVALUE variant=%1 is QVariant::Invalid. Returning Qnil.").arg(v.toString()) );
@@ -282,6 +289,13 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             return new RubyMetaTypeVariant<QRect>(value);
         case QVariant::RectF:
             return new RubyMetaTypeVariant<QRectF>(value);
+
+        case QVariant::Date:
+            return new RubyMetaTypeVariant<QDate>(value);
+        case QVariant::Time:
+            return new RubyMetaTypeVariant<QTime>(value);
+        case QVariant::DateTime:
+            return new RubyMetaTypeVariant<QDateTime>(value);
 
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through

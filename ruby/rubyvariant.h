@@ -60,14 +60,14 @@ namespace Kross {
      *   \li QVariant::Rect
      *   \li QVariant::RectF
      *   \li QVariant::Url
+     *   \li QVariant::Date
+     *   \li QVariant::Time
+     *   \li QVariant::DateTime
      *   \li QVariant::List
      *   \li QVariant::Map
      *
      * Following QVariant::Type's are unimplemented yet (do we need them anyways?);
      *   \li QVariant::BitArray
-     *   \li QVariant::Date
-     *   \li QVariant::Time
-     *   \li QVariant::DateTime
      *   \li QVariant::Bitmap
      *   \li QVariant::Brush
      *   \li QVariant::Char
@@ -379,6 +379,42 @@ namespace Kross {
         }
         inline static QUrl toVariant(VALUE value) {
             return QUrl( RubyType<QString>::toVariant(value) );
+        }
+    };
+
+    /// \internal
+    template<>
+    struct RubyType<QDateTime>
+    {
+        inline static VALUE toVALUE(const QDateTime& datetime) {
+            return RubyType<QString>::toVALUE( datetime.toString(Qt::ISODate) );
+        }
+        inline static QDateTime toVariant(VALUE value) {
+            return QDateTime::fromString(RubyType<QString>::toVariant(value), Qt::ISODate);
+        }
+    };
+
+    /// \internal
+    template<>
+    struct RubyType<QTime>
+    {
+        inline static VALUE toVALUE(const QTime& time) {
+            return RubyType<QString>::toVALUE( time.toString(Qt::ISODate) );
+        }
+        inline static QTime toVariant(VALUE value) {
+            return QTime::fromString(RubyType<QString>::toVariant(value), Qt::ISODate);
+        }
+    };
+
+    /// \internal
+    template<>
+    struct RubyType<QDate>
+    {
+        inline static VALUE toVALUE(const QDate& date) {
+            return RubyType<QString>::toVALUE( date.toString(Qt::ISODate) );
+        }
+        inline static QDate toVariant(VALUE value) {
+            return QDate::fromString(RubyType<QString>::toVariant(value), Qt::ISODate);
         }
     };
 
