@@ -37,3 +37,5 @@ message(STATUS "  JAVA_JVM_LIBRARY: " ${JAVA_JVM_LIBRARY})
 if(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
     add_subdirectory(krossjava)
 endif(JAVA_INCLUDE_PATH AND JAVA_JVM_LIBRARY)
+
+add_subdirectory(test)
