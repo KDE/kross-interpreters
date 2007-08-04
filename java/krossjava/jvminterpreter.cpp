@@ -82,6 +82,15 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
     return obj->callQMethod(env, method, numargs, args);
 }
 
+jboolean JNICALL callConnect(JNIEnv *env, jobject self, jlong jvmsender, jstring signal, jobject receiver, jobject method)
+{
+    Q_UNUSED(self);
+
+    JVMExtension* obj = static_cast<JVMExtension*>(JavaType<void*>::toVariant(jvmsender,env));
+
+    return obj->doConnect(env, signal, receiver, method);
+}
+
     /// \internal
     class JVMInterpreter::Private
     {
@@ -139,13 +148,16 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
                 classloader = env->NewGlobalRef(loaderweak);
 
                 jclass proxy = env->FindClass("org/kde/kdebindings/java/krossjava/KrossQExtension");
-                JNINativeMethod nativeMethod;
-                nativeMethod.name = "invokeNative";
-                nativeMethod.signature = "(JLjava/lang/String;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;"
+                JNINativeMethod nativeMethod[2];
+                nativeMethod[0].name = "invokeNative";
+                nativeMethod[0].signature = "(JLjava/lang/String;ILjava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;"
                                           "Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;"
                                           "Ljava/lang/Object;Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;";
-                nativeMethod.fnPtr = (void*) callQMethod;
-                env->RegisterNatives(proxy, &nativeMethod, 1);
+                nativeMethod[0].fnPtr = (void*) callQMethod;
+                nativeMethod[1].name = "connect";
+                nativeMethod[1].signature = "(JLjava/lang/String;Ljava/lang/Object;Ljava/lang/reflect/Method;)Z";
+                nativeMethod[1].fnPtr = (void*) callConnect;
+                env->RegisterNatives(proxy, nativeMethod, 2);
 
                 handleException();
 

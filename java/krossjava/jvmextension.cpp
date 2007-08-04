@@ -270,6 +270,11 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject
     return 0;
 }
 
+jboolean JVMExtension::doConnect(JNIEnv *env, jstring signal, jobject receiver, jobject method){
+    //TODO
+    return JNI_FALSE;
+}
+
 bool JVMExtension::isJVMExtension(jobject obj, JNIEnv* env){
     if(obj == NULL)
         return false;

@@ -72,6 +72,11 @@ namespace Kross {
             jobject callQMethod(JNIEnv *env, jstring method, int numargs, jobject args[]);
 
             /**
+            * Connect a signal of the wrapped QObject to a given Java method.
+            */
+            jboolean doConnect(JNIEnv *env, jstring signal, jobject receiver, jobject method);
+
+            /**
             * \return true if the given jobject is a subclass of KrossQExtension and not NULL, false otherwise.
             */
             static bool isJVMExtension(jobject obj, JNIEnv* env);

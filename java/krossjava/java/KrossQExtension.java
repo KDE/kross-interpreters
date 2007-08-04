@@ -1,5 +1,7 @@
 package org.kde.kdebindings.java.krossjava;
 
+import java.lang.reflect.Method;
+
 public abstract class KrossQExtension {
 	private long p;
 
@@ -85,4 +87,10 @@ public abstract class KrossQExtension {
 		Object arg0, Object arg1, Object arg2, Object arg3,
 		Object arg4, Object arg5, Object arg6, Object arg7,
 		Object arg8, Object arg9);
+
+	public boolean connect(String signal, Object receiver, Method member){
+		return connect(getPointer(), signal, receiver, member);
+	}
+
+	private native boolean connect(long qobjpointer, String signal, Object receiver, Method member);
 }

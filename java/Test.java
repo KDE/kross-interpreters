@@ -33,6 +33,8 @@ public class Test {
         testRectf();
         testURL();
         testQObject();
+
+        testConnect();
     }
 
     public void assertEquals(Object actual, Object expected) {
@@ -255,5 +257,21 @@ public class Test {
 
     public void testQObject() {
         System.out.println("TestObject.func_qobject_qobject(to [" + to + "])=" + to.func_qobject_qobject(to));
+    }
+
+    public void testConnect() {
+        try {
+            if(to.connect("signalVoid",this,this.getClass().getMethod("signalVoid"))){
+                 //TODO: emit signal
+             } else {
+                 System.out.println("FAILED to connect method to signal");
+             }
+        } catch(NoSuchMethodException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void signalVoid() {
+       System.out.println("Received signalVoid");
     }
 }
