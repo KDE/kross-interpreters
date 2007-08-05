@@ -45,4 +45,6 @@ public class TestObject extends KrossQExtension {
     public double[] func_qrectf_qrectf(double[] i){ return (double[])invoke("func_qrectf_qrectf", i); }
     public URL func_qurl_qurl(URL u){ return (URL)invoke("func_qurl_qurl", u); }
     public KrossQExtension func_qobject_qobject(KrossQExtension obj){ return (KrossQExtension)invoke("func_qobject_qobject", obj); }
+
+    public void emitSignalVoid(){ invoke("emitSignalVoid"); }
 }

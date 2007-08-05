@@ -261,8 +261,8 @@ public class Test {
 
     public void testConnect() {
         try {
-            if(to.connect("signalVoid",this,this.getClass().getMethod("signalVoid"))){
-                 //TODO: emit signal
+            if(to.connect("signalVoid()",this,this.getClass().getMethod("signalVoid"))){
+                 to.emitSignalVoid();
              } else {
                  System.out.println("FAILED to connect method to signal");
              }

@@ -23,6 +23,7 @@
 #include "jvminterpreter.h"
 #include "jvmclasswriter.h"
 #include "jvmvariant.h"
+#include "jvmfunction.h"
 //#include <kross/core/metatype.h>
 
 //#include <QMap>
@@ -271,8 +272,25 @@ jobject JVMExtension::callQMethod(JNIEnv* env, jstring method, int argc, jobject
 }
 
 jboolean JVMExtension::doConnect(JNIEnv *env, jstring signal, jobject receiver, jobject method){
-    //TODO
-    return JNI_FALSE;
+    QObject* qsender = d->m_object;
+    QByteArray qsignal = JavaType<QString>::toVariant(signal, env).toLatin1();
+
+    QObject* qreceiver = new JVMFunction(qsender, qsignal, receiver, method, env);
+    QByteArray qmethod = qsignal;
+
+    // Dirty hack to replace SIGNAL() and SLOT() macros. If the user doesn't
+    // defined them explicit, we assume it's wanted to connect from a signal to
+    // a slot. This seems to be the most flexible solution so far...
+    if( ! qsignal.startsWith('1') && ! qsignal.startsWith('2') )
+        qsignal.prepend('2'); // prepending 2 means SIGNAL(...)
+    if( ! qmethod.startsWith('1') && ! qmethod.startsWith('2') )
+        qmethod.prepend('1'); // prepending 1 means SLOT(...)
+
+    if(! QObject::connect(qsender, qsignal, qreceiver, qmethod, Qt::DirectConnection) ) {
+        krosswarning( QString("JVMExtension::doConnect Failed to connect").toLatin1().constData() );
+        return JNI_FALSE;
+    }
+    return JNI_TRUE;
 }
 
 bool JVMExtension::isJVMExtension(jobject obj, JNIEnv* env){
