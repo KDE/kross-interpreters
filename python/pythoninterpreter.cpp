@@ -168,7 +168,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "       self.realImporter = __main__.__builtin__.__import__\n"
         "       __main__.__builtin__.__import__ = self._import\n"
         "   def _import(self, name, globals=None, locals=None, fromlist=[], level = -1):\n"
-        "       try:\n"
+        //"       try:\n"
         //"           print \"1===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
         "           mod = __main__._import(self.script, name, globals, locals, fromlist, level)\n"
         "           if mod == None:\n"
@@ -180,10 +180,10 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "                   globals[name] = mod\n"
         "           return mod\n"
         //"       except ImportError:\n"
-        "       except:\n"
+        //"       except:\n"
         //"           print \"9===========> _Importer Trying ImportError with name=%s fromlist=%s insysmodules=%s\" % (name,fromlist,name in sys.modules)\n"
-        "           print \" \".join( traceback.format_exception(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2]) )\n"
-        "       return None\n"
+        //"           print \" \".join( traceback.format_exception(sys.exc_info()[0],sys.exc_info()[1],sys.exc_info()[2]) )\n"
+        //"       return None\n"
 
 /*
         "       print \"_Importer name=%s fromlist=%s\" % (name,fromlist)\n"
