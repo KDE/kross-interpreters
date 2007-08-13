@@ -47,4 +47,5 @@ public class TestObject extends KrossQExtension {
     public KrossQExtension func_qobject_qobject(KrossQExtension obj){ return (KrossQExtension)invoke("func_qobject_qobject", obj); }
 
     public void emitSignalVoid(){ invoke("emitSignalVoid"); }
+    public void emitSignalInt(Integer i){ invoke("emitSignalInt", i); }
 }

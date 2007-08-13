@@ -264,7 +264,13 @@ public class Test {
             if(to.connect("signalVoid()",this,this.getClass().getMethod("signalVoid"))){
                  to.emitSignalVoid();
              } else {
-                 System.out.println("FAILED to connect method to signal");
+                 System.out.println("FAILED to connect method to signalVoid");
+             }
+
+            if(to.connect("signalInt(int)",this,this.getClass().getMethod("signalInt",Integer.class))){
+                 to.emitSignalInt(43);
+             } else {
+                 System.out.println("FAILED to connect method to signalVoid");
              }
         } catch(NoSuchMethodException e) {
             e.printStackTrace();
@@ -272,6 +278,10 @@ public class Test {
     }
 
     public void signalVoid() {
-       System.out.println("Received signalVoid");
+       System.out.println("passed signalVoid");
+    }
+
+    public void signalInt(Integer i) {
+       assertEquals(i, 43);
     }
 }
