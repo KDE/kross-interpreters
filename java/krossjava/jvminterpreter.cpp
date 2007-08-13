@@ -230,6 +230,11 @@ JNIEnv* JVMInterpreter::getEnv()
     return d->env;
 }
 
+JavaVM* JVMInterpreter::getJVM()
+{
+    return d->jvm;
+}
+
 void JVMInterpreter::addToCP(const QUrl& url)
 {
     Q_ASSERT(d->classloader);

@@ -53,12 +53,18 @@ namespace Kross {
             * be executed if the QObject emits the signal.
             */
             JVMFunction(QObject* sender, const QByteArray& signal, jobject instance, jobject callable, JNIEnv* env)
-                : MetaFunction(sender, signal), m_instance(instance), m_callable(callable), m_env(env) {}
+                : MetaFunction(sender, signal), m_env(env) {
+                m_callable = m_env->NewGlobalRef(callable);
+                m_instance = m_env->NewGlobalRef(instance);
+            }
 
             /**
             * Destructor.
             */
-            virtual ~JVMFunction() {}
+            virtual ~JVMFunction() {
+                m_env->DeleteGlobalRef(m_instance);
+                m_env->DeleteGlobalRef(m_callable);
+            }
 
             /**
             * This method got called if a method this QObject instance

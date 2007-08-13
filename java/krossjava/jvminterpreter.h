@@ -75,6 +75,7 @@ namespace Kross {
 
             //This should probably become a more local class
             static JNIEnv* getEnv();
+            static JavaVM* getJVM();
             static bool addClass(const QString& name, const QByteArray& array);
             static void addToCP(const QUrl& url);
             static jobject newObject(const QString& name);
