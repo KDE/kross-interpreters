@@ -1,4 +1,4 @@
-import org.kde.kdebindings.java.krossjava.KrossClassLoader;
+import org.kde.kdebindings.java.krossjava.*;
 import java.util.*;
 import java.net.*;
 
@@ -266,11 +266,25 @@ public class Test {
              } else {
                  System.out.println("FAILED to connect method to signalVoid");
              }
-
+            if(to.connect("signalBool(bool)",this,this.getClass().getMethod("signalBool",Boolean.class))){
+                 to.emitSignalBool(true);
+             } else {
+                 System.out.println("FAILED to connect method to signalBool");
+             }
             if(to.connect("signalInt(int)",this,this.getClass().getMethod("signalInt",Integer.class))){
                  to.emitSignalInt(43);
              } else {
-                 System.out.println("FAILED to connect method to signalVoid");
+                 System.out.println("FAILED to connect method to signalInt");
+             }
+            if(to.connect("signalString(QString)",this,this.getClass().getMethod("signalString",String.class))){
+                 to.emitSignalString("SignalString");
+             } else {
+                 System.out.println("FAILED to connect method to signalString");
+             }
+            if(to.connect("signalObject(QObject*)",this,this.getClass().getMethod("signalObject",KrossQExtension.class))){
+                 to.emitSignalObject(to);
+             } else {
+                 System.out.println("FAILED to connect method to signalObject");
              }
         } catch(NoSuchMethodException e) {
             e.printStackTrace();
@@ -280,8 +294,16 @@ public class Test {
     public void signalVoid() {
        System.out.println("passed signalVoid");
     }
-
+    public void signalBool(Boolean b) {
+       assertEquals(b, true);
+    }
     public void signalInt(Integer i) {
        assertEquals(i, 43);
+    }
+    public void signalString(String s) {
+       assertEquals(s, "SignalString");
+    }
+    public void signalObject(KrossQExtension obj) {
+       assertEquals(obj, to);
     }
 }

@@ -89,7 +89,7 @@ namespace Kross {
                             foreach(QByteArray param, params) {
                                 int tp = QVariant::nameToType( param.constData() );
                                 switch(tp) {
-#if 0
+
                                     case QVariant::Invalid: // fall through
                                     case QVariant::UserType: {
                                         tp = QMetaType::type( param.constData() );
@@ -100,19 +100,23 @@ namespace Kross {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
                                                 //args[idx-1] = Py::asObject(new JVMExtension(obj, false));
-                                                args[idx-1] = Py::asObject(new JVMExtension(obj));
+                                                const JVMExtension* ext = JVMInterpreter::extension(obj);
+                                                if(ext == 0)
+                                                    ext = new JVMExtension(obj);
+                                                m_env->SetObjectArrayElement(args, idx-1, ext->javaobject());
                                             } break;
+#if 0
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
                                                 //args[idx-1] = Py::asObject(new JVMExtension(obj, false));
                                                 args[idx-1] = Py::asObject(new JVMExtension(obj));
                                             } break;
+#endif
                                             default: {
-                                                args[idx-1] = Py::None();
+                                                m_env->SetObjectArrayElement(args, idx-1, NULL);
                                             } break;
                                         }
                                     } break;
-#endif
                                     default: {
                                         QVariant v(tp, _a[idx]);
                                         #ifdef KROSS_JVM_FUNCTION_DEBUG
