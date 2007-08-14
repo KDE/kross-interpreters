@@ -170,10 +170,18 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "   def _import(self, name, globals=None, locals=None, fromlist=[], level = -1):\n"
         //"       try:\n"
         //"           print \"1===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
+#if PY_MAJOR_VERSION >= 2 && PY_MINOR_VERSION >= 5
         "           mod = __main__._import(self.script, name, globals, locals, fromlist, level)\n"
+#else
+        "           mod = __main__._import(self.script, name, globals, locals, fromlist)\n"
+#endif
         "           if mod == None:\n"
         //"               print \"2===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
+#if PY_MAJOR_VERSION >= 2 && PY_MINOR_VERSION >= 5
         "               mod = self.realImporter(name, globals, locals, fromlist, level)\n"
+#else
+        "               mod = self.realImporter(name, globals, locals, fromlist)\n"
+#endif
         "           if mod != None:\n"
         //"               print \"3===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
         "               if globals != None:\n"
