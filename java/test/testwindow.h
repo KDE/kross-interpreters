@@ -35,6 +35,10 @@ class TestWindow : public KMainWindow
     public:
         TestWindow(QStringList scripts);
         virtual ~TestWindow();
+    signals:
+        void scriptHook();
+    public slots:
+        void emitScriptHook() { emit scriptHook(); }
     private slots:
         void execute();
     private:

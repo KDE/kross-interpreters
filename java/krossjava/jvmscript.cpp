@@ -54,8 +54,8 @@ JVMScript::JVMScript(Interpreter* interpreter, Action* action)
     #endif
 
     //this is a testcase to be able to test the QObject functionality.
-    TestObject* testobject = new TestObject(this, "TestObject");
-    action->addObject(testobject, "TestObject");
+    //TestObject* testobject = new TestObject(this, "TestObject");
+    //action->addObject(testobject, "TestObject");
 
     //TODO: multiple scripts can run the same time and each of them would
     //need an own environment. So, probably just move the JNIEnv setup

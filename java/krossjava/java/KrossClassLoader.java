@@ -23,8 +23,11 @@ public class KrossClassLoader extends URLClassLoader {
 			//TODO: compile
 			System.out.println("Didn't get a valid classfile!");
 		}
-		//TODO: a better way would be to check whether the class is already defined
-		//This might require some byte[] manipulations, though.
+		
+		if(storedClasses.containsKey(name)){
+			//System.out.println("Class " + name + " already loaded.");
+			return;
+		}
 		try {
 			Class c = defineClass(null, data, 0, data.length);
 			//The passed name may be not the actual classname!
@@ -33,7 +36,7 @@ public class KrossClassLoader extends URLClassLoader {
 				storedClasses.put(name,c);
 			storedClasses.put(c.getName(),c);
 		} catch (LinkageError e) {
-			System.out.println("Class probably already defined! Trying to continue.");
+			e.printStackTrace();
 		}
 
 	}
@@ -130,9 +133,10 @@ public class KrossClassLoader extends URLClassLoader {
 		return super.findClass(name);
 	}
 
-	public void addURL(URL url){
-		super.addURL(url);
-	}
+//Why implement something like this? :/
+//	public void addURL(URL url){
+//		super.addURL(url);
+//	}
 
 	public static boolean isClassData(byte[] data){
 		if(data == null || data.length < 4)

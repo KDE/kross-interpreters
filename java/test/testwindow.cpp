@@ -35,6 +35,9 @@ TestWindow::TestWindow(QStringList scripts) : KMainWindow()
 {
     //Kross::Manager::self().addModule( Kross::Module::Ptr(new TestPluginModule("krosstestpluginmodule")) );
 
+    //TODO: this is currently required for our classloader to find the class. Perhaps we should ease this a bit?
+    setObjectName("TestWindow");
+
     QWidget* mainbox = new QWidget(this);
     QVBoxLayout* layout = new QVBoxLayout(mainbox);
     Q_UNUSED(layout);
@@ -44,6 +47,8 @@ TestWindow::TestWindow(QStringList scripts) : KMainWindow()
     foreach(QString s, scripts) {
         Kross::Action* action = new Kross::Action(this, s);
         action->setFile(s);
+        //FIXME
+        action->addObject(this, "TestWindow");
         m_actions.append(action);
     }
 
