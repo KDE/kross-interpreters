@@ -10,16 +10,23 @@ public class DelayedScript {
     private int id;
 
     public DelayedScript() throws Exception {
-        System.out.println("DelayedScript: " + this.getClass().getClassLoader());
         id = (int)(10000 * Math.random());
         obj = (TestWindow)(KrossClassLoader.importModule("TestWindow"));
         obj.connect("scriptHook()",this,this.getClass().getMethod("scriptHook"));
 
-        //TODO: this fails with an obscure classloader error. Also, inner classes don't work either.
-        Thread t = new SleepyThread(id, obj);
+        Thread t = new Thread(){
+            public void run(){
+                try {
+                    int sleepTime = (int)(5000 * Math.random());
+                    System.out.println("[" + id + "]" + " registered update and sleeping for " + sleepTime + " ms.");
+                    sleep(sleepTime);
+                } catch(InterruptedException e) {
+                    e.printStackTrace();
+                }
+                obj.emitScriptHook();
+            }
+        };
         t.start();
-
-        //obj.emitScriptHook();
     }
 
     public void scriptHook(){
