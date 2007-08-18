@@ -96,7 +96,6 @@ public class KrossClassLoader extends URLClassLoader {
 		//TODO - if mf, return correct name
 		if(mf != null){
 			Attributes attr = mf.getMainAttributes();
-			System.out.println("Kross-Main:" + attr.getValue("Kross-Main"));
 			return attr.getValue("Kross-Main");
 		} else
 			return "";
