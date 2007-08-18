@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<project name="krossjava" default="makejar" basedir=".">
+	<property name="src" value="."/>
+	<property name="build" value="build"/>
+	<property name="target" value="."/>
+	<property name="jarname" value="script.jar"/>
+	<property name="manifestfile" value="manifest"/>
+	
+	<target name="compile">
+		<mkdir dir="${build}"/>
+		<javac srcdir="${src}" destdir="${build}" classpath=".:../krossjava/kross.jar" excludes="TestWindow.java"/>
+	</target>
+	
+	<target name="makejar" depends="compile">
+		<jar destfile="${build}/${jarname}" manifest="${manifestfile}">
+			<fileset dir="${build}" includes="**/*.class"/>
+		</jar>
+		
+		<copy file="${build}/${jarname}" todir="${target}"/>
+	</target>
+	
+	<target name="clean">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${build}"/>
+		</delete>
+	</target>
+</project>

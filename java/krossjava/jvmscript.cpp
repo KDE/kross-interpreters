@@ -98,7 +98,7 @@ void JVMScript::execute()
     jvmi->addToCP(QUrl::fromLocalFile(file.absolutePath()));
 
     //Add the code to the classloader, which compiles it if needed
-    jvmi->addClass(classname, action()->code());
+    classname = jvmi->addClass(classname, action()->code());
 
     jobject scriptweak = jvmi->newObject(classname);
     if (scriptweak == 0) {

@@ -11,6 +11,7 @@ public class SleepyThread extends Thread {
 
     public void run() {
         try {
+            System.out.println("SleepyThread: " + this.getClass().getClassLoader());
             int sleepTime = (int)(5000 * Math.random());
             System.out.println("[" + id + "]" + " registered update and sleeping for " + sleepTime + " ms.");
             sleep(sleepTime);

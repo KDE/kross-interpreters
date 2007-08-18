@@ -127,7 +127,7 @@ jboolean JNICALL callConnect(JNIEnv *env, jobject self, jlong jvmsender, jstring
                   krosswarning( "Class 'KrossClassLoader' not found! Is kross.jar accessible?" );
                   return false;
                 }
-                addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)V");
+                addclass = env->GetMethodID(clclass, "addClass", "(Ljava/lang/String;[B)Ljava/lang/String;");
                 newinst = env->GetMethodID(clclass, "newInstance", "(Ljava/lang/String;)Ljava/lang/Object;");
                 addurl = env->GetMethodID(clclass, "addURL", "(Ljava/net/URL;)V");
                 addextension = env->GetMethodID(clclass, "addExtension", "(Ljava/lang/String;J)Lorg/kde/kdebindings/java/krossjava/KrossQExtension;");
@@ -227,7 +227,9 @@ Script* JVMInterpreter::createScript(Action* action)
 
 JNIEnv* JVMInterpreter::getEnv()
 {
-    return d->env;
+    JNIEnv* m_env;
+    d->jvm->GetEnv((void**)&m_env,JNI_VERSION_1_2);
+    return m_env;
 }
 
 JavaVM* JVMInterpreter::getJVM()
@@ -244,13 +246,15 @@ void JVMInterpreter::addToCP(const QUrl& url)
     handleException();
 }
 
-bool JVMInterpreter::addClass(const QString& name, const QByteArray& array)
+QString JVMInterpreter::addClass(const QString& name, const QByteArray& array)
 {
     jstring jname = JavaType<QString>::toJObject(name,d->env);
     jbyteArray jarray = JavaType<QByteArray>::toJObject(array,d->env);
-    d->env->CallVoidMethod(d->classloader,d->addclass,jname,jarray);
+    jobject realName = d->env->CallObjectMethod(d->classloader,d->addclass,jname,jarray);
 
-    return !handleException();
+    handleException();
+
+    return JavaType<QString>::toVariant(realName, d->env);
 }
 
 jobject JVMInterpreter::addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz, const QObject* wrapped){

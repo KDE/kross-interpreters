@@ -26,6 +26,7 @@
 
 #include "jvmconfig.h"
 #include "jvmvariant.h"
+#include "jvminterpreter.h"
 #include <kross/core/krossconfig.h>
 #include <kross/core/metafunction.h>
 
@@ -72,6 +73,9 @@ namespace Kross {
             */
             int qt_metacall(QMetaObject::Call _c, int _id, void **_a)
             {
+                //The method might be called from a different thread, so we get the right JNIEnv.
+                JNIEnv* m_env = JVMInterpreter::getEnv();
+
                 _id = QObject::qt_metacall(_c, _id, _a);
                 #ifdef KROSS_JVM_FUNCTION_DEBUG
                     krossdebug(QString("JVMFunction::qt_metacall id=%1").arg(_id));
