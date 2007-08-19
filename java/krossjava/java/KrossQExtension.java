@@ -2,6 +2,12 @@ package org.kde.kdebindings.java.krossjava;
 
 import java.lang.reflect.Method;
 
+/**
+* KrossQExtension represents a QObject in the Java world. Methods can be called on this
+* object just as if they would be called on the actual QObject. Usually, the only method
+* needed from this class is connect(). The various invoke methods are provided just-in-case,
+* but are used in the actual subclasses.
+*/
 public abstract class KrossQExtension {
 	private long p;
 
@@ -88,6 +94,15 @@ public abstract class KrossQExtension {
 		Object arg4, Object arg5, Object arg6, Object arg7,
 		Object arg8, Object arg9);
 
+	/**
+	* Connects a Qt signal to a Java method. When the signal is emitted, the function will be called.
+	*
+	* @param signal The signature of the signal to connect with, for example valueChanged(int).
+	* @param receiver The object on which to call the method.
+	* @param member The method to call when a signal is emitted. Note that the signature of this method should match
+	* the one of the signal.
+	* @return True if the connection succeeded, false if not.
+	*/
 	public boolean connect(String signal, Object receiver, Method member){
 		return connect(getPointer(), signal, receiver, member);
 	}
