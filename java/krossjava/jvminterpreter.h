@@ -73,17 +73,86 @@ namespace Kross {
             */
             virtual Script* createScript(Action* action);
 
-            //This should probably become a more local class
+            /**
+            * \return A valid JNIEnv that can be used in the current thread.
+            */
             static JNIEnv* getEnv();
+
+            /**
+            * \return The Java Virtual Machine used to run the Java code.
+            */
             static JavaVM* getJVM();
-            static QString addClass(const QString& name, const QByteArray& array);
+
+            /**
+            * Defines a new Java class. This can be used in two ways:
+            * either by passing in the bytecode of a Java class, or the
+            * data of a JAR file.
+            *
+            * \param name The name by which to register this class. This is
+            * used to prevent double definitions of the same code.
+            * \param data The Java bytecode that makes up this class or
+            * the raw contents of a JAR file.
+            * \return The Java class name of the executable script, or the
+            * empty string "" if none could be found. For class data, this
+            * returns the (real) classname, for JAR data, it returns the
+            * value of the "Kross-Main" attribute in the manifest.
+            */
+            static QString addClass(const QString& name, const QByteArray& data);
+
+            /**
+            * Adds a URL to the Java classpath.
+            *
+            * \param url A URL to add to the search path when looking for
+            * class definitions.
+            */
             static void addToCP(const QUrl& url);
+
+            /**
+            * Creates a new Java object of the given class. If an exception
+            * occurred, it will be handled.
+            *
+            * \param name The name of a Java class.
+            * \return A new object of the given class, or NULL if an
+            * exception was thrown while attempting to create the object.
+            */
             static jobject newObject(const QString& name);
+
+            /**
+            * Registers a \a JVMExtension. This creates a Java object to
+            * mirror the C object and stores the links between the
+            * involved objects.
+            *
+            * \param name The name of the extension.
+            * \param obj The JVMExtension to bridge to Java.
+            * \param clazz The raw data of the Java class.
+            * \param wrapped The QObject wrapped by \p obj.
+            * \return A KrossQExtension mirrorring the JVMExtension in Java.
+            */
             static jobject addExtension(const QString& name, const JVMExtension* obj, const QByteArray& clazz, const QObject* wrapped);
+
+            /**
+            * Returns the registered JVMExtension associated to a QObject.
+            * \param obj A bridged QObject.
+            * \return The JVMExtension associated with this QObject, or 0
+            * if none could be found.
+            */
             static const JVMExtension* extension(const QObject* obj);
-            //TODO: would this be the right place?
+
+            /**
+            * Checks to see if an exception has occurred in the Java world.
+            * If so, it clears the exception state and prints out the
+            * stacktrace of the thrown exception.
+            *
+            * \return True if an exception occurred, false if not.
+            */
             static bool handleException();
 #ifdef KROSS_JVM_INTERPRETER_DEBUG
+            /**
+            * Prints some debug information about a Java object. Printed
+            * are the toString() method and the runtime class.
+            *
+            * \param obj A Java object to know more about.
+            */
             static void showDebugInfo(jobject obj);
 #endif
 

@@ -30,9 +30,16 @@
 
 namespace Kross {
 
+    /**
+    * Holds convenience methods to throw various Java exceptions.
+    */
     class JVMException {
         public:
 
+            /**
+            * Throws a java.io.IOException.
+            * @param env the JNIEnv in which to throw the exception
+            */
             static void throwIOException(JNIEnv *env) {
                 jclass clazz = env->FindClass("java/io/IOException");
                 jmethodID method = env->GetMethodID(clazz, "<init>", "()V");
@@ -40,6 +47,10 @@ namespace Kross {
                 env->Throw(throwObj);
             }
 
+            /**
+            * Throws a java.io.EOFException.
+            * @param env the JNIEnv in which to throw the exception
+            */
             static void throwEOFException(JNIEnv *env) {
                 jclass clazz = env->FindClass("java/io/EOFException");
                 jmethodID method = env->GetMethodID(clazz, "<init>", "()V");
@@ -47,6 +58,10 @@ namespace Kross {
                 env->Throw(throwObj);
             }
 
+            /**
+            * Throws a java.lang.ArrayIndexOutOfBoundsException.
+            * @param env the JNIEnv in which to throw the exception
+            */
             static void throwArrayIndexOutOfBoundsException(JNIEnv *env) {
                 jclass clazz = env->FindClass("java/lang/ArrayIndexOutOfBoundsException");
                 jmethodID method = env->GetMethodID(clazz, "<init>", "()V");
@@ -54,6 +69,10 @@ namespace Kross {
                 env->Throw(throwObj);
             }
 
+            /**
+            * Throws a java.lang.NullPointerException.
+            * @param env the JNIEnv in which to throw the exception
+            */
             static void throwNullPointerException(JNIEnv *env) {
                 jclass clazz = env->FindClass("java/lang/NullPointerException");
                 jmethodID method = env->GetMethodID(clazz, "<init>", "()V");
@@ -61,6 +80,10 @@ namespace Kross {
                 env->Throw(throwObj);
             }
 
+            /**
+            * Throws a java.lang.IllegalArgumentException.
+            * @param env the JNIEnv in which to throw the exception
+            */
             static void throwIllegalArgumentException(JNIEnv *env) {
                 jclass clazz = env->FindClass("java/lang/IllegalArgumentException");
                 jmethodID method = env->GetMethodID(clazz, "<init>", "()V");

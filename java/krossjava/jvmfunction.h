@@ -50,8 +50,10 @@ namespace Kross {
             *
             * \param sender The QObject instance that sends the signal.
             * \param signal The signature of the signal the QObject emits.
-            * \param callable The callable Java function that should
+            * \param instance The Java Object on which to invoke the method.
+            * \param callable The callable Java function (a java.lang.reflect.Method) that should
             * be executed if the QObject emits the signal.
+            * \param env The Java environment where the Java objects live.
             */
             JVMFunction(QObject* sender, const QByteArray& signal, jobject instance, jobject callable, JNIEnv* env)
                 : MetaFunction(sender, signal), m_env(env) {
