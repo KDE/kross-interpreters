@@ -93,10 +93,13 @@ public class KrossClassLoader extends URLClassLoader {
 			//I don't think this can happen, unless perhaps with wrong data... Hmm.
 			e.printStackTrace();
 		}
-		//TODO - if mf, return correct name
 		if(mf != null){
 			Attributes attr = mf.getMainAttributes();
-			return attr.getValue("Kross-Main");
+			String val = attr.getValue("Kross-Main");
+			if(val != null)
+				return val;
+			else
+				return "";
 		} else
 			return "";
 	}
@@ -149,43 +152,6 @@ public class KrossClassLoader extends URLClassLoader {
 			return null;
 		}
 	}
-/*
-	public Class loadClass(String name, boolean resolve) throws ClassNotFoundException{
-		//First, we see if it's already loaded.
-		Class output = findLoadedClass(name);
-
-		//Next, let's see if it's a custom class.
-		if(output == null){
-			try {
-			output = findClass(name);
-			} catch (ClassNotFoundException e){
-
-			}
-		}
-
-		//All seems to fail, let's try the native classloader.
-		//Exceptions can bubble up from here.
-		if(output == null){
-			ClassLoader par = getParent();
-			if(par == null)
-				output = getSystemClassLoader().loadClass(name);
-			else
-				output = par.loadClass(name);
-		}
-
-		//We had a correct result, see if it must be resolved...
-		if(resolve && output != null){
-			try {
-				resolveClass(output);
-			} catch(NullPointerException e) {
-				//IMPOSSIBLE! (but assertions are java 1.4)
-			}
-			
-		}
-
-		return output;
-	}
-*/
 
 	public Class findClass(String name) throws ClassNotFoundException{
 		if(storedClasses.containsKey(name)){
@@ -193,11 +159,6 @@ public class KrossClassLoader extends URLClassLoader {
 		}
 		return super.findClass(name);
 	}
-
-//Why implement something like this? :/
-//	public void addURL(URL url){
-//		super.addURL(url);
-//	}
 
 	public static boolean isClassData(byte[] data){
 		return getDataType(data) != UNKNOWN_DATA;
