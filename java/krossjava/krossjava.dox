@@ -1,0 +1,24 @@
+/** @section java The Java interpreter backend
+ *
+ * The Java interpreter backend implements scripting with Java.
+ *
+ * The @a Kross::JVMInterpreter class implements @a Kross::Interpreter
+ * for the Java interpreter backend and provides with the
+ * @a Kross::JVMInterpreter::createScript a factory method to create
+ * @a Kross::JVMScript instances. Furthermore it provides various methods
+ * to inspect and manipulate the state of the Java Virtual Machine.
+ * @a Kross::JVMInterpreter also manages the various @a Kross::JVMExtension
+ * instances.
+ *
+ * The @a Kross::JVMScript class implements @a Kross::Script for the
+ * Java backend to provide the functionality to execute Java code
+ * within a script-container.
+ *
+ * The @a Kross::JVMExtension class implements a Java Object to wrap a
+ * QObject instance into the world of Java.
+ *
+ * Within JVMVariant the @a Kross::JavaType helper class is used to cast
+ * between QVariant and Java objects while the @a Kross::JVMMetaTypeFactory
+ * helper class is used as factory within @a Kross::JavaExtension to translate
+ * an argument into a @a Kross::MetaType needed for QGenericArgument's data pointer.
+ */
