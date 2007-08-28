@@ -110,32 +110,24 @@ namespace Kross {
                                 ++idx;
                             }
 
-                            // call the python function
                             Py::Object result;
                             try {
+                                // call the python function
                                 result = m_callable.apply(args);
+                                // set the returnvalue
+                                m_tmpResult = PythonType<QVariant>::toVariant(result);
                             }
                             catch(Py::Exception& e) {
                                 QStringList trace;
                                 int lineno;
                                 PythonInterpreter::extractException(trace, lineno);
-                                krosswarning( QString("PythonFunction::qt_metacall exception on line %1:\n%2 \n%3").arg(lineno).arg(Py::value(e).as_string().c_str()).arg(trace.join("\n")) );
+                                #ifdef KROSS_PYTHON_FUNCTION_DEBUG
+                                    krosswarning( QString("PythonFunction::qt_metacall exception on line %1:\n%2 \n%3").arg(lineno).arg(Py::value(e).as_string().c_str()).arg(trace.join("\n")) );
+                                #endif
                                 PyErr_Print(); //e.clear();
                                 return -1;
                             }
 
-                            // finally set the returnvalue
-                            try {
-                                m_tmpResult = PythonType<QVariant>::toVariant(result);
-                                #ifdef KROSS_PYTHON_FUNCTION_DEBUG
-                                    QObject* sender = QObject::sender();
-                                    krossdebug( QString("PythonFunction::qt_metacall sender.objectName=%1 sender.className=%2 pyresult=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(result.as_string().c_str()).arg(m_tmpResult.toString()) );
-                                #endif
-                            }
-                            catch(Py::Exception& e) {
-                                m_tmpResult = QVariant();
-                                PyErr_Print();
-                            }
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
                         } break;
