@@ -110,9 +110,9 @@ namespace Kross {
                                 ++idx;
                             }
 
+                            // call the python function
                             Py::Object result;
                             try {
-                                // call the python function
                                 result = m_callable.apply(args);
                             }
                             catch(Py::Exception& e) {
@@ -125,11 +125,17 @@ namespace Kross {
                             }
 
                             // finally set the returnvalue
-                            m_tmpResult = PythonType<QVariant>::toVariant(result);
-                            #ifdef KROSS_PYTHON_FUNCTION_DEBUG
-                                QObject* sender = QObject::sender();
-                                krossdebug( QString("PythonFunction::qt_metacall sender.objectName=%1 sender.className=%2 pyresult=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(result.as_string().c_str()).arg(m_tmpResult.toString()) );
-                            #endif
+                            try {
+                                m_tmpResult = PythonType<QVariant>::toVariant(result);
+                                #ifdef KROSS_PYTHON_FUNCTION_DEBUG
+                                    QObject* sender = QObject::sender();
+                                    krossdebug( QString("PythonFunction::qt_metacall sender.objectName=%1 sender.className=%2 pyresult=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(result.as_string().c_str()).arg(m_tmpResult.toString()) );
+                                #endif
+                            }
+                            catch(Py::Exception& e) {
+                                m_tmpResult = QVariant();
+                                PyErr_Print();
+                            }
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
                         } break;
