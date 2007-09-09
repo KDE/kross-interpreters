@@ -20,10 +20,7 @@
 #include "falconinterpreter.h"
 #include "falconerrhand.h"
 #include "falconscript.h"
-/*
 #include "falconmodule.h"
-#include "falconvariant.h"
-*/
 
 // The in krossconfig.h defined KROSS_EXPORT_INTERPRETER macro defines an
 // exported C function used as factory for Kross::FalconInterpreter instances.
@@ -45,11 +42,15 @@ namespace Kross {
             /// Falcon standard module: the runtime library
             Falcon::Module *m_rtl_module;
             
+            /// Module used by Falcon scripts being run by Kross
+            Falcon::Module *m_kross_module;
+            
             FalconInterpreterPrivate():
                 m_loader(0),
                 m_errHandler(0),
                 m_core_module(0),
-                m_rtl_module(0)
+                m_rtl_module(0),
+                m_kross_module(0)
             {}
     };
 
@@ -76,10 +77,13 @@ FalconInterpreter::FalconInterpreter(InterpreterInfo* info)
     
     // and then load the rtl.
     d->m_rtl_module = d->m_loader->loadName( "falcon_rtl" );
-
+    
     // on error, the error handler is invoked, and it will call our setError method.
     //    d->m_rtl_module will be 0.
-      
+    
+    // and get an instance of our module
+    d->m_kross_module = CreateKrossModule();
+    
     #ifdef KROSS_FALCON_INTERPRETER_DEBUG
         //TODO: Get Falcon Infos
         //krossdebug(QString("Falcon Version: %1").arg());
@@ -99,6 +103,7 @@ FalconInterpreter::~FalconInterpreter()
     if ( d->m_rtl_module != 0 )
         d->m_rtl_module->decref();
     
+    d->m_kross_module->decref();
     delete d;
 }
 
@@ -133,6 +138,11 @@ Kross::Script* FalconInterpreter::createScript(Kross::Action* Action)
 ::Falcon::Module* FalconInterpreter::rtlModule()
 {
     return d->m_rtl_module;
+}
+
+::Falcon::Module* FalconInterpreter::krossModule()
+{
+    return d->m_kross_module;
 }
 
 }

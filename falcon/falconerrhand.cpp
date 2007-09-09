@@ -1,5 +1,5 @@
 /***************************************************************************
-* falconinterpreter.h
+* falconerrhand.cpp
 * This file is part of the KDE project
 * copyright (C)2007-2008 by Giancarlo Niccolai (jonnymind@falconpl.org)
 *

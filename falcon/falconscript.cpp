@@ -19,6 +19,7 @@
 
 #include "falconscript.h"
 #include "falconinterpreter.h"
+#include "falconkfvm.h"
 #include <kross/core/action.h>
 
 //TODO move that functionality to FalconExtension!
@@ -35,7 +36,7 @@ namespace Kross {
     {
         public:
             /// The Falcon virtual machine running the script
-            Falcon::VMachine *m_vm;
+            KFVM *m_vm;
             
             /// The topmost (main) module
             Falcon::Module *m_mainModule;
@@ -57,15 +58,17 @@ FalconScript::FalconScript(Kross::Interpreter* interpreter, Kross::Action* actio
     #ifdef KROSS_FALCON_SCRIPT_CTOR_DEBUG
         krossdebug("FalconScript::Constructor.");
     #endif
-    d->m_vm = new Falcon::VMachine;
+    d->m_vm = new KFVM;
     d->m_vm->errorHandler( new KErrHandler( this ), true );
     
     #ifdef KROSS_FALCON_SCRIPT_CTOR_DEBUG
         krossdebug("FalconScript::Constructor Linking base modules.");
     #endif
     
+    // Linking in the relevant modules
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->coreModule() );
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->rtlModule() );
+    d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->krossModule() );
 }
 
 FalconScript::~FalconScript()
@@ -276,14 +279,47 @@ QVariant FalconScript::callFunction(const QString& name, const QVariantList& arg
     Falcon::String funcName;
     funcName.fromUTF8( name.toUtf8() );
     Falcon::Item *callable = d->m_vm->findGlobalItem( funcName );
-    if ( callable != 0 && callable->isCallable() )
+    
+    if ( callable == 0 ) 
     {
-        //TODO convert the parameters.
-        d->m_vm->callItem( *callable, 0 );
-        // Todo: convert the a register into values.
+        // the symbol is not exported, or it does not exist.
+        setError( QString( "Kross: Symbol '%s' not found" ).arg( name ) );
+        return QVariant();
     }
+    
+    if ( ! callable->isCallable() )
+    {
+        // The symbol exists, but it has currently some non-callable value associated.
+        setError( QString( "Kross: Symbol '%s' is not a callable item." ).arg( name ) );
+        return QVariant();
+    }
+    
+    for ( QVariantList::size_type i = 0; i < args.size(); i ++ )
+    {
+        Falcon::Item item;
+        
+        // there may be a conversion error
+        if( ! d->m_vm->variantToItem( args[i], item ) )
+        {
+            // in that case, the error has already been raised and stored in our lastError.
+            // we just have to return
+            return QVariant();
+        }
 
-    return QVariant();
+        d->m_vm->pushParameter( item );
+    }
+    
+    d->m_vm->callItem( *callable, args.size() );
+    
+    // now let's convert the return value into our return variant
+    QVariant retvar;
+    if ( ! d->m_vm->itemToVariant( d->m_vm->regA(), retvar ) )
+    {
+        // again, conversion error (already logged)
+        return QVariant();
+    }
+    
+    return retvar;
 }
 
 }
