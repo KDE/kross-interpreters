@@ -18,7 +18,7 @@
 ***************************************************************************/
 
 #include "falconkfvm.h"
-#include <falcon/autowstring.h>
+#include <falcon/autocstring.h>
 
 #include <QChar>
 #include <QString>
@@ -31,22 +31,80 @@ namespace Kross {
     {
         switch ( item.type() )
         {
+            // Conversion from the nil value
             case FLC_ITEM_NIL:
                 variant.clear();
             break;
             
+            // Conversion from falcon INT (int64 signed)
             case FLC_ITEM_INT:
                 variant.setValue( item.asInteger() );
             break;
             
+            // Conversion from falcon numeric (C double)
             case FLC_ITEM_NUM:
                 variant.setValue( item.asNumeric() );
             break;
             
+            // Conversion from falcon String.
             case FLC_ITEM_STRING:
             {
-                Falcon::AutoCString utf16rep( *item.asString() );
-                variant.setValue( QString( utf16rep.c_str() ) );
+                Falcon::AutoCString utf8rep( *item.asString() );
+                variant.setValue( QString( utf8rep.c_str() ) );
+            }
+            break;
+            
+            case FLC_ITEM_ARRAY:
+            {
+                QList<QVariant> ret;
+                Falcon::CoreArray *array = item.asArray();
+                
+                for ( Falcon::uint32 i = 0; i < array->length(); i++ )
+                {
+                    QVariant temp;
+                    if ( ! itemToVariant( array->at(i), temp ) )
+                        return false;
+                    
+                    ret.push_back( temp );
+                }
+                
+                variant = ret;
+            }
+            break;
+            
+            case FLC_ITEM_DICT:
+            {
+                QMap<QString, QVariant> ret;
+                Falcon::CoreDict *dict = item.asDict();
+                Falcon::DictIterator *iter = dict->begin();
+                while( iter->isValid() )
+                {
+                    // First, see if we can convert the value.
+                    QVariant value;
+                    if ( ! itemToVariant( iter->getCurrent(), value ) )
+                        return false;
+                        
+                    // Fine, now we must convert the key item to a string.
+                    // The conversion may fail; in that case, we just got to return.
+                    Falcon::String tgt;
+                    itemToString( tgt, &iter->getCurrentKey() );
+                    if ( hadError() )
+                    {
+                        delete iter;
+                        return false;
+                    }
+                    QString skey;
+                    Falcon::AutoCString ctgt( tgt );
+                    skey.fromUtf8( ctgt.c_str() );
+                    
+                    // Create the entry
+                    ret[ skey ] = value;
+                    
+                    iter->next();
+                }
+                
+                delete iter;
+                variant = ret;
             }
             break;
             
@@ -123,6 +181,56 @@ namespace Kross {
                 Falcon::String *tstr = new Falcon::GarbageString( this );
                 tstr->fromUTF8( variant.toString().toUtf8().data() );
                 item.setString( tstr );
+            }
+            break;
+            
+            case QVariant::List:
+            {
+                const QList<QVariant> &qlist = variant.toList();
+                Falcon::CoreArray *array = new Falcon::CoreArray( this, qlist.size() );
+                QList<QVariant>::ConstIterator qliter = qlist.constBegin();
+                while( qliter != qlist.constEnd() )
+                {
+                    Falcon::Item value;
+                    if ( ! variantToItem( *qliter, value ) )
+                        return false;
+                    array->append( value );
+                    ++qliter;
+                }
+            }
+            break;
+            
+            case QVariant::StringList:
+            {
+                const QList<QString> &qlist = variant.toStringList();
+                Falcon::CoreArray *array = new Falcon::CoreArray( this, qlist.size() );
+                QList<QString>::ConstIterator qliter = qlist.constBegin();
+                while( qliter != qlist.constEnd() )
+                {
+                    Falcon::String *value = new Falcon::GarbageString( this );
+                    value->fromUTF8( qliter->toUtf8() );
+                    array->append( value );
+                    ++qliter;
+                }
+            }
+            break;
+            
+            case QVariant::Map:
+            {
+                const QMap<QString, QVariant> &qMap = variant.toMap();
+                Falcon::CoreDict *map = new Falcon::LinearDict( this, qMap.size() );
+                QMap<QString, QVariant>::ConstIterator qmiter = qMap.constBegin();
+                while( qmiter != qMap.constEnd() )
+                {
+                    Falcon::Item value;
+                    if ( ! variantToItem( qmiter.value(), value ) )
+                        return false;
+                    
+                    Falcon::String *key = new Falcon::GarbageString( this );
+                    key->fromUTF8( qmiter.key().toUtf8() );
+                    map->insert( key, value );
+                    ++qmiter;
+                }
             }
             break;
 
