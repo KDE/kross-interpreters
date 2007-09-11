@@ -93,6 +93,11 @@ namespace Kross {
              * This function override the clone function behaviour
              */
             static VALUE clone(VALUE self);
+            
+            /**
+             * Return a (void*) wraped objects of this
+             */
+            static VALUE toVoidPtr(VALUE self);
 
             /**
              * Connect was called.

@@ -170,6 +170,16 @@ VALUE RubyExtension::clone(VALUE self)
     return Qnil; // TODO: is it useful to call the ruby clone function if no clone function is available ?
 }
 
+VALUE RubyExtension::toVoidPtr(VALUE self)
+{
+    #ifdef KROSS_RUBY_EXTENSION_DEBUG
+      krossdebug("toVoidPtr...");
+    #endif
+      RubyExtension* extension = toExtension(self);
+      Q_ASSERT(extension);
+      return Data_Wrap_Struct( rb_cObject, 0, 0, extension->object());
+}
+
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 {
     #ifdef KROSS_RUBY_EXTENSION_CALLCONNECT_DEBUG
@@ -498,9 +508,10 @@ VALUE RubyExtension::toVALUE(RubyExtension* extension)
         return 0;
 
     if( RubyExtensionPrivate::s_krossObject == 0 ) {
-        RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject );
+        RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "KrossObject", rb_cObject );
         rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
         rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
+        rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
         rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
         rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
     }
