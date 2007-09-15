@@ -345,7 +345,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
         }
 
         //VALUE r = rb_eval_string("myFunc()");
-        VALUE v = rb_funcall2(self, rb_intern(name.toLatin1()), rnargs, rargs);
+        VALUE v = rb_funcall2(d->m_script, rb_intern(name.toLatin1()), rnargs, rargs);
         result = RubyType<QVariant>::toVariant(v);
         delete[] rargs;
     }
