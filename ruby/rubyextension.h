@@ -61,6 +61,7 @@ namespace Kross {
             QObject* object() const;
 
         private:
+            static void init();
 
             /**
             * Create and return a new \a RubyFunction instance.
@@ -98,6 +99,10 @@ namespace Kross {
              * Return a (void*) wraped objects of this
              */
             static VALUE toVoidPtr(VALUE self);
+            /**
+             * @return a RubyExtension from an void* object
+             */
+            static VALUE fromVoidPtr(VALUE self, VALUE obj);
 
             /**
              * Connect was called.

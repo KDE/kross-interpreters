@@ -164,7 +164,7 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
                 krossdebug("RubyType<QVariant>::toVariant QObject is NULL. Returning QVariant::Invalid.");
                 return QVariant();
             }
-            return qVariantFromValue( extension->object() );
+            return qVariantFromValue( object );
         }
 
         case T_FLOAT:

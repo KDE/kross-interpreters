@@ -172,12 +172,22 @@ VALUE RubyExtension::clone(VALUE self)
 
 VALUE RubyExtension::toVoidPtr(VALUE self)
 {
-    #ifdef KROSS_RUBY_EXTENSION_DEBUG
-      krossdebug("toVoidPtr...");
-    #endif
+      #ifdef KROSS_RUBY_EXTENSION_DEBUG
+          krossdebug("toVoidPtr...");
+      #endif
       RubyExtension* extension = toExtension(self);
       Q_ASSERT(extension);
       return Data_Wrap_Struct( rb_cObject, 0, 0, extension->object());
+}
+
+VALUE RubyExtension::fromVoidPtr(VALUE self, VALUE obj)
+{
+    #ifdef KROSS_RUBY_EXTENSION_DEBUG
+        krossdebug("toVoidPtr...");
+    #endif
+    QObject* qobj;
+    Data_Get_Struct(obj, QObject, qobj);
+    return RubyExtension::toVALUE( new RubyExtension(qobj) );
 }
 
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
@@ -507,15 +517,18 @@ VALUE RubyExtension::toVALUE(RubyExtension* extension)
     if( ! object )
         return 0;
 
-    if( RubyExtensionPrivate::s_krossObject == 0 ) {
-        RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "KrossObject", rb_cObject );
-        rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
-        rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
-        rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
-        rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
-        rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
-    }
+    Q_ASSERT( RubyExtensionPrivate::s_krossObject );
 
     return Data_Wrap_Struct(RubyExtensionPrivate::s_krossObject, 0, RubyExtension::delete_object, extension);
 }
 
+void RubyExtension::init()
+{
+    RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject );
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
+    rb_define_module_function(RubyExtensionPrivate::s_krossObject, "fromVoidPtr", (VALUE (*)(...))RubyExtension::fromVoidPtr, 1);
+}
