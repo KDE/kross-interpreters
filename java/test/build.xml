@@ -1,23 +1,33 @@
 <?xml version="1.0"?>
-<project name="krossjava" default="makejar" basedir=".">
+<project name="krossjava" default="all" basedir=".">
 	<property name="src" value="."/>
 	<property name="build" value="build"/>
 	<property name="target" value="."/>
-	<property name="jarname" value="script.jar"/>
-	<property name="manifestfile" value="manifest"/>
 	
 	<target name="compile">
 		<mkdir dir="${build}"/>
-		<javac srcdir="${src}" destdir="${build}" classpath=".:../krossjava/kross.jar" excludes="TestWindow.java"/>
+		<javac srcdir="${src}" destdir="${build}" classpath=".:../krossjava/kross.jar"/>
+		<copy todir="${target}">
+			<fileset dir="${build}">
+				<include name="TestWindow.class" />
+				<include name="TestObject.class" />
+			</fileset>
+		</copy>
 	</target>
 	
-	<target name="makejar" depends="compile">
-		<jar destfile="${build}/${jarname}" manifest="${manifestfile}">
-			<fileset dir="${build}" includes="**/*.class"/>
+	<target name="delayed" depends="compile">
+		<jar destfile="${build}/delayed.jar" manifest="manifest">
+			<fileset dir="${build}" includes="**/DelayedScript*.class"/>
 		</jar>
 		
-		<copy file="${build}/${jarname}" todir="${target}"/>
+		<copy file="${build}/delayed.jar" todir="${target}"/>
 	</target>
+	
+	<target name="test" depends="compile">
+		<copy file="${build}/Test.class" todir="${target}"/>
+	</target>
+	
+	<target name="all" depends="delayed,test" />
 	
 	<target name="clean">
 		<delete includeEmptyDirs="true">

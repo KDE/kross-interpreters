@@ -34,7 +34,7 @@ TestObject::TestObject(QObject* parent, const QString& name)
     : QObject(parent)
 {
     setObjectName(name);
-    kDebug() << "TestObject(const QString&) objectName=" << objectName() << endl;
+    //kDebug() << "TestObject(const QString&) objectName=" << objectName() << endl;
 
     //connect(this, SIGNAL(testSignal()), this, SLOT(testSignalSlot()));
     //connect(this, SIGNAL(stdoutSignal(const QString&)), this, SLOT(stdoutSlot(const QString&)));
@@ -122,7 +122,7 @@ QString TestObject::func_qstring_qstring_int(QString s, int i)
 
 QByteArray TestObject::func_qbytearray_qbytearray(QByteArray ba)
 {
-    kDebug() << "TestObject::func_qbytearray_qbytearray ba=" << ba << endl;
+    //kDebug() << "TestObject::func_qbytearray_qbytearray ba=" << ba << endl;
     return ba;
 }
 
@@ -140,13 +140,13 @@ QStringList TestObject::func_qstringlist_qstringlist(QStringList sl)
 
 QVariantList TestObject::func_qvariantlist_qvariantlist(QVariantList vl)
 {
-    kDebug() << "TestObject::func_qvariantlist_qvariantlist vl.count=" << vl.count() << endl;
+    //kDebug() << "TestObject::func_qvariantlist_qvariantlist vl.count=" << vl.count() << endl;
     return vl;
 }
 
 QVariantMap TestObject::func_qvariantmap_qvariantmap(QVariantMap vm)
 {
-    kDebug() << "TestObject::func_qvariantmap_qvariantmap vm.count=" << vm.count() << endl;
+    //kDebug() << "TestObject::func_qvariantmap_qvariantmap vm.count=" << vm.count() << endl;
     return vm;
 }
 
@@ -180,7 +180,7 @@ QRectF TestObject::func_qrectf_qrectf(const QRectF& r)
 }
 QUrl TestObject::func_qurl_qurl(const QUrl& u)
 {
-    kDebug() << "TestObject::func_qurl_qurl u.toString=" << u.toString() << endl;
+    //kDebug() << "TestObject::func_qurl_qurl u.toString=" << u.toString() << endl;
     return u;
 }
 
@@ -223,7 +223,7 @@ void TestObject::func_void_qobject(QObject* obj)
 
 QObject* TestObject::func_qobject_qobject(QObject* obj)
 {
-    kDebug() << "TestObject::func_qobject_qobject " << (obj ? QString("objectName=%1 className=%2").arg(obj->objectName()).arg(obj->metaObject()->className()) : "NULL") << endl;
+    //kDebug() << "TestObject::func_qobject_qobject " << (obj ? QString("objectName=%1 className=%2").arg(obj->objectName()).arg(obj->metaObject()->className()) : "NULL") << endl;
     return obj;
 }
 

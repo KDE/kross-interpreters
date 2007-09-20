@@ -1,4 +1,4 @@
-import org.kde.kdebindings.java.krossjava.*;
+import org.kde.kdebindings.java.krossjava.KrossQExtension;
 import java.util.*;
 import java.net.*;
 
@@ -84,7 +84,7 @@ public class Test {
     }
 
     public void setUp() {
-        to = (TestObject)(KrossClassLoader.importModule("TestObject"));
+        to = (TestObject)(KrossQExtension.importModule("TestObject"));
     }
 
     public void testName() {

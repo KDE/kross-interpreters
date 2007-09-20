@@ -19,6 +19,15 @@ public abstract class KrossQExtension {
 		return p;
 	}
 
+	/**
+	* Returns a loaded KrossQExtension to use in scripts.
+	* @param name The name by which a module was registered.
+	* @return The KrossQExtension bridging the given module.
+	*/
+	public static KrossQExtension importModule(String name) {
+		return KrossClassLoader.importModule(name);
+	}
+
 	public Object invoke(String name){
 		return invokeNative(getPointer(), name, 0, null, null, null, null,
 			null, null, null, null, null, null);

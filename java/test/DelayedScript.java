@@ -11,7 +11,7 @@ public class DelayedScript {
 
     public DelayedScript() throws Exception {
         id = (int)(10000 * Math.random());
-        obj = (TestWindow)(KrossClassLoader.importModule("TestWindow"));
+        obj = (TestWindow)(KrossQExtension.importModule("TestWindow"));
         obj.connect("scriptHook()",this,this.getClass().getMethod("scriptHook"));
 
         Thread t = new Thread(){
