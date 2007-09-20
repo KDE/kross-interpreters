@@ -21,6 +21,8 @@
 
 #include "testwindow.h"
 
+#include "testobject.h"
+
 #include <QLabel>
 #include <QMenu>
 #include <QGroupBox>
@@ -44,11 +46,13 @@ TestWindow::TestWindow(QStringList scripts) : KMainWindow()
     setCentralWidget(mainbox);
     setMinimumSize(600,420);
 
+    TestObject* testobject = new TestObject(this, "TestObject");
     foreach(QString s, scripts) {
         Kross::Action* action = new Kross::Action(this, s);
         action->setFile(s);
         //FIXME
         action->addObject(this, "TestWindow");
+        action->addObject(testobject, "TestObject");
         m_actions.append(action);
     }
 
