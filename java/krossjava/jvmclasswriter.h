@@ -47,6 +47,12 @@ namespace Kross {
 
             void writeHeader(QDataStream& data);
             void writeConstantPool(QDataStream& data);
+            void writeClassInfo(QDataStream& data);
+            void writeFields(QDataStream& data);
+            void writeMethods(QDataStream& data);
+            void writeAttributes(QDataStream& data);
+
+            void writeUtf8ToPool(QDataStream& data, const QString& str);
     };
 
 }

@@ -47,7 +47,10 @@ void JVMClassWriter::writeInterface(QDataStream& data)
 {
     writeHeader(data);
     writeConstantPool(data);
-    //TODO
+    writeClassInfo(data);
+    writeFields(data);
+    writeMethods(data);
+    writeAttributes(data);
 }
 
 void JVMClassWriter::writeHeader(QDataStream& data)
@@ -58,17 +61,26 @@ void JVMClassWriter::writeHeader(QDataStream& data)
 
     //The values of the minor_version and major_version items are the minor and major version
     //numbers of this class file.
-    data << (qint16) 1; //major, u2
-    data << (qint16) 6; //minor, u2
+    data << (qint16) 0; //minor, u2
+    data << (qint16) 50; //major, u2
 }
 
 void JVMClassWriter::writeConstantPool(QDataStream& data)
 {
+
+    /*
+    * We will be using the following conventions for the constant pool. #n refers to a pool index.
+    * #1 is the classname of this class, as a CONSTANT_Class_info structure.
+    * #2 is the textual representation of the classname, as CONSTANT_Utf8_info.
+    * #3 and #4 are the classinfo and name of the superclass.
+    */
+
     QObject* object = m_extension->object();
     Q_ASSERT(object);
     const QMetaObject* metaobject = object->metaObject();
     const int methodCount = metaobject->methodCount();
 
+/*
     //The value of the constant_pool_count item is equal to the number of entries in the
     //constant_pool table plus one.
     data << (qint16) methodCount + 1;
@@ -82,4 +94,59 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
         data << (qint8) 11; //CONSTANT_InterfaceMethodref
         //TODO
     }
+*/
+    data << (qint16) 5; //class + superclass
+    //Class
+    data << (qint8) 7; //CONSTANT_Class
+    data << (qint16) 2; //index of name - next pool item
+    writeUtf8ToPool(data,QString("My") + object->objectName());
+    //Superclass
+    data << (qint8) 7; //CONSTANT_Class
+    data << (qint16) 4; //index of name - next pool item
+    writeUtf8ToPool(data,"org/kde/kdebindings/java/krossjava/KrossQExtension");
+}
+
+void JVMClassWriter::writeClassInfo(QDataStream& data)
+{
+    //TODO
+    //Access flags. We use the value ACC_PUBLIC|ACC_SUPER. ACC_PUBLIC denotes this is a public
+    //class. According to specification, all new compilers to the instruction set of the Java
+    //virtual machine should set the ACC_SUPER flag.
+    data << (qint16) (0x0001|0x0020);
+
+    //The following class information denotes indices into the constant pool.
+    //Class
+    data << (qint16) 1;
+    //Superclass
+    data << (qint16) 3;
+
+    //Interfaces - we don't (directly) implement any, so interface_count = 0.
+    data << (qint16) 0;
+}
+
+void JVMClassWriter::writeFields(QDataStream& data)
+{
+    //TODO
+    data << (qint16) 0;
+}
+
+void JVMClassWriter::writeMethods(QDataStream& data)
+{
+    // TODO
+    data << (qint16) 0;
+}
+
+void JVMClassWriter::writeAttributes(QDataStream& data)
+{
+    //We don't need any atributes like SourceFile or Deprecated, so we set attribute_count
+    //to 0.
+    data << (qint16) 0;
+}
+
+void JVMClassWriter::writeUtf8ToPool(QDataStream& data, const QString& str)
+{
+    QByteArray ba = str.toUtf8();
+    data << (qint8) 1; //CONSTANT_Utf8
+    data << (qint16) (ba.size()); //length in bytes, not null-terminated
+    data.writeRawData(ba.data(), ba.size()); //raw bytes, not null-terminated
 }
