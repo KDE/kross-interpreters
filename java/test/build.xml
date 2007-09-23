@@ -7,6 +7,12 @@
 	<target name="compile">
 		<mkdir dir="${build}"/>
 		<javac srcdir="${src}" destdir="${build}" classpath=".:../krossjava/kross.jar"/>
+		<copy todir="${target}">
+			<fileset dir="${build}">
+				<include name="TestWindow.class" />
+				<include name="TestObject.class" />
+			</fileset>
+		</copy>
 	</target>
 	
 	<target name="delayed" depends="compile">
