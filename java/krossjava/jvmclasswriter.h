@@ -54,6 +54,7 @@ namespace Kross {
 
             void writeUtf8ToPool(QDataStream& data, const QString& str);
             QString toJavaType(const QByteArray& type);
+            qint16 toConstantpoolIndex(const QByteArray& type);
     };
 
 }

@@ -73,20 +73,12 @@ JVMExtension::JVMExtension(QObject* object)
         krossdebug(QString("JVMExtension Ctor %1").arg(d->debuginfo));
     #endif
 
-    //testcase (TODO: something like this should go into JVMExtension)
-    QFile toclass( QString("%1.class").arg(name) ); //e.g. "TestObject.class"
-    toclass.open(QIODevice::ReadOnly);
-    d->javaobj = JVMInterpreter::addExtension(name, this, toclass.readAll(), object);
-    toclass.close();
+    QByteArray ba;
+    QDataStream data(&ba, QIODevice::WriteOnly);
+    JVMClassWriter writer(this);
+    writer.writeInterface(data);
 
-    #ifdef KROSS_JVM_CLASSWRITER_DEBUG
-        QFile ifacefile( QString("My%1.class").arg(name) );
-        ifacefile.open(QIODevice::WriteOnly);
-        QDataStream data(&ifacefile);
-        JVMClassWriter writer(this);
-        writer.writeInterface(data);
-        ifacefile.close();
-    #endif
+    d->javaobj = JVMInterpreter::addExtension(name, this, ba, object);
 
     //TODO what we could do here is to create a class on the fly and register native
     //callbacks using the env->RegisterNatives method to be able to provide a Java

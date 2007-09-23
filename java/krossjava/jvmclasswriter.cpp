@@ -97,9 +97,10 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     * #52 is "[B" (byte array)
     * #53 is "[I" (int array)
     * #54 is "[D" (double array)
-    * #55 until #65 are the classes corresponding to #44 to #54.
+    * #55 is "[Ljava/lang/String;"
+    * #56 until #67 are the classes corresponding to #44 to #55.
     * (note that the return type of KrossQObject is to be found in #3)
-    * Starting with #66 comes, for each method:
+    * Starting with #68 comes, for each method:
     *   1) UTF8 name of method
     *   2) Constant string of the name (used in the code)
     *   3) UTF8 signature description
@@ -107,6 +108,7 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     * It might be posible to reduce the size of the generated constant pool
     * by keeping track of generated signature descriptions and using a more
     * advanced technique to reuse them where possible, but the gains seem small.
+    * Doing this might make this code a bit more maintainable, though.
     */
 
     QObject* object = m_extension->object();
@@ -115,11 +117,11 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     const int methodCount = metaobject->methodCount();
 
     //Constant_pool_count is last index + 1, see verbose description above for the numbers
-    data << (qint16) (65 + 3 * methodCount + 1);
+    data << (qint16) (67 + 3 * methodCount + 1);
     //Class
     data << (qint8) 7; //CONSTANT_Class
     data << (qint16) 2; //index of name - next pool item
-    writeUtf8ToPool(data,QString("My") + object->objectName());
+    writeUtf8ToPool(data,object->objectName());
     //Superclass
     data << (qint8) 7; //CONSTANT_Class
     data << (qint16) 4; //index of name - next pool item
@@ -169,7 +171,8 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     writeUtf8ToPool(data,"[B");
     writeUtf8ToPool(data,"[I");
     writeUtf8ToPool(data,"[D");
-    for(int i=0;i<11;i++){
+    writeUtf8ToPool(data,"[Ljava/lang/String;");
+    for(int i=0;i<12;i++){
         data << (qint8) 7; //CONSTANT_Class
         data << (qint16) (44 + i); //index of corresponding string
     }
@@ -182,7 +185,7 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
         writeUtf8ToPool(data,signature.left(signature.indexOf('(')));
         //String of name
         data << (qint8) 8; //CONSTANT_String
-        data << (qint16) (66 + i * 3); //index of previous pool item
+        data << (qint16) (68 + i * 3); //index of previous pool item
         //Parameter string
         QList<QByteArray> params = method.parameterTypes();
         QString sig("(");
@@ -192,6 +195,54 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
         sig += ")";
         sig += toJavaType(QByteArray(method.typeName()));
         writeUtf8ToPool(data,sig);
+    }
+}
+
+qint16 JVMClassWriter::toConstantpoolIndex(const QByteArray& type)
+{
+    int tp = QVariant::nameToType( type.constData() );
+    switch(tp) {
+        case QVariant::Int:
+            return (qint16)57;
+        case QVariant::UInt:
+            return (qint16)57;
+        case QVariant::Double:
+            return (qint16)59;
+        case QVariant::Bool:
+            return (qint16)56;
+        case QVariant::ByteArray:
+            return (qint16)64;
+        case QVariant::String:
+            return (qint16)60;
+        case QVariant::StringList:
+            return (qint16)67;
+        case QVariant::Map:
+            return (qint16)62;
+        case QVariant::List:
+            return (qint16)61;
+        case QVariant::LongLong:
+            return (qint16)58;
+        case QVariant::ULongLong:
+            return (qint16)58;
+        case QVariant::Url:
+            return (qint16)63;
+        case QVariant::Size:
+            return (qint16)65;
+        case QVariant::SizeF:
+            return (qint16)66;
+        case QVariant::Point:
+            return (qint16)65;
+        case QVariant::PointF:
+            return (qint16)66;
+        case QVariant::Rect:
+            return (qint16)65;
+        case QVariant::RectF:
+            return (qint16)66;
+        case QVariant::Invalid: // fall through
+        case QVariant::UserType: // fall through
+        default:
+            //TODO: think about this case, when can we do this?
+            return (qint16)1;
     }
 }
 
@@ -222,7 +273,7 @@ QString JVMClassWriter::toJavaType(const QByteArray& type)
         case QVariant::ULongLong:
             return "Ljava/lang/Long;";
         case QVariant::Url:
-            return "Ljava/lang/URL";
+            return "Ljava/net/URL;";
         case QVariant::Size:
             return "[I";
         case QVariant::SizeF:
@@ -320,26 +371,32 @@ void JVMClassWriter::writeMethods(QDataStream& data)
         //Access flags, ACC_PUBLIC
         data << (qint16) 0x0001;
         //Name
-        data << (qint16) (66 + i * 3);
+        data << (qint16) (68 + i * 3);
         //Descriptor
-        data << (qint16) (66 + i * 3 + 2);
+        data << (qint16) (68 + i * 3 + 2);
         //Attributes. We only use one attribute, Code.
         data << (qint16) 1;
 
         //Attribute name, "Code" in the constant pool.
         data << (qint16) 7;
         //Length of Code attribute (minus 6 first bytes)
-        data << (qint32) (12 + 9 + 2 * numargs);
+        if(voidreturn)
+            data << (qint32) (12 + 9 + 2 * numargs);
+        else
+            data << (qint32) (12 + 11 + 2 * numargs);
         //Max stack depth, each argument + string + 'this' reference
         data << (qint16) (numargs + 2);
         //Max locals, arguments + string
         data << (qint16) (numargs + 1);
         //Code length
-        data << (qint32) (9 + 2 * numargs);
+        if(voidreturn)
+            data << (qint32) (9 + 2 * numargs);
+        else
+            data << (qint32) (11 + 2 * numargs); //2 extra bytes for the checkcast
         //Bytecode
         data << (qint8) 0x2a; //aload_0, push 'this' on operand stack
         data << (qint8) 0x13; //ldc_w, load string for constant pool on operand stack
-        data << (qint16) (66 + 3*i + 1); //string that represents the method to be called
+        data << (qint16) (68 + 3*i + 1); //string that represents the method to be called
         for(int i = 1; i <= numargs; i++){
             //note, there are shorthand forms for i <= 4, but it's not really needed here,
             //using the same 2-byte version eases size calculations.
@@ -352,9 +409,8 @@ void JVMClassWriter::writeMethods(QDataStream& data)
             data << (qint8) 0x57; //pop, to get rid of the return argument
             data << (qint8) 0xb1; //return
         } else {
-            //The Java compiler adds a check cast here, but we will assume our code works
-            //and not bother with that. We insert a nop for size calculation ease.
-            data << (qint8) 0x00; //nop
+            data << (qint8) 0xc0; //checkcast
+            data << (qint16) toConstantpoolIndex(method.typeName());
             data << (qint8) 0xb0; //areturn, return java object
         }
         //Exceptions, we don't use them here so count = 0
