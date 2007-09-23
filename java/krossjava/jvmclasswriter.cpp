@@ -27,8 +27,8 @@
 //#include <QMap>
 #include <QString>
 #include <QFile>
-//#include <QMetaObject>
-//#include <QMetaMethod>
+#include <QMetaObject>
+#include <QMetaMethod>
 //#include <QHash>
 //#include <QVarLengthArray>
 
@@ -78,6 +78,35 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     * #7 is "Code", used to identify the Code attribute of a method.
     * #8 is the superconstructor, #3.#9.
     * #9 is the signature of the constructor, #5:#6.
+    * #10 is "(Ljava/lang/String;)Ljava/lang/Object;"
+    * #11 is "(Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;"
+    * This continues to #20, which has 10 Objects as arguments.
+    * #21 is "invoke".
+    * #22 is the signature invoke:(Ljava/lang/String;)Ljava/lang/Object;, #21:#10
+    * Up until #32, which is the signature with 10 Objects as argments.
+    * #33 is this.invoke(String), or #1.#22
+    * Until #43, which is this.invoke(String,Object*10), or #1.#32
+    * #44 is "java/lang/Boolean"
+    * #45 is "java/lang/Integer"
+    * #46 is "java/lang/Long"
+    * #47 is "java/lang/Double"
+    * #48 is "java/lang/String"
+    * #49 is "java/util/ArrayList"
+    * #50 is "java/util/Map"
+    * #51 is "java/net/URL"
+    * #52 is "[B" (byte array)
+    * #53 is "[I" (int array)
+    * #54 is "[D" (double array)
+    * #55 until #65 are the classes corresponding to #44 to #54.
+    * (note that the return type of KrossQObject is to be found in #3)
+    * Starting with #66 comes, for each method:
+    *   1) UTF8 name of method
+    *   2) Constant string of the name (used in the code)
+    *   3) UTF8 signature description
+    *
+    * It might be posible to reduce the size of the generated constant pool
+    * by keeping track of generated signature descriptions and using a more
+    * advanced technique to reuse them where possible, but the gains seem small.
     */
 
     QObject* object = m_extension->object();
@@ -85,22 +114,8 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     const QMetaObject* metaobject = object->metaObject();
     const int methodCount = metaobject->methodCount();
 
-/*
-    //The value of the constant_pool_count item is equal to the number of entries in the
-    //constant_pool table plus one.
-    data << (qint16) methodCount + 1;
-
-    //The constant_pool is a table of structures representing various string constants, class
-    //and interface names, field names, and other constants that are referred to within the
-    //ClassFile structure and its substructures.
-    for(int i = 0; i < methodCount; ++i) {
-        //The format of each constant_pool table entry is indicated by its first "tag" byte.
-        //http://java.sun.com/docs/books/jvms/second_edition/html/ClassFile.doc.html#20080
-        data << (qint8) 11; //CONSTANT_InterfaceMethodref
-        //TODO
-    }
-*/
-    data << (qint16) 10; //last index + 1
+    //Constant_pool_count is last index + 1, see verbose description above for the numbers
+    data << (qint16) (65 + 3 * methodCount + 1);
     //Class
     data << (qint8) 7; //CONSTANT_Class
     data << (qint16) 2; //index of name - next pool item
@@ -110,6 +125,7 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     data << (qint16) 4; //index of name - next pool item
     writeUtf8ToPool(data,"org/kde/kdebindings/java/krossjava/KrossQExtension");
 
+    //Constructor
     writeUtf8ToPool(data,"<init>");
     writeUtf8ToPool(data,"(Ljava/lang/Long;)V");
     writeUtf8ToPool(data,"Code");
@@ -120,6 +136,113 @@ void JVMClassWriter::writeConstantPool(QDataStream& data)
     data << (qint8) 12; //CONSTANT_NameAndType
     data << (qint16) 5; // "<init>" in the pool
     data << (qint16) 6; // "(Ljava/lang/Long;)V" in the pool
+
+    //Various invoke() alternatives
+    QString start("(Ljava/lang/String;");
+    QString end(")Ljava/lang/Object;");
+    for(int i=0;i<11;i++){
+        writeUtf8ToPool(data,start + end);
+        start += "Ljava/lang/Object;";
+    }
+    writeUtf8ToPool(data,"invoke");
+
+    for(int i=0;i<11;i++){
+        data << (qint8) 12; //CONSTANT_NameAndType
+        data << (qint16) 21; //"invoke" in the pool
+        data << (qint16) (10 + i); //signature string with i Objects
+    }
+    for(int i=0;i<11;i++){
+        data << (qint8) 10; //CONSTANT_Methodref
+        data << (qint16) 1; //Own class in the pool
+        data << (qint16) (22 + i); //signature of method with i Objects
+    }
+
+    //Return types
+    writeUtf8ToPool(data,"java/lang/Boolean");
+    writeUtf8ToPool(data,"java/lang/Integer");
+    writeUtf8ToPool(data,"java/lang/Long");
+    writeUtf8ToPool(data,"java/lang/Double");
+    writeUtf8ToPool(data,"java/lang/String");
+    writeUtf8ToPool(data,"java/util/ArrayList");
+    writeUtf8ToPool(data,"java/util/Map");
+    writeUtf8ToPool(data,"java/net/URL");
+    writeUtf8ToPool(data,"[B");
+    writeUtf8ToPool(data,"[I");
+    writeUtf8ToPool(data,"[D");
+    for(int i=0;i<11;i++){
+        data << (qint8) 7; //CONSTANT_Class
+        data << (qint16) (44 + i); //index of corresponding string
+    }
+
+    //Methods
+    for(int i = 0; i < methodCount; ++i) {
+        QMetaMethod method = metaobject->method(i);
+        QString signature(method.signature());
+        // Method name
+        writeUtf8ToPool(data,signature.left(signature.indexOf('(')));
+        //String of name
+        data << (qint8) 8; //CONSTANT_String
+        data << (qint16) (66 + i * 3); //index of previous pool item
+        //Parameter string
+        QList<QByteArray> params = method.parameterTypes();
+        QString sig("(");
+        foreach(QByteArray param, params) {
+            sig += toJavaType(param);
+        }
+        sig += ")";
+        sig += toJavaType(QByteArray(method.typeName()));
+        writeUtf8ToPool(data,sig);
+    }
+}
+
+QString JVMClassWriter::toJavaType(const QByteArray& type)
+{
+    int tp = QVariant::nameToType( type.constData() );
+    switch(tp) {
+        case QVariant::Int:
+            return "Ljava/lang/Integer;";
+        case QVariant::UInt:
+            return "Ljava/lang/Integer;";
+        case QVariant::Double:
+            return "Ljava/lang/Double;";
+        case QVariant::Bool:
+            return "Ljava/lang/Boolean;";
+        case QVariant::ByteArray:
+            return "[B";
+        case QVariant::String:
+            return "Ljava/lang/String;";
+        case QVariant::StringList:
+            return "[Ljava/lang/String;";
+        case QVariant::Map:
+            return "Ljava/util/Map;";
+        case QVariant::List:
+            return "Ljava/util/ArrayList;";
+        case QVariant::LongLong:
+            return "Ljava/lang/Long;";
+        case QVariant::ULongLong:
+            return "Ljava/lang/Long;";
+        case QVariant::Url:
+            return "Ljava/lang/URL";
+        case QVariant::Size:
+            return "[I";
+        case QVariant::SizeF:
+            return "[D";
+        case QVariant::Point:
+            return "[I";
+        case QVariant::PointF:
+            return "[D";
+        case QVariant::Rect:
+            return "[I";
+        case QVariant::RectF:
+            return "[D";
+        case QVariant::Invalid: // possible fall through?
+            if(type.isEmpty())
+                return "V";
+        case QVariant::UserType: // fall through
+        default:
+            //TODO: think about this case, when can we do this?
+            return "Lorg/kde/kdebindings/java/krossjava/KrossQExtension;";
+    }
 }
 
 void JVMClassWriter::writeClassInfo(QDataStream& data)
@@ -154,8 +277,7 @@ void JVMClassWriter::writeMethods(QDataStream& data)
     const QMetaObject* metaobject = object->metaObject();
     const int methodCount = metaobject->methodCount();
     // The methods_count is the number of wrapped methods + 1 for the constructor
-    //data << (qint16) (methodCount + 1); //TODO
-    data << (qint16) 1;
+    data << (qint16) (methodCount + 1);
 
     //CONSTRUCTOR
     //Access flags, ACC_PUBLIC
@@ -191,7 +313,55 @@ void JVMClassWriter::writeMethods(QDataStream& data)
     data << (qint16) 0;
 
     //WRAPPER METHODS
-    //TODO
+    for(int i = 0; i < methodCount; ++i) {
+        QMetaMethod method = metaobject->method(i);
+        int numargs = method.parameterTypes().size();
+        bool voidreturn = QString(method.typeName()).isEmpty();
+        //Access flags, ACC_PUBLIC
+        data << (qint16) 0x0001;
+        //Name
+        data << (qint16) (66 + i * 3);
+        //Descriptor
+        data << (qint16) (66 + i * 3 + 2);
+        //Attributes. We only use one attribute, Code.
+        data << (qint16) 1;
+
+        //Attribute name, "Code" in the constant pool.
+        data << (qint16) 7;
+        //Length of Code attribute (minus 6 first bytes)
+        data << (qint32) (12 + 9 + 2 * numargs);
+        //Max stack depth, each argument + string + 'this' reference
+        data << (qint16) (numargs + 2);
+        //Max locals, arguments + string
+        data << (qint16) (numargs + 1);
+        //Code length
+        data << (qint32) (9 + 2 * numargs);
+        //Bytecode
+        data << (qint8) 0x2a; //aload_0, push 'this' on operand stack
+        data << (qint8) 0x13; //ldc_w, load string for constant pool on operand stack
+        data << (qint16) (66 + 3*i + 1); //string that represents the method to be called
+        for(int i = 1; i <= numargs; i++){
+            //note, there are shorthand forms for i <= 4, but it's not really needed here,
+            //using the same 2-byte version eases size calculations.
+            data << (qint8) 0x19; //aload, push an argument on operand stack...
+            data << (qint8) i; //...the ith variable in the frame, being the ith argument
+        }
+        data << (qint8) 0xb7; //invokespecial ...
+        data << (qint16) (33 + numargs); //... with as argument the correct invoke method
+        if(voidreturn){
+            data << (qint8) 0x57; //pop, to get rid of the return argument
+            data << (qint8) 0xb1; //return
+        } else {
+            //The Java compiler adds a check cast here, but we will assume our code works
+            //and not bother with that. We insert a nop for size calculation ease.
+            data << (qint8) 0x00; //nop
+            data << (qint8) 0xb0; //areturn, return java object
+        }
+        //Exceptions, we don't use them here so count = 0
+        data << (qint16) 0;
+        //Attributes, we don't use those either
+        data << (qint16) 0;
+    }
 }
 
 void JVMClassWriter::writeAttributes(QDataStream& data)

@@ -53,6 +53,7 @@ namespace Kross {
             void writeAttributes(QDataStream& data);
 
             void writeUtf8ToPool(QDataStream& data, const QString& str);
+            QString toJavaType(const QByteArray& type);
     };
 
 }
