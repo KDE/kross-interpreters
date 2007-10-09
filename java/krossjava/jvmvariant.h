@@ -33,7 +33,7 @@
 //#include <QSize>
 //#include <QPoint>
 //#include <QRect>
-//#include <QUrl>
+#include <QUrl>
 //#include <QDate>
 //#include <QTime>
 //#include <QDateTime>
