@@ -312,6 +312,20 @@ QStringList RubyScript::functionNames()
     return d->m_functionnames;
 }
 
+static VALUE callFunction2(VALUE args)
+{
+    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+        krossdebug( QString("RubyScript::callFunction2 args=%1").arg( STR2CSTR(rb_inspect(args)) ) );
+    #endif
+    Q_ASSERT( TYPE(args) == T_ARRAY );
+    VALUE self = rb_ary_entry(args, 0);
+    Q_ASSERT( ! NIL_P(self) );
+    ID functionId = rb_ary_entry(args, 1);
+    VALUE arguments = rb_ary_entry(args, 2);
+    Q_ASSERT( TYPE(arguments) == T_ARRAY );
+    return rb_funcall2(self, functionId, RARRAY(arguments)->len, RARRAY(arguments)->ptr);
+}
+
 QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
 {
     QVariant result;
@@ -344,9 +358,13 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
             rargs[i] = RubyType<QVariant>::toVALUE( args[i] );
         }
 
-        //VALUE r = rb_eval_string("myFunc()");
-        VALUE v = rb_funcall2(d->m_script, rb_intern(name.toLatin1()), rnargs, rargs);
+        VALUE args = rb_ary_new2(3);
+        rb_ary_store(args, 0, d->m_script); //self
+        rb_ary_store(args, 1, rb_intern(name.toLatin1()));
+        rb_ary_store(args, 2, rb_ary_new4(rnargs, rargs));
+        VALUE v = rb_rescue2((VALUE(*)(...))callFunction2, args, (VALUE(*)(...))callExecuteException, d->m_script, rb_eException, 0);
         result = RubyType<QVariant>::toVariant(v);
+
         delete[] rargs;
     }
 
