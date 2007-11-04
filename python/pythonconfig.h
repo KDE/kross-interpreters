@@ -79,7 +79,7 @@
 //#define KROSS_PYTHON_FUNCTION_DEBUG
 
 // Enable debugging for Kross::PythonType and Kross::PythonMetaTypeFactory
-//#define KROSS_PYTHON_VARIANT_DEBUG
+#define KROSS_PYTHON_VARIANT_DEBUG
 
 #define KROSS_PYTHON_EXCEPTION_DEBUG
 

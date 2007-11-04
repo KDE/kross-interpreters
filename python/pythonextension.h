@@ -157,7 +157,7 @@ namespace Kross {
             /// Set a property value.
             Py::Object setProperty(const Py::Tuple&);
 
-            //Py::Object toPointer(const Py::Tuple&);
+            Py::Object toPointer(const Py::Tuple&);
             //Py::Object fromPointer(const Py::Tuple&);
 
             /// Connect signal, slots or python functions together.

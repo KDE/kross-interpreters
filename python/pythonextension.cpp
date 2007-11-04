@@ -105,7 +105,7 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
     //add_varargs_method("dynamicPropertyNames", &PythonExtension::getDynamicPropertyNames, "");
     add_varargs_method("property", &PythonExtension::getProperty, "Return a property value.");
     add_varargs_method("setProperty", &PythonExtension::setProperty, "Set a property value.");
-    //add_varargs_method("__toPointer__", &PythonExtension::toPointer, "Return the void* pointer of the QObject.");
+    add_varargs_method("__toPointer__", &PythonExtension::toPointer, "Return the void* pointer of the QObject.");
     //add_varargs_method("__fromPointer__", &PythonExtension::fromPointer, "Set the QObject* to the passed void* pointer.");
     add_varargs_method("connect", &PythonExtension::doConnect, "Connect signal, slots or python functions together.");
     add_varargs_method("disconnect", &PythonExtension::doDisconnect, "Disconnect signal, slots or python functions that are connected together.");
@@ -368,16 +368,17 @@ Py::Object PythonExtension::setProperty(const Py::Tuple& args)
     ) );
 }
 
-/*
 Py::Object PythonExtension::toPointer(const Py::Tuple&)
 {
-    PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) d->object.data() );
+    QObject* obj = d->object;
+    PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) obj );
     //PyObject* o = Py_BuildValue ("N", mw);
     return Py::asObject( qobjectptr );
     //PythonPyQtExtension* pyqtextension = new PythonPyQtExtension(self, args);
     //return pyqtextension;
 }
 
+/*
 Py::Object PythonExtension::fromPointer(fromPointer(const Py::Tuple&)
 {
     QObject* object = dynamic_cast< QObject* >(PyLong_AsVoidPtr( args[0] ));
