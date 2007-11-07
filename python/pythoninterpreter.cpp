@@ -327,7 +327,6 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
         PyObject *next;
         while (traceback && traceback != Py_None) {
             PyFrameObject *frame = (PyFrameObject*)PyObject_GetAttrString(traceback, const_cast< char* >("tb_frame"));
-            Py_DECREF(frame);
             {
                 PyObject *getobj = PyObject_GetAttrString(traceback, const_cast< char* >("tb_lineno") );
                 lineno = PyInt_AsLong(getobj);
@@ -343,6 +342,8 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
             //const char* filename = PyString_AsString(frame->f_code->co_filename);
             //const char* name = PyString_AsString(frame->f_code->co_name);
             //errorlist.append( QString("%1#%2: \"%3\"").arg(filename).arg(lineno).arg(name) );
+
+            //Py_DECREF(frame); // don't free cause we don't own it.
 
             next = PyObject_GetAttrString(traceback, const_cast< char* >("tb_next") );
             Py_DECREF(traceback);
