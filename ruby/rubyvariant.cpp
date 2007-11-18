@@ -132,7 +132,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krosswarning( QString("RubyType<QVariant>::toVALUE Not possible to convert the QVariant '%1' with type '%2' (%3) to a VALUE.").arg(v.toString()).arg(v.typeName()).arg(v.type()) );
             #endif
-            //throw Py::TypeError( QString("Variant of type %1 can not be casted to a python object.").arg(v.typeName()).toLatin1().constData() );
+            //throw Py::TypeError( QString("Variant of type %1 can not be casted to a Ruby object.").arg(v.typeName()).toLatin1().constData() );
             return 0;
         }
     }
@@ -141,7 +141,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
 QVariant RubyType<QVariant>::toVariant(VALUE value)
 {
     #ifdef KROSS_RUBY_VARIANT_DEBUG
-        krossdebug(QString("RubyType<QVariant>::toVariant of type %1").arg(TYPE(value)));
+        krossdebug(QString("RubyType<QVariant>::toVariant of type=%1 inspect=%2").arg(TYPE(value)).arg(STR2CSTR(rb_inspect(value))));
     #endif
 
     switch( TYPE( value ) )

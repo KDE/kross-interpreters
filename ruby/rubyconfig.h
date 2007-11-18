@@ -1,5 +1,5 @@
 /***************************************************************************
- * pythonconfig.h
+ * rubyconfig.h
  * This file is part of the KDE project
  * copyright (C)2005 by Cyrille Berger (cberger@cberger.net)
  *

@@ -183,7 +183,7 @@ VALUE RubyExtension::toVoidPtr(VALUE self)
 VALUE RubyExtension::fromVoidPtr(VALUE self, VALUE obj)
 {
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
-        krossdebug("toVoidPtr...");
+        krossdebug("fromVoidPtr...");
     #endif
     QObject* qobj;
     Data_Get_Struct(obj, QObject, qobj);
