@@ -24,6 +24,10 @@
 #include <kross/core/krossconfig.h>
 #include <falcon/vm.h>
 
+#include <QMetaClassInfo>
+#include <QMetaEnum>
+#include <QMetaMethod>
+
 namespace Kross {
 
     /** 
@@ -62,6 +66,43 @@ namespace Kross {
         * \return true if operation was possible, false in case of error.
         */
         bool variantToItem( const QVariant &variant, Falcon::Item &item ); 
+        
+        /**
+        * Creates an instance of the Falcon representation of a metaclass info.
+        * \param qmi metaclass info to be converted
+        * \return a CoreObject holding a Falcon "QMetaClassInfo" instance.
+        */
+        Falcon::CoreObject *MetaClassInfoToObject( const QMetaClassInfo &qmi );
+        
+        /**
+        * Creates an instance of the Falcon representation of a QMetaEnum info.
+        * \param qmi metaclass info to be converted
+        * \return a CoreObject holding a Falcon "QMetaEnum" instance.
+        */
+        Falcon::CoreObject *MetaEnumToObject( const QMetaEnum &qmi );
+        
+        /**
+        * Creates an instance of the Falcon representation of a QMetaMethod info.
+        * \param qmi metaclass info to be converted
+        * \return a CoreObject holding a Falcon "QMetaMethod" instance.
+        */
+        Falcon::CoreObject *MetaMethodToObject( const QMetaMethod &qmi );
+        
+        /**
+        * Creates an instance of the Falcon representation of a QMetaProperty info.
+        * \param qmp metaclass property to be converted
+        * \return a CoreObject holding a Falcon "QMetaProperty" instance.
+        */
+        Falcon::CoreObject *MetaPropertyToObject( const QMetaProperty &qmp);
+        
+        /**
+        * Creates an instance of the Falcon representation of a QMetaObject info.
+        * Notice that we want here a QMetaObject pointer, which is shared across
+        * all the program. We don't own it, and we suppose it's always available.
+        * \param qmo metaclass object to be converted
+        * \return a CoreObject holding a Falcon "QMetaObject" instance.
+        */
+        Falcon::CoreObject *MetaObjectToObject( const QMetaObject *qmo );
     };
 }
 

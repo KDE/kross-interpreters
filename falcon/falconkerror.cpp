@@ -1,7 +1,7 @@
 /***************************************************************************
- * falconmodule.h
+ * falconkerror.cpp
  * This file is part of the KDE project
- * copyright (C)2004-2007 by jonnymind@falconpl.org
+ * copyright (C)2007-2008 by Giancarlo Niccolai (jonnymind@falconpl.org)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,25 +17,18 @@
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
 
-#ifndef KROSS_FALCONMODULE_H
-#define KROSS_FALCONMODULE_H
-
-
-namespace Falcon {
-    /// Forward declaration for Module class;
-    class Module;
-}
+#include "falconkerror.h"
+#include <falcon/cobject.h>
+#include <falcon/vm.h>
 
 namespace Kross {
-    
-    /**
-    * Creates the Kross-Falcon integration module.
-    * This factory function returns a Falcon module which is injected
-    * in scripts. The module contains the glue between Falcon and Kross/KDE;
-    * QVariant special types, Action reflections and so on.
-    */
-    
-    Falcon::Module *CreateKrossModule();
-}
 
-#endif
+FALCON_FUNC  FalconKrossError_init ( ::Falcon::VMachine *vm )
+{
+   Falcon::CoreObject *einst = vm->self().asObject();
+   if( einst->getUserData() == 0 )
+      einst->setUserData( new Falcon::ErrorCarrier( new FalconKrossError ) );
+
+   ::Falcon::core::Error_init( vm );
+}
+}

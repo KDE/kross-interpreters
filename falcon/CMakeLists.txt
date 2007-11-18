@@ -23,6 +23,13 @@ set(krossfalcon_PART_SRCS
    falconscript.cpp
    falconkfvm.cpp
    falconmodule.cpp
+   falconkerror.cpp
+   falconqobject.cpp
+   falconmcinfo.cpp
+   falconmetaenum.cpp
+   falconmetamethod.cpp
+   falconmetaprop.cpp
+   falconmetaobject.cpp
 )
 
 kde4_add_plugin(krossfalcon ${krossfalcon_PART_SRCS})

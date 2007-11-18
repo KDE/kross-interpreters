@@ -54,95 +54,95 @@ namespace Kross {
             {}
     };
 
-FalconInterpreter::FalconInterpreter(InterpreterInfo* info)
-    : Kross::Interpreter(info),
-    d( new FalconInterpreterPrivate )
-{
-    // Initialize the falcon interpreter.
-    initialize();
+    FalconInterpreter::FalconInterpreter(InterpreterInfo* info)
+        : Kross::Interpreter(info),
+        d( new FalconInterpreterPrivate )
+    {
+        // Initialize the falcon interpreter.
+        initialize();
+        
+        //First of all, we need a standard module loader.
+        //TODO: set here extra load paths
+        d->m_loader = new Falcon::FlcLoader( "." );
+        
+        // however, add system falcon paths, which are safe.
+        d->m_loader->addFalconPath();
+        
+        // Then, tell that we're the ones listening for errors in compile/load steps
+        d->m_errHandler = new Kross::KErrHandler( this );
+        d->m_loader->errorHandler( d->m_errHandler );
+        
+        // we can create an instance of the built-in core module
+        d->m_core_module = Falcon::core_module_init();
+        
+        // and then load the rtl.
+        d->m_rtl_module = d->m_loader->loadName( "falcon_rtl" );
+        
+        // on error, the error handler is invoked, and it will call our setError method.
+        //    d->m_rtl_module will be 0.
+        
+        // and get an instance of our module
+        d->m_kross_module = CreateKrossModule();
+        
+        #ifdef KROSS_FALCON_INTERPRETER_DEBUG
+            //TODO: Get Falcon Infos
+            //krossdebug(QString("Falcon Version: %1").arg());
+        #endif
+    }
     
-    //First of all, we need a standard module loader.
-    //TODO: set here extra load paths
-    d->m_loader = new Falcon::FlcLoader( "." );
+    FalconInterpreter::~FalconInterpreter()
+    {
+        // clear Falcon loader
+        delete d->m_loader;
+        delete d->m_errHandler;
+        
+        // remove our reference (and probably delete) for loaded modules.
+        d->m_core_module->decref();
+        
+        // we may have not loaded it
+        if ( d->m_rtl_module != 0 )
+            d->m_rtl_module->decref();
+        
+        d->m_kross_module->decref();
+        delete d;
+    }
     
-    // however, add system falcon paths, which are safe.
-    d->m_loader->addFalconPath();
+    void FalconInterpreter::initialize()
+    {
+        // not necessary, but currently this is the only locale Falcon engine has.
+        Falcon::setEngineLanguage( "C" );
+        
+        // If we had special KDE memory allocation functions, we should set them here.
+        Falcon::EngineData data;
+        
+        // initialize the engine using gathered data.
+        Falcon::Init( data );
+    }
     
-    // Then, tell that we're the ones listening for errors in compile/load steps
-    d->m_errHandler = new Kross::KErrHandler( this );
-    d->m_loader->errorHandler( d->m_errHandler );
+    void FalconInterpreter::finalize()
+    {
+        // nothing to do in Falcon.
+    }
     
-    // we can create an instance of the built-in core module
-    d->m_core_module = Falcon::core_module_init();
+    Kross::Script* FalconInterpreter::createScript(Kross::Action* Action)
+    {
+        //if(hadError()) return 0;
+        return new FalconScript(this, Action);
+    }
     
-    // and then load the rtl.
-    d->m_rtl_module = d->m_loader->loadName( "falcon_rtl" );
+    ::Falcon::Module* FalconInterpreter::coreModule()
+    {
+        return d->m_core_module;
+    }
     
-    // on error, the error handler is invoked, and it will call our setError method.
-    //    d->m_rtl_module will be 0.
+    ::Falcon::Module* FalconInterpreter::rtlModule()
+    {
+        return d->m_rtl_module;
+    }
     
-    // and get an instance of our module
-    d->m_kross_module = CreateKrossModule();
-    
-    #ifdef KROSS_FALCON_INTERPRETER_DEBUG
-        //TODO: Get Falcon Infos
-        //krossdebug(QString("Falcon Version: %1").arg());
-    #endif
-}
-
-FalconInterpreter::~FalconInterpreter()
-{
-    // clear Falcon loader
-    delete d->m_loader;
-    delete d->m_errHandler;
-    
-    // remove our reference (and probably delete) for loaded modules.
-    d->m_core_module->decref();
-    
-    // we may have not loaded it
-    if ( d->m_rtl_module != 0 )
-        d->m_rtl_module->decref();
-    
-    d->m_kross_module->decref();
-    delete d;
-}
-
-void FalconInterpreter::initialize()
-{
-    // not necessary, but currently this is the only locale Falcon engine has.
-    Falcon::setEngineLanguage( "C" );
-    
-    // If we had special KDE memory allocation functions, we should set them here.
-    Falcon::EngineData data;
-    
-    // initialize the engine using gathered data.
-    Falcon::Init( data );
-}
-
-void FalconInterpreter::finalize()
-{
-    // nothing to do in Falcon.
-}
-
-Kross::Script* FalconInterpreter::createScript(Kross::Action* Action)
-{
-    //if(hadError()) return 0;
-    return new FalconScript(this, Action);
-}
-
-::Falcon::Module* FalconInterpreter::coreModule()
-{
-    return d->m_core_module;
-}
-
-::Falcon::Module* FalconInterpreter::rtlModule()
-{
-    return d->m_rtl_module;
-}
-
-::Falcon::Module* FalconInterpreter::krossModule()
-{
-    return d->m_kross_module;
-}
+    ::Falcon::Module* FalconInterpreter::krossModule()
+    {
+        return d->m_kross_module;
+    }
 
 }

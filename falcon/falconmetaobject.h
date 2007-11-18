@@ -1,7 +1,7 @@
 /***************************************************************************
- * falconmodule.h
+ * falconmetaobject.h
  * This file is part of the KDE project
- * copyright (C)2004-2007 by jonnymind@falconpl.org
+ * copyright (C)2004-2006 by Giancarlo Niccolai (jonnymind@falconpl.org)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,25 +17,32 @@
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
 
-#ifndef KROSS_FALCONMODULE_H
-#define KROSS_FALCONMODULE_H
+#ifndef FALCONMETAOBJECT_H
 
+#include <falcon/module.h>
+#include <falcon/cobject.h>
+#include <QMetaObject>
 
-namespace Falcon {
-    /// Forward declaration for Module class;
-    class Module;
-}
-
-namespace Kross {
-    
+namespace Kross
+{
     /**
-    * Creates the Kross-Falcon integration module.
-    * This factory function returns a Falcon module which is injected
-    * in scripts. The module contains the glue between Falcon and Kross/KDE;
-    * QVariant special types, Action reflections and so on.
+    * Creates the reflected "QMetaObject"
     */
-    
-    Falcon::Module *CreateKrossModule();
+    void DeclareFalconMetaObject( Falcon::Module *self );
+
+    /**
+    * Reflects QMetaObject in Falcon objects
+    */
+    class FalconMetaObjectData: public Falcon::UserData
+    {
+        const QMetaObject *m_metaObject;
+        
+    public:
+        FalconMetaObjectData( const QMetaObject *base );
+        
+        virtual Falcon::UserData *clone();
+        const QMetaObject &metaObject() const { return *m_metaObject; }
+    };
 }
 
 #endif

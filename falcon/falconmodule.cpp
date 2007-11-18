@@ -17,19 +17,27 @@
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
 
-#include "falconmodule.h"
+
 #include <QtGlobal>
 #include <falcon/module.h>
 #include <falcon/item.h>
 #include <falcon/vm.h>
 #include <falcon/error.h>
 
+#include "falconmodule.h"
+#include "falconkerror.h"
+#include "falconmcinfo.h"
+#include "falconmetamethod.h"
+#include "falconmetaenum.h"
+#include "falconmetaprop.h"
+#include "falconmetaobject.h"
+
 namespace Kross {
 
     /****************************************************
     Falcon QPoint class
     *****************************************************/
-    void  _qpoint_init( Falcon::VMachine *vm )
+    void  _falcon_qpoint_init( Falcon::VMachine *vm )
     {
         Falcon::CoreObject *self = vm->self().asObject();
         Falcon::Item *i_x = vm->param(0);
@@ -45,10 +53,10 @@ namespace Kross {
         }
 
         self->setProperty( "x", i_x == 0 ? (Falcon::int64) 0: *i_x );
-        self->setProperty( "y", i_x == 0 ? (Falcon::int64) 0: *i_x );
+        self->setProperty( "y", i_y == 0 ? (Falcon::int64) 0: *i_y );
     }
 
-    void  _qpoint_compare( Falcon::VMachine *vm )
+    void  _falcon_qpoint_compare( Falcon::VMachine *vm )
     {
         Falcon::CoreObject *self = vm->self().asObject();
         Falcon::Item *i_other = vm->param(0);
@@ -99,7 +107,7 @@ namespace Kross {
     }
     
     
-    void _qpoint_manatthanLength( Falcon::VMachine *vm )
+    void _falcon_qpoint_manatthanLength( Falcon::VMachine *vm )
     {
         Falcon::CoreObject *self = vm->self().asObject();
     
@@ -136,19 +144,40 @@ namespace Kross {
     {
         Falcon::Module *self = new Falcon::Module();
         
-        //TODO: QObject and QAction
-        self->name( "falcon_rtl" );
+        self->name( "KrossBinding" );
         self->engineVersion( FALCON_VERSION_NUM );
         
         // TODO: integrate with kross versioning
         self->version( 0, 1, 0 );
    
+        // The KrossError class
+        Falcon::Symbol *error_class = self->addExternalRef( "Error" ); // it's external
+        Falcon::Symbol *kerr_cls = self->addClass( "KrossError", Kross::FalconKrossError_init );
+        kerr_cls->getClassDef()->addInheritance(  new Falcon::InheritDef( error_class ) );
+
+        // MetaClassInfo
+        DeclareFalconMetaclassInfo( self );
+        
+        // MetaEnum
+        DeclareFalconMetaEnum( self );
+        
+        // MetaMethod
+        DeclareFalconMetaMethod( self );
+        
+        // MetaProperty
+        DeclareFalconMetaProperty( self );
+        
+        // MetaObject
+        DeclareFalconMetaObject( self );
+        
+        
+        
         // QPoint
-        Falcon::Symbol *qpoint_class = self->addClass( "QPoint", _qpoint_init );
+        Falcon::Symbol *qpoint_class = self->addClass( "QPoint", _falcon_qpoint_init );
         self->addClassProperty( qpoint_class, "x" );
         self->addClassProperty( qpoint_class, "y" );
-        self->addClassMethod( qpoint_class, "compare", _qpoint_compare );
-        self->addClassMethod( qpoint_class, "manatthanLength", _qpoint_manatthanLength );
+        self->addClassMethod( qpoint_class, "compare", _falcon_qpoint_compare );
+        self->addClassMethod( qpoint_class, "manatthanLength", _falcon_qpoint_manatthanLength );
         
         /* TODO Add those:
         self->addClassMethod( qpoint_class, "add", _qpoint_add );
@@ -156,6 +185,7 @@ namespace Kross {
         self->addClassMethod( qpoint_class, "subtract", _qpoint_subtract );
         self->addClassMethod( qpoint_class, "divide", _qpoint_divide );
         */
+        
         
     
         return self;

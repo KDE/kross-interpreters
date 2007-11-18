@@ -1,7 +1,7 @@
 /***************************************************************************
- * falconmodule.h
+ * falconmetaenum.h
  * This file is part of the KDE project
- * copyright (C)2004-2007 by jonnymind@falconpl.org
+ * copyright (C)2004-2006 by Giancarlo Niccolai (jonnymind@falconpl.org)
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,25 +17,33 @@
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
 
-#ifndef KROSS_FALCONMODULE_H
-#define KROSS_FALCONMODULE_H
+#ifndef FALCONMETAENUM_H
 
+#include <falcon/module.h>
+#include <falcon/cobject.h>
+#include <QMetaEnum>
 
-namespace Falcon {
-    /// Forward declaration for Module class;
-    class Module;
-}
-
-namespace Kross {
-    
+namespace Kross
+{
     /**
-    * Creates the Kross-Falcon integration module.
-    * This factory function returns a Falcon module which is injected
-    * in scripts. The module contains the glue between Falcon and Kross/KDE;
-    * QVariant special types, Action reflections and so on.
+    * Creates the reflected "QMetaEnum"
     */
     
-    Falcon::Module *CreateKrossModule();
+    void DeclareFalconMetaEnum( Falcon::Module *self );
+
+    /**
+    * Reflects QMetaEnum in Falcon objects
+    */
+    class FalconMetaEnumData: public Falcon::UserData
+    {
+        QMetaEnum m_metaEnum;
+        
+    public:
+        FalconMetaEnumData( const QMetaEnum &base );
+        
+        virtual Falcon::UserData *clone();
+        const QMetaEnum &metaEnum() const { return m_metaEnum; }
+    };
 }
 
 #endif

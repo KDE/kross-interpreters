@@ -20,6 +20,7 @@
 #include "falconerrhand.h"
 #include <falcon/autowstring.h>
 #include <falcon/autocstring.h>
+#include <QTextStream>
 
 namespace Kross {
 
