@@ -647,19 +647,24 @@ Py::Object PythonExtension::sequence_concat(const Py::Object& obj)
     throw Py::RuntimeError( QString("Unsupported: PythonExtension::sequence_concat %1").arg(obj.as_string().c_str()).toLatin1().constData() );
 }
 
-Py::Object PythonExtension::sequence_repeat(int index)
+Py::Object PythonExtension::sequence_repeat(Py_ssize_t index)
 {
-    throw Py::RuntimeError( QString("Unsupported: PythonExtension::sequence_repeat %1").arg(index).toLatin1().constData() );
+    // what we do here is rather evil and does not make sense at all. We assume that something
+    // like "myobjinstance * 2" means, that the pointer-address should be multiplied by 2. This
+    // is the case to keep backward-compatibility with SuperKaramba. In normal cases you wan't
+    // use such kind of logic within your python scripts anyway + we can't guarantee that the
+    // resulting number may not overflow or something like this.
+    return Py::Long( long( (QObject*) d->object ) * index );
 }
 
-Py::Object PythonExtension::sequence_item(int index)
+Py::Object PythonExtension::sequence_item(Py_ssize_t index)
 {
     if(index < d->object->children().count())
         return Py::asObject(new PythonExtension( d->object->children().at(index) ));
     return Py::asObject( Py::new_reference_to( NULL ) );
 }
 
-Py::Object PythonExtension::sequence_slice(int from, int to)
+Py::Object PythonExtension::sequence_slice(Py_ssize_t from, Py_ssize_t to)
 {
     Py::List list;
     if(from >= 0) {
@@ -670,12 +675,12 @@ Py::Object PythonExtension::sequence_slice(int from, int to)
     return list;
 }
 
-int PythonExtension::sequence_ass_item(int index, const Py::Object& obj)
+int PythonExtension::sequence_ass_item(Py_ssize_t index, const Py::Object& obj)
 {
     throw Py::RuntimeError( QString("Unsupported: PythonExtension::sequence_ass_item %1 %2").arg(index).arg(obj.as_string().c_str()).toLatin1().constData() );
 }
 
-int PythonExtension::sequence_ass_slice(int from, int to, const Py::Object& obj)
+int PythonExtension::sequence_ass_slice(Py_ssize_t from, Py_ssize_t to, const Py::Object& obj)
 {
     throw Py::RuntimeError( QString("Unsupported: PythonExtension::sequence_ass_slice %1 %2 %3").arg(from).arg(to).arg(obj.as_string().c_str()).toLatin1().constData() );
 }

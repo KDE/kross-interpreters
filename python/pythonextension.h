@@ -98,11 +98,11 @@ namespace Kross {
             // Sequence
             virtual int sequence_length();
             virtual Py::Object sequence_concat(const Py::Object&);
-            virtual Py::Object sequence_repeat(int);
-            virtual Py::Object sequence_item(int);
-            virtual Py::Object sequence_slice(int, int);
-            virtual int sequence_ass_item(int, const Py::Object&);
-            virtual int sequence_ass_slice(int, int, const Py::Object&);
+            virtual Py::Object sequence_repeat(Py_ssize_t);
+            virtual Py::Object sequence_item(Py_ssize_t);
+            virtual Py::Object sequence_slice(Py_ssize_t, Py_ssize_t);
+            virtual int sequence_ass_item(Py_ssize_t, const Py::Object&);
+            virtual int sequence_ass_slice(Py_ssize_t, Py_ssize_t, const Py::Object&);
 
             // Mapping
             virtual int mapping_length();
