@@ -52,7 +52,8 @@ namespace Kross {
     {
         Q_ASSERT(object);
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            d->debuginfo = QString("name=%1 class=%2 methodindex=%3").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex);
+            QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
+            d->debuginfo = QString("name=%1 class=%2 methodindex=%3 signature=%4").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex).arg(metamethod.signature());
             krossdebug( QString("RubyCallCache Ctor %1 ").arg(d->debuginfo) );
         #endif
     }
