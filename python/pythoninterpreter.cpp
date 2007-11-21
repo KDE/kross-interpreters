@@ -176,6 +176,8 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "           mod = __main__._import(self.script, name, globals, locals, fromlist)\n"
 #endif
         "           if mod == None:\n"
+        "               if name == 'qt':\n"
+        "                   raise ImportError('Import of the PyQt3 module is not allowed. Please use PyQt4 instead.')\n"
         //"               print \"2===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
 #if PY_MAJOR_VERSION >= 3 || (PY_MAJOR_VERSION >= 2 && PY_MINOR_VERSION >= 5)
         "               mod = self.realImporter(name, globals, locals, fromlist, level)\n"
