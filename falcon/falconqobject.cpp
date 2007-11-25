@@ -147,25 +147,243 @@ namespace Kross
         }
     }
 
+/*
+    static void _falcon_qobject_connect( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_disconnect( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_dumpObjectInfo( Falcon::VMachine *vm )
+    {
+    }
+    
+    static void _falcon_qobject_dumpObjectTree( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_findChild( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_findChildren ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_inherits ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_installEventFilter ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_isWidgetType ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_killTimer ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_killTimer ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_objectName ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_parent ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_property ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_removeEventFilter ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_setObjectName ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_setParent ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_setProperty( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_signalsBlocked ( Falcon::VMachine *vm )
+    {
+    }
+    
+    
+    static void _falcon_qobject_startTimer ( Falcon::VMachine *vm )
+    {
+    }
 
-    void _falcon_qobject_connect( Falcon::VMachine *vm );
-    void _falcon_qobject_disconnect( Falcon::VMachine *vm );
-    void _falcon_qobject_dumpObjectInfo( Falcon::VMachine *vm );
-    void _falcon_qobject_dumpObjectTree( Falcon::VMachine *vm );
-    void _falcon_qobject_findChild( Falcon::VMachine *vm );
-    void _falcon_qobject_findChildren ( Falcon::VMachine *vm );
-    void _falcon_qobject_inherits ( Falcon::VMachine *vm );
-    void _falcon_qobject_installEventFilter ( Falcon::VMachine *vm );
-    void _falcon_qobject_isWidgetType ( Falcon::VMachine *vm );
-    void _falcon_qobject_killTimer ( Falcon::VMachine *vm );
-    void _falcon_qobject_killTimer ( Falcon::VMachine *vm );
-    void _falcon_qobject_objectName ( Falcon::VMachine *vm );
-    void _falcon_qobject_parent ( Falcon::VMachine *vm );
-    void _falcon_qobject_property ( Falcon::VMachine *vm );
-    void _falcon_qobject_removeEventFilter ( Falcon::VMachine *vm );
-    void _falcon_qobject_setObjectName ( Falcon::VMachine *vm );
-    void _falcon_qobject_setParent ( Falcon::VMachine *vm );
-    void _falcon_qobject_setProperty( Falcon::VMachine *vm );
-    void _falcon_qobject_signalsBlocked ( Falcon::VMachine *vm );
-    void _falcon_qobject_startTimer ( Falcon::VMachine *vm );
+    static void _falcon_qobject_static_connect ( Falcon::VMachine *vm )
+    {
+    }
+    
+    static void _falcon_qobject_static_disconnect ( Falcon::VMachine *vm )
+    {
+    }
+    
+    static void _falcon_qobject_static_staticMetaObject( Falcon::VMachine *vm )
+    {
+    }
+    
+    static void _falcon_qobject_static_tr( Falcon::VMachine *vm )
+    {
+    }
+    
+    static void _falcon_qobject_static_trUtf8( Falcon::VMachine *vm )
+    {
+    }
+
+
+    
+    void DeclareFalconQObject( Falcon::Module *self )
+    {
+        Falcon::Symbol *qo_class = self->addClass( "QObject", _falcon_qobject_init );
+        // the symbol is exported, so scripts can create qobjects
+        
+        self->addClassMethod( qo_class, "blockSignals", _falcon_qobject_blockSignals );
+        self->addClassMethod( qo_class, "connect", _falcon_qobject_connect );
+        self->addClassMethod( qo_class, "disconnect", _falcon_qobject_disconnect );
+        self->addClassMethod( qo_class, "dumpObjectInfo", _falcon_qobject_dumpObjectInfo );
+        self->addClassMethod( qo_class, "dumpObjectTree", _falcon_qobject_dumpObjectTree );
+        self->addClassMethod( qo_class, "findChild", _falcon_qobject_findChild );
+        self->addClassMethod( qo_class, "findChildren", _falcon_qobject_findChildren );
+        self->addClassMethod( qo_class, "inherits", _falcon_qobject_inherits );
+        self->addClassMethod( qo_class, "installEventFilter", _falcon_qobject_installEventFilter );
+        self->addClassMethod( qo_class, "isWidgetType", _falcon_qobject_isWidgetType );
+        self->addClassMethod( qo_class, "killTimer", _falcon_qobject_killTimer );
+        self->addClassMethod( qo_class, "objectName", _falcon_qobject_objectName );
+        self->addClassMethod( qo_class, "parent", _falcon_qobject_parent );
+        self->addClassMethod( qo_class, "property", _falcon_qobject_property );
+        self->addClassMethod( qo_class, "removeEventFilter", _falcon_qobject_removeEventFilter );
+        self->addClassMethod( qo_class, "setObjectName", _falcon_qobject_setObjectName );
+        self->addClassMethod( qo_class, "setParent", _falcon_qobject_setParent );
+        self->addClassMethod( qo_class, "setProperty", _falcon_qobject_setProperty );
+        self->addClassMethod( qo_class, "signalsBlocked", _falcon_qobject_signalsBlocked );
+        self->addClassMethod( qo_class, "startTimer", _falcon_qobject_startTimer );
+        
+        
+        self->addConstant( "QOBJECT_", (Falcon::int64) QMetaMethod::Method );
+        self->addConstant( "QMT_SLOT", (Falcon::int64) QMetaMethod::Slot );
+        self->addConstant( "QMT_SIGNAL", (Falcon::int64) QMetaMethod::Signal );
+    }
+*/
+
+    /*
+        code formerly used in falcon kvm
+    Falcon::CoreObject *KFVM::MetaClassInfoToObject( const QMetaClassInfo &qmi )
+    {
+        Falcon::Item *i_qmi = findGlobalItem( "QMetaClassInfo" );
+        Q_ASSERT( i_qmi != 0 );
+        // if it's a class, then we can create an instance from that
+        if ( i_qmi->isClass() )
+        {
+            Falcon::CoreObject *instance = i_qmi->asClass()->createInstance();
+            
+            Falcon::String *sName = new Falcon::GarbageString( this, qmi.name() );
+            instance->setProperty( "name", sName );
+            
+            Falcon::String *sValue = new Falcon::GarbageString( this, qmi.value() );
+            instance->setProperty( "value", sValue );
+            return instance;
+        }
+        
+        return 0;
+    }
+    
+    
+    Falcon::CoreObject *KFVM::MetaEnumToObject( const QMetaEnum &qmi )
+    {
+        Falcon::Item *i_qme = findGlobalItem( "QMetaEnum" );
+        Q_ASSERT( i_qme != 0 );
+        // if it's a class, then we can create an instance from that
+        if ( i_qme->isClass() )
+        {
+            Falcon::CoreObject *instance = i_qme->asClass()->createInstance();
+            instance->setUserData( new FalconMetaEnumData( qmi ) );
+            return instance;
+        }
+        
+        return 0;
+    }
+    
+    
+    Falcon::CoreObject *KFVM::MetaMethodToObject( const QMetaMethod &qmi )
+    {
+        Falcon::Item *i_qme = findGlobalItem( "QMetaMethod" );
+        Q_ASSERT( i_qme != 0 );
+        // if it's a class, then we can create an instance from that
+        if ( i_qme->isClass() )
+        {
+            Falcon::CoreObject *instance = i_qme->asClass()->createInstance();
+            instance->setUserData( new FalconMetaMethodData( qmi ) );
+            return instance;
+        }
+        
+        return 0;
+    }
+    
+    
+    Falcon::CoreObject *KFVM::MetaPropertyToObject( const QMetaProperty &qmp)
+    {
+        Falcon::Item *i_qmp = findGlobalItem( "QMetaProperty" );
+        Q_ASSERT( i_qmp != 0 );
+        // if it's a class, then we can create an instance from that
+        if ( i_qmp->isClass() )
+        {
+            Falcon::CoreObject *instance = i_qmp->asClass()->createInstance();
+            instance->setUserData( new FalconMetaPropertyData( qmp ) );
+            return instance;
+        }
+        
+        return 0;
+    }
+    
+    Falcon::CoreObject *KFVM::MetaObjectToObject( const QMetaObject *qmo )
+    {
+        Falcon::Item *i_qmo = findGlobalItem( "QMetaObject" );
+        Q_ASSERT( i_qmo != 0 );
+        // if it's a class, then we can create an instance from that
+        if ( i_qmo->isClass() )
+        {
+            Falcon::CoreObject *instance = i_qmo->asClass()->createInstance();
+            instance->setUserData( new FalconMetaObjectData( qmo ) );
+            return instance;
+        }
+        
+        return 0;
+    }
+    */
 }

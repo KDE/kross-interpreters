@@ -25,10 +25,7 @@
 #include <QVariant>
 #include <QMetaType>
 
-#include "falconmetaenum.h"
-#include "falconmetamethod.h"
-#include "falconmetaprop.h"
-#include "falconmetaobject.h"
+#include "falconkrossobject.h"
 
 namespace Kross {
     
@@ -301,88 +298,26 @@ namespace Kross {
     }
 
 
-    Falcon::CoreObject *KFVM::MetaClassInfoToObject( const QMetaClassInfo &qmi )
+    Falcon::CoreObject *KFVM::QObjectToKrossObject( QObject *qo ) const
     {
-        Falcon::Item *i_qmi = findGlobalItem( "QMetaClassInfo" );
-        Q_ASSERT( i_qmi != 0 );
+        Falcon::Item *i_ko_class = findGlobalItem( "KrossObject" );
+        Q_ASSERT( i_ko_class != 0 );
         // if it's a class, then we can create an instance from that
-        if ( i_qmi->isClass() )
+        if ( i_ko_class->isClass() )
         {
-            Falcon::CoreObject *instance = i_qmi->asClass()->createInstance();
-            
-            Falcon::String *sName = new Falcon::GarbageString( this, qmi.name() );
-            instance->setProperty( "name", sName );
-            
-            Falcon::String *sValue = new Falcon::GarbageString( this, qmi.value() );
-            instance->setProperty( "value", sValue );
+            Falcon::CoreObject *instance = i_ko_class->asClass()->createInstance();
+            instance->setUserData( new FalconCarrier( qo ) );
             return instance;
         }
         
         return 0;
     }
     
-    
-    Falcon::CoreObject *KFVM::MetaEnumToObject( const QMetaEnum &qmi )
+    Falcon::String *KFVM::QStringToString( const QString &qstring )
     {
-        Falcon::Item *i_qme = findGlobalItem( "QMetaEnum" );
-        Q_ASSERT( i_qme != 0 );
-        // if it's a class, then we can create an instance from that
-        if ( i_qme->isClass() )
-        {
-            Falcon::CoreObject *instance = i_qme->asClass()->createInstance();
-            instance->setUserData( new FalconMetaEnumData( qmi ) );
-            return instance;
-        }
-        
-        return 0;
+        Falcon::String *ret = new Falcon::GarbageString( this );
+        ret->fromUTF8( qstring.toUtf8().data() );
+        return ret;
     }
-    
-    
-    Falcon::CoreObject *KFVM::MetaMethodToObject( const QMetaMethod &qmi )
-    {
-        Falcon::Item *i_qme = findGlobalItem( "QMetaMethod" );
-        Q_ASSERT( i_qme != 0 );
-        // if it's a class, then we can create an instance from that
-        if ( i_qme->isClass() )
-        {
-            Falcon::CoreObject *instance = i_qme->asClass()->createInstance();
-            instance->setUserData( new FalconMetaMethodData( qmi ) );
-            return instance;
-        }
-        
-        return 0;
-    }
-    
-    
-    Falcon::CoreObject *KFVM::MetaPropertyToObject( const QMetaProperty &qmp)
-    {
-        Falcon::Item *i_qmp = findGlobalItem( "QMetaProperty" );
-        Q_ASSERT( i_qmp != 0 );
-        // if it's a class, then we can create an instance from that
-        if ( i_qmp->isClass() )
-        {
-            Falcon::CoreObject *instance = i_qmp->asClass()->createInstance();
-            instance->setUserData( new FalconMetaPropertyData( qmp ) );
-            return instance;
-        }
-        
-        return 0;
-    }
-    
-    Falcon::CoreObject *KFVM::MetaObjectToObject( const QMetaObject *qmo )
-    {
-        Falcon::Item *i_qmo = findGlobalItem( "QMetaObject" );
-        Q_ASSERT( i_qmo != 0 );
-        // if it's a class, then we can create an instance from that
-        if ( i_qmo->isClass() )
-        {
-            Falcon::CoreObject *instance = i_qmo->asClass()->createInstance();
-            instance->setUserData( new FalconMetaObjectData( qmo ) );
-            return instance;
-        }
-        
-        return 0;
-    }
-
 }
 

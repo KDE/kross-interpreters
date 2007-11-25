@@ -46,10 +46,9 @@ namespace Kross {
     };
     
     /** 
-    * Falcon object constructor for KrossError.
+    * Declarator for the falcon class "KrossError".
     */
-    FALCON_FUNC  FalconKrossError_init ( ::Falcon::VMachine *vm );
-
+    void DeclareFalconKrossError( ::Falcon::Module *self );
 }
 
 #endif

@@ -218,7 +218,7 @@ namespace Kross {
     * it gets destroyed while in the carrier, the object is zeroed
     * and access will generate an exception in the calling VM.
     *
-    * This class hasn't a m-> pointer as it IS the m pointer for the
+    * This class hasn't a d-> pointer as it IS the d pointer for the
     * CoreObject class...
     */
     class FQOCarrier: public Falcon::UserData

@@ -26,11 +26,8 @@
 
 #include "falconmodule.h"
 #include "falconkerror.h"
-#include "falconmcinfo.h"
-#include "falconmetamethod.h"
-#include "falconmetaenum.h"
-#include "falconmetaprop.h"
-#include "falconmetaobject.h"
+#include "falconkross.h"
+#include "falconkrossobject.h"
 
 namespace Kross {
 
@@ -150,27 +147,14 @@ namespace Kross {
         // TODO: integrate with kross versioning
         self->version( 0, 1, 0 );
    
+        // The Kross singletone interface
+        DeclareFalconKross( self );
+        
         // The KrossError class
-        Falcon::Symbol *error_class = self->addExternalRef( "Error" ); // it's external
-        Falcon::Symbol *kerr_cls = self->addClass( "KrossError", Kross::FalconKrossError_init );
-        kerr_cls->getClassDef()->addInheritance(  new Falcon::InheritDef( error_class ) );
-
-        // MetaClassInfo
-        DeclareFalconMetaclassInfo( self );
+        DeclareFalconKrossError( self );
         
-        // MetaEnum
-        DeclareFalconMetaEnum( self );
-        
-        // MetaMethod
-        DeclareFalconMetaMethod( self );
-        
-        // MetaProperty
-        DeclareFalconMetaProperty( self );
-        
-        // MetaObject
-        DeclareFalconMetaObject( self );
-        
-        
+        // The KrossObject class (wrapper for QObject)
+        DeclareFalconKrossObject( self );
         
         // QPoint
         Falcon::Symbol *qpoint_class = self->addClass( "QPoint", _falcon_qpoint_init );
@@ -179,14 +163,7 @@ namespace Kross {
         self->addClassMethod( qpoint_class, "compare", _falcon_qpoint_compare );
         self->addClassMethod( qpoint_class, "manatthanLength", _falcon_qpoint_manatthanLength );
         
-        /* TODO Add those:
-        self->addClassMethod( qpoint_class, "add", _qpoint_add );
-        self->addClassMethod( qpoint_class, "multiply", _qpoint_multiply );
-        self->addClassMethod( qpoint_class, "subtract", _qpoint_subtract );
-        self->addClassMethod( qpoint_class, "divide", _qpoint_divide );
-        */
-        
-        
+        // KrossObject
     
         return self;
     }

@@ -24,9 +24,7 @@
 #include <kross/core/krossconfig.h>
 #include <falcon/vm.h>
 
-#include <QMetaClassInfo>
-#include <QMetaEnum>
-#include <QMetaMethod>
+#include <QObject>
 
 namespace Kross {
 
@@ -68,41 +66,20 @@ namespace Kross {
         bool variantToItem( const QVariant &variant, Falcon::Item &item ); 
         
         /**
-        * Creates an instance of the Falcon representation of a metaclass info.
-        * \param qmi metaclass info to be converted
-        * \return a CoreObject holding a Falcon "QMetaClassInfo" instance.
+        * Creates an instance of the Falcon representation of a QObject.
+        * \param qo qobject to be converted
+        * \return a CoreObject holding a Falcon "KrossObject" instance.
         */
-        Falcon::CoreObject *MetaClassInfoToObject( const QMetaClassInfo &qmi );
+        Falcon::CoreObject *QObjectToKrossObject( QObject *qo ) const;
         
         /**
-        * Creates an instance of the Falcon representation of a QMetaEnum info.
-        * \param qmi metaclass info to be converted
-        * \return a CoreObject holding a Falcon "QMetaEnum" instance.
+        * Creates a dinamically allocated Falcon garbage string from a QString.
+        * This class respect international transcoding between QT and Falcon strings
+        * by using the respective to and from UTF8 encoding.
+        * \param qstring metaclass info to be converted
+        * \return a newly allocated garbage string.
         */
-        Falcon::CoreObject *MetaEnumToObject( const QMetaEnum &qmi );
-        
-        /**
-        * Creates an instance of the Falcon representation of a QMetaMethod info.
-        * \param qmi metaclass info to be converted
-        * \return a CoreObject holding a Falcon "QMetaMethod" instance.
-        */
-        Falcon::CoreObject *MetaMethodToObject( const QMetaMethod &qmi );
-        
-        /**
-        * Creates an instance of the Falcon representation of a QMetaProperty info.
-        * \param qmp metaclass property to be converted
-        * \return a CoreObject holding a Falcon "QMetaProperty" instance.
-        */
-        Falcon::CoreObject *MetaPropertyToObject( const QMetaProperty &qmp);
-        
-        /**
-        * Creates an instance of the Falcon representation of a QMetaObject info.
-        * Notice that we want here a QMetaObject pointer, which is shared across
-        * all the program. We don't own it, and we suppose it's always available.
-        * \param qmo metaclass object to be converted
-        * \return a CoreObject holding a Falcon "QMetaObject" instance.
-        */
-        Falcon::CoreObject *MetaObjectToObject( const QMetaObject *qmo );
+        Falcon::String *QStringToString( const QString &qstring );
     };
 }
 
