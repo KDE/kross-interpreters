@@ -1,11 +1,29 @@
+PROJECT(KROSSPYTHON)
+
+find_package(KDE4 REQUIRED)
+find_package(Qt4 REQUIRED)
+include(KDE4Defaults)
+include(MacroLibrary)
+find_package(PythonLibrary REQUIRED)
+include(PythonMacros)
+
 include_directories(
-	${PYTHON_INCLUDE_PATH}
+    ${PYTHON_INCLUDE_PATH}
+    ${QT_INCLUDE_DIR}
+    ${QT_QT_INCLUDE_DIR}
+    ${QT_QTCORE_INCLUDE_DIR}
+    ${QT_QTGUI_INCLUDE_DIR}
+    #${QT_QTNETWORK_INCLUDE_DIR}
+    #${QT_QTXML_INCLUDE_DIR}
+    ${KDE4_INCLUDE_DIR}
+    ${KDE4_INCLUDE_DIR}/kross
 )
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  ${KDE4_ENABLE_EXCEPTIONS}")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}")
+
+########### next target ###############
 
 add_subdirectory( cxx )
-##add_subdirectory( scripts )
 
 set(libkrosspythoncxx_SRCS 
     ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxsupport.cxx 
