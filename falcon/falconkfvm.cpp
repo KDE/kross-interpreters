@@ -78,7 +78,7 @@ namespace Kross {
             {
                 QMap<QString, QVariant> ret;
                 Falcon::CoreDict *dict = item.asDict();
-                Falcon::DictIterator *iter = dict->begin();
+                Falcon::DictIterator *iter = dict->first();
                 while( iter->isValid() )
                 {
                     // First, see if we can convert the value.
@@ -309,6 +309,8 @@ namespace Kross {
             instance->setUserData( new FalconCarrier( qo ) );
             return instance;
         }
+        else
+            Q_ASSERT( false );
         
         return 0;
     }

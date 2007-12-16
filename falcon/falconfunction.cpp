@@ -70,12 +70,6 @@ namespace Kross {
                                         QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
                                         m_vm->pushParameter( m_vm->QObjectToKrossObject( obj ) );
                                     } break;
-                                    /*
-                                    case QMetaType::QWidgetStar: {
-                                        QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                        m_vm->pushParameter( m_vm->QObjectToKrossObject( obj ) );
-                                    } break;
-                                    */
                                     default: {
                                         m_vm->pushParameter( Falcon::Item() );
                                     } break;
@@ -94,6 +88,9 @@ namespace Kross {
                         ++idx;
                     }
     
+                    // At the moment, this callback can be performed only from outside the VM
+                    // as linkable signals are only in QObjects coming from the applications.
+                    // so, it's correct to use callItem.
                     m_vm->callItem( m_callLock->item(), idx - 1 ); 
                     // set the return value
                     if ( m_vm->hadError() ) {
