@@ -131,7 +131,7 @@ bool FalconScript::initialize()
     // a transient data.
     Falcon::StringStream input( Falcon::String(action()->code().data(), action()->code().size()) );
 
-    d->m_mainModule = scriptLoader.loadSource( &input );
+    d->m_mainModule = scriptLoader.loadSource( &input, "kross.stdin" );
     if ( d->m_mainModule == 0 )
     {
         #ifdef KROSS_FALCON_SCRIPT_INIT_DEBUG
