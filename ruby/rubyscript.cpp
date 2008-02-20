@@ -368,9 +368,6 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
         delete[] rargs;
     }
 
-    ruby_in_eval--;
-    rb_thread_critical = critical;
-
     #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
         krossdebug( QString("RubyScript::callFunction() result typeName=%1 toString=%2").arg(result.typeName()).arg(result.toString()) );
     #endif
@@ -378,6 +375,9 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     #ifdef KROSS_RUBY_EXPLICIT_GC
         rb_gc();
     #endif
+
+    ruby_in_eval--;
+    rb_thread_critical = critical;
 
     return result;
 }
