@@ -170,10 +170,6 @@ namespace Kross {
             /**
             * Converts a \a RubyExtension to a VALUE.
             *
-            * This function take over the ownership of the passed
-            * RubyExtension object and deletes the instance once
-            * not needed any longer.
-            *
             * \param extension The \a RubyExtension object to convert.
             * \param owner if true the returned value will take over
             * the ownership of the extension. That means, once the
