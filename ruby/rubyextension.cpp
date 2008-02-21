@@ -451,7 +451,7 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
 void RubyExtension::delete_object(void* object)
 {
     #ifdef KROSS_RUBY_EXTENSION_CTORDTOR_DEBUG
-        //krossdebug("RubyExtension::delete_object");
+        krossdebug("RubyExtension::delete_object");
     #endif
     RubyExtension* extension = static_cast< RubyExtension* >(object);
     delete extension;
@@ -506,20 +506,16 @@ RubyExtension* RubyExtension::toExtension(VALUE value)
     return extension;
 }
 
-VALUE RubyExtension::toVALUE(RubyExtension* extension)
+VALUE RubyExtension::toVALUE(RubyExtension* extension, bool owner)
 {
     QObject* object = extension->d->m_object;
-
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
-        krossdebug( QString("RubyExtension::toVALUE RubyExtension.QObject=%1").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL" ) );
+        krossdebug( QString("RubyExtension::toVALUE RubyExtension.QObject=%1 owner=%2").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()).arg(owner) : "NULL" ) );
     #endif
-
     if( ! object )
         return 0;
-
     Q_ASSERT( RubyExtensionPrivate::s_krossObject );
-
-    return Data_Wrap_Struct(RubyExtensionPrivate::s_krossObject, 0, RubyExtension::delete_object, extension);
+    return Data_Wrap_Struct(RubyExtensionPrivate::s_krossObject, 0, owner ? RubyExtension::delete_object : 0, extension);
 }
 
 void RubyExtension::init()

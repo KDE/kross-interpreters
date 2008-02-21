@@ -101,6 +101,19 @@ namespace Kross {
         friend class RubyScript;
 
         /**
+        * Return the \a RubyExtension instance that wraps our \a Kross::Action instance.
+        */
+        static VALUE action_instance(VALUE self, VALUE unit)
+        {
+            krossdebug(QString("RubyScriptPrivate::action_instance"));
+            VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
+            RubyScript* rubyscript;
+            Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
+            Q_ASSERT(rubyscript);
+            return RubyExtension::toVALUE(rubyscript->d->m_extension, /*owner*/ false);
+        }
+
+        /**
         * This is called if a method got added. We handle this here to be able
         * to e.g. attach our QObject signals to it if requested.
         */
@@ -147,6 +160,7 @@ namespace Kross {
         {
             if(RubyScriptPrivate::s_krossScript == 0) {
                 RubyScriptPrivate::s_krossScript = rb_define_class_under(RubyInterpreter::krossModule(), "Script", rb_cModule);
+                rb_define_method(RubyScriptPrivate::s_krossScript, "action", (VALUE (*)(...))RubyScriptPrivate::action_instance, 0);
                 rb_define_method(RubyScriptPrivate::s_krossScript, "method_added", (VALUE (*)(...))RubyScriptPrivate::method_added, 1);
             }
         }
@@ -182,6 +196,8 @@ namespace Kross {
 
         /// The Ruby class instance that wraps a \a RubyScript instances.
         VALUE m_script;
+        /// The extension that wraps our \a Kross::Action instance.
+        RubyExtension* m_extension;
         /// A list of functionnames.
         QStringList m_functionnames;
         /// The Ruby class definition for instances of m_script.
@@ -226,6 +242,8 @@ RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* action)
     VALUE rubyscriptvalue = Data_Wrap_Struct(RubyScriptPrivate::s_krossScript, 0, 0, this);
     rb_define_const(d->m_script, "RUBYSCRIPTOBJ", rubyscriptvalue);
 
+    d->m_extension = new RubyExtension(action);
+
     d->addFunctions( &Manager::self() );
     d->addFunctions( action );
 }
@@ -237,7 +255,9 @@ RubyScript::~RubyScript()
     #endif
 
     qDeleteAll( d->m_rubyfunctions );
-//qDeleteAll( d->modules.values() );
+    //qDeleteAll( d->modules.values() );
+    delete d->m_extension;
+
     rb_gc_unregister_address(&d->m_script);
     delete d;
 }
@@ -263,6 +283,9 @@ void RubyScript::execute()
     #ifdef KROSS_RUBY_SCRIPT_EXECUTE_DEBUG
         krossdebug( "RubyScript::execute()" );
     #endif
+
+    // needed to prevent infinitive loops ifour scripting call uses e.g. callFunction
+    d->m_hasBeenSuccessFullyExecuted = true;
 
     const int critical = rb_thread_critical;
     rb_thread_critical = Qtrue;
@@ -293,11 +316,11 @@ void RubyScript::execute()
         d->m_hasBeenSuccessFullyExecuted = true;
     }
 
-    rb_thread_critical = critical;
-
     #ifdef KROSS_RUBY_EXPLICIT_GC
         rb_gc();
     #endif
+
+    rb_thread_critical = critical;
 }
 
 QStringList RubyScript::functionNames()
@@ -349,7 +372,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
         setError( QString("Failed to call function \"%1\": %2").arg(name).arg(STR2CSTR( rb_obj_as_string(ruby_errinfo) )) ); // TODO: get the error
     }
     else {
-        VALUE self = rb_eval_string("self");
+        //VALUE self = rb_eval_string("self");
         //krossdebug(QString("RubyScript::callFunction() ===> %1").arg(STR2CSTR(rb_inspect(self))));
 
         const int rnargs = args.size();
@@ -368,9 +391,6 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
         delete[] rargs;
     }
 
-    ruby_in_eval--;
-    rb_thread_critical = critical;
-
     #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
         krossdebug( QString("RubyScript::callFunction() result typeName=%1 toString=%2").arg(result.typeName()).arg(result.toString()) );
     #endif
@@ -378,6 +398,9 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     #ifdef KROSS_RUBY_EXPLICIT_GC
         rb_gc();
     #endif
+
+    ruby_in_eval--;
+    rb_thread_critical = critical;
 
     return result;
 }
