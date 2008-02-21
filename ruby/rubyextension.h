@@ -41,6 +41,7 @@ namespace Kross {
             friend class RubyInterpreter;
             friend class RubyModule;
             friend class RubyScript;
+            friend class RubyScriptPrivate;
         public:
 
             /**
@@ -168,10 +169,19 @@ namespace Kross {
 
             /**
             * Converts a \a RubyExtension to a VALUE.
-            * \param object The RubyExtension to convert.
+            *
+            * This function take over the ownership of the passed
+            * RubyExtension object and deletes the instance once
+            * not needed any longer.
+            *
+            * \param extension The \a RubyExtension object to convert.
+            * \param owner if true the returned value will take over
+            * the ownership of the extension. That means, once the
+            * Ruby gc removes the returned VALUE instance we will
+            * also delete the extension.
             * \return The to a VALUE converted RubyExtension.
             */
-            static VALUE toVALUE(RubyExtension* object);
+            static VALUE toVALUE(RubyExtension* extension, bool owner = true);
 
         private:
             /// @internal private d-pointer.

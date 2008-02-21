@@ -54,7 +54,7 @@ RubyModule::RubyModule(QObject* parent, QObject* object, const QString & modname
     d->extension = new RubyExtension(object);
     VALUE rmodule = rb_define_module(d->modulename.toAscii());
     rb_define_module_function(rmodule,"method_missing",  (VALUE (*)(...))RubyModule::method_missing, -1);
-    VALUE extension = RubyExtension::toVALUE( d->extension );
+    VALUE extension = RubyExtension::toVALUE(d->extension, /*owner*/ false);
     rb_define_const(rmodule, "MODULEOBJ", extension);
 }
 
@@ -64,9 +64,7 @@ RubyModule::~RubyModule()
         krossdebug(QString("RubyModule Dtor: %1").arg(d->modulename));
     #endif
 
-    // Don't delete the RubyExtension object since it will be deleted by Ruby if not needed any longer.
-    //delete d->extension;
-
+    delete d->extension;
     delete d;
 }
 
