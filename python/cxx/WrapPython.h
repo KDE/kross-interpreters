@@ -49,6 +49,14 @@ DAMAGE.
   #undef _POSIX_C_SOURCE
 #endif
 
+/* Prevent multiple conflicting definitions of swab from stdlib.h and unistd.h
+See also http://bugs.kde.org/show_bug.cgi?id=156950 */
+#if defined(__sun) || defined(sun)
+  #if defined(_XPG4)
+    #undef _XPG4
+  #endif
+#endif
+
 /* pull in python definitions */
 #include <Python.h>
 
