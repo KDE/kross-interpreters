@@ -360,18 +360,23 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
             }
             */
 
-            if( object.isNone() ) {
-                int metaid = QMetaType::type(typeName);
-                switch(metaid) {
-                    case QMetaType::QObjectStar: // fall through
-                    case QMetaType::QWidgetStar: {
-                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
-                        #endif
-                        void* ptr = QMetaType::construct(metaid, 0);
-                        return new MetaTypeVoidStar( metaid, ptr, owner );
-                    } break;
-                    default: break;
+            int metaid = QMetaType::type(typeName);
+            if( metaid > 0 ) {
+                if( object.isNone() ) {
+                    switch(metaid) {
+                        case QMetaType::QObjectStar: // fall through
+                        case QMetaType::QWidgetStar: {
+                            #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
+                            #endif
+                            void* ptr = QMetaType::construct(metaid, 0);
+                            return new MetaTypeVoidStar( metaid, ptr, owner );
+                        } break;
+                        default: break;
+                    }
+                }
+                if( strcmp(typeName,"KUrl") == 0 ) {
+                    return new PythonMetaTypeVariant<QUrl>(object);
                 }
             }
 

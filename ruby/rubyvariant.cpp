@@ -318,17 +318,23 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                 return new MetaTypeVoidStar( typeId, object, false /*owner*/ );
             }
 
-            if( TYPE(value) == T_NIL ) {
-                switch(metaTypeId) {
-                    case QMetaType::QObjectStar: // fall through
-                    case QMetaType::QWidgetStar: {
-                        #ifdef KROSS_RUBY_VARIANT_DEBUG
-                            krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
-                        #endif
-                        void* ptr = QMetaType::construct( metaTypeId, 0 );
-                        return new MetaTypeVoidStar( metaTypeId, ptr, false );
-                    } break;
-                    default: break;
+            if( metaTypeId > 0 ) {
+                if( TYPE(value) == T_NIL ) {
+                    switch(metaTypeId) {
+                        case QMetaType::QObjectStar: // fall through
+                        case QMetaType::QWidgetStar: {
+                            #ifdef KROSS_RUBY_VARIANT_DEBUG
+                                krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                            #endif
+                            void* ptr = QMetaType::construct( metaTypeId, 0 );
+                            return new MetaTypeVoidStar( metaTypeId, ptr, false );
+                        } break;
+                        default: break;
+                    }
+                }
+                const char* typeName = QMetaType::typeName(typeId);
+                if( strcmp(typeName,"KUrl") == 0 ) {
+                    return new RubyMetaTypeVariant<QUrl>(value);
                 }
             }
 
