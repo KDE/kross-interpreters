@@ -372,7 +372,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
         setError( QString("Failed to call function \"%1\": %2").arg(name).arg(STR2CSTR( rb_obj_as_string(ruby_errinfo) )) ); // TODO: get the error
     }
     else {
-        VALUE self = rb_eval_string("self");
+        //VALUE self = rb_eval_string("self");
         //krossdebug(QString("RubyScript::callFunction() ===> %1").arg(STR2CSTR(rb_inspect(self))));
 
         const int rnargs = args.size();

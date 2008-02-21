@@ -127,7 +127,6 @@ RubyExtension::~RubyExtension()
         krossdebug(QString("RubyExtension Dtor %1 functioncount=%2 cachecount=%3").arg(d->debuginfo).arg(d->m_functions.count()).arg(d->m_cachelist.count()));
     #endif
     qDeleteAll(d->m_functions);
-    d->m_functions.clear();
     //qDeleteAll(d->m_cachelist);
     delete d;
 }
