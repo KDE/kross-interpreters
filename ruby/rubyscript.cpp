@@ -103,7 +103,7 @@ namespace Kross {
         /**
         * Return the \a RubyExtension instance that wraps our \a Kross::Action instance.
         */
-        static VALUE action_instance(VALUE self, VALUE unit)
+        static VALUE action_instance(VALUE self, VALUE)
         {
             krossdebug(QString("RubyScriptPrivate::action_instance"));
             VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
