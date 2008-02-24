@@ -105,7 +105,7 @@ namespace Kross {
         */
         static VALUE action_instance(VALUE self, VALUE)
         {
-            krossdebug(QString("RubyScriptPrivate::action_instance"));
+            //krossdebug(QString("RubyScriptPrivate::action_instance"));
             VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
             RubyScript* rubyscript;
             Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
