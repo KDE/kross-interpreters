@@ -329,7 +329,7 @@ QStringList RubyScript::functionNames()
         krossdebug( "RubyScript::getFunctionNames()" );
     #endif
 
-    if(not d->m_hasBeenSuccessFullyExecuted ) {
+    if( ! d->m_hasBeenSuccessFullyExecuted ) {
         execute(); // will fill the d->m_functionnames
     }
     return d->m_functionnames;
@@ -361,11 +361,10 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     ruby_in_eval++;
     //ruby_current_node
 
-    if(not d->m_hasBeenSuccessFullyExecuted) {
+    if( ! d->m_hasBeenSuccessFullyExecuted ) {
         execute();
     }
-    if(not d->m_hasBeenSuccessFullyExecuted)
-    {
+    if( ! d->m_hasBeenSuccessFullyExecuted ) {
         #ifdef KROSS_RUBY_SCRIPT_CALLFUNCTION_DEBUG
             krossdebug("RubyScript::callFunction failed");
         #endif

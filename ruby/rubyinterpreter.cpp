@@ -97,7 +97,7 @@ void RubyInterpreter::initRuby()
     ruby_init();
     ruby_init_loadpath();
     rb_define_global_function("require", (VALUE (*)(...))RubyInterpreter::require, 1);
-    if(not RubyInterpreterPrivate::s_krossModule)
+    if( ! RubyInterpreterPrivate::s_krossModule )
     {
       RubyInterpreterPrivate::s_krossModule = rb_define_module("Kross");
       RubyExtension::init();
