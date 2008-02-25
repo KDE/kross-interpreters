@@ -313,10 +313,9 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
 
     int methodindex = d->m_methods[funcname];
     if(methodindex < 0) {
-        //if(funcname == "connect") return callConnect(argc, argv, self);
-        //if(funcname == "disconnect") return callDisconnect(argc, argv, self);
         krosswarning(QString("No such function '%1'").arg(funcname.constData()));
-        return Qfalse;
+        rb_raise(rb_eTypeError, "No such function");
+        return Qnil;
     }
 
     QObject* object = d->m_object;
@@ -379,19 +378,19 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
     for(int idx = 1; idx <= typelistcount; ++idx) {
         const char* typeName = typelist[idx - 1].constData();
         types[idx] = QVariant::nameToType(typeName);
+
         if( types[idx] == QVariant::Invalid || types[idx] == QVariant::UserType ) {
             metatypes[idx] = QMetaType::type(typeName);
             #ifdef KROSS_RUBY_EXTENSION_DEBUG
-                krossdebug( QString("RubyExtension::callMetaMethod argument typeName=%1 typeId=%2").arg(metamethod.typeName()).arg(metatypes[idx]) );
+                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3").arg(idx).arg(metamethod.typeName()).arg(metatypes[idx]) );
             #endif
         }
         else {
             metatypes[idx] = QMetaType::Void; //FIXME: disable before release
             #ifdef KROSS_RUBY_EXTENSION_DEBUG
-                krossdebug( QString("RubyExtension::callMetaMethod argument typeName=%1 typeId=%2 set metatype=QMetaType::Void").arg(metamethod.typeName()).arg(metatypes[idx]) );
+                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3 set metatype=QMetaType::Void").arg(idx).arg(metamethod.typeName()).arg(metatypes[idx]) );
             #endif
         }
-
     }
 
     // Create a cache of the function call

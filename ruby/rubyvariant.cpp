@@ -114,7 +114,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
 
             if( qVariantCanConvert< QObject* >(v) ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krossdebug( QString("RubyType<QVariant>::toVALUE Casting '%1' to QObject").arg(v.typeName()) );
+                    krossdebug( QString("RubyType<QVariant>::toVALUE Casting '%1' to QObject*").arg(v.typeName()) );
                 #endif
                 QObject* obj = qvariant_cast< QObject* >(v);
                 if(! obj) {
@@ -164,6 +164,7 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
                 krossdebug("RubyType<QVariant>::toVariant QObject is NULL. Returning QVariant::Invalid.");
                 return QVariant();
             }
+            //krossdebug(QString(">>>>>>>> %1").arg(object->objectName()));
             return qVariantFromValue( object );
         }
 
