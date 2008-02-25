@@ -109,7 +109,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     #endif
                     return 0;
                 }
-                return RubyExtension::toVALUE( new RubyExtension(widget) );
+                return RubyExtension::toVALUE( new RubyExtension(widget), true /*owner*/ );
             }
 
             if( qVariantCanConvert< QObject* >(v) ) {
@@ -123,7 +123,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     #endif
                     return 0;
                 }
-                return RubyExtension::toVALUE( new RubyExtension(obj) );
+                return RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ );
             }
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));

@@ -177,7 +177,7 @@ namespace Kross {
             * also delete the extension.
             * \return The to a VALUE converted RubyExtension.
             */
-            static VALUE toVALUE(RubyExtension* extension, bool owner = true);
+            static VALUE toVALUE(RubyExtension* extension, bool owner);
 
         private:
             /// @internal private d-pointer.

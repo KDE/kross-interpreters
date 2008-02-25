@@ -154,11 +154,11 @@ namespace Kross {
                                         switch( tp ) {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj) ) );
+                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ ) );
                                             } break;
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj) ) );
+                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ ) );
                                             } break;
                                             default: {
                                                 rb_ary_store(args, idx, Qnil);

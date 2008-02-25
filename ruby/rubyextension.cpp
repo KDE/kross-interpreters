@@ -180,14 +180,14 @@ VALUE RubyExtension::toVoidPtr(VALUE self)
       return Data_Wrap_Struct( rb_cObject, 0, 0, extension->object());
 }
 
-VALUE RubyExtension::fromVoidPtr(VALUE self, VALUE obj)
+VALUE RubyExtension::fromVoidPtr(VALUE /*self*/, VALUE obj)
 {
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
         krossdebug("fromVoidPtr...");
     #endif
     QObject* qobj;
     Data_Get_Struct(obj, QObject, qobj);
-    return RubyExtension::toVALUE( new RubyExtension(qobj) );
+    return RubyExtension::toVALUE( new RubyExtension(qobj), true /*owner*/ );
 }
 
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
