@@ -140,11 +140,15 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
 
         // On the try to read something from stdin always return an empty
         // string. That way such reads don't block our script.
-        "try:\n"
-        "    import cStringIO\n"
-        "    sys.stdin = cStringIO.StringIO()\n"
-        "except:\n"
-        "    pass\n"
+        // Deactivated since sys.stdin has the encoding attribute needed
+        // by e.g. LiquidWeather and those attr is missing in StringIO
+        // and cause it's buildin we can't just add it but would need to
+        // implement our own class. Grrrr, what a stupid design :-/
+        //"try:\n"
+        //"    import cStringIO\n"
+        //"    sys.stdin = cStringIO.StringIO()\n"
+        //"except:\n"
+        //"    pass\n"
 
         // Class to redirect something. We use this class e.g. to redirect
         // <stdout> and <stderr> to a c++ event.
