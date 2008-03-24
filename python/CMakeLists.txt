@@ -25,10 +25,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}")
 
 add_subdirectory( cxx )
 
-set(libkrosspythoncxx_SRCS 
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxsupport.cxx 
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxx_extensions.cxx 
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxextensions.c 
+set(libkrosspythoncxx_SRCS
+    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxsupport.cxx
+    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxx_extensions.cxx
+    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxextensions.c
     ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/IndirectPythonInterface.cxx
 )
 
@@ -40,6 +40,7 @@ set(krosspython_PART_SRCS ${libkrosspythoncxx_SRCS}
    pythonmodule.cpp
    pythonscript.cpp
    pythoninterpreter.cpp
+   pythonobject.cpp
 )
 
 kde4_add_plugin(krosspython ${krosspython_PART_SRCS})

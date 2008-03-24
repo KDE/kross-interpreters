@@ -21,6 +21,7 @@
 #define KROSS_PYTHONVARIANT_H
 
 #include "pythonconfig.h"
+#include "pythonobject.h"
 #include <kross/core/metatype.h>
 
 #include <QString>

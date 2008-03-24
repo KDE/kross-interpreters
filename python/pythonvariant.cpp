@@ -23,6 +23,8 @@
 //#include <kross/core/variant.h>
 
 #include <QWidget>
+#include <KDebug>
+#include <KSharedPtr>
 
 using namespace Kross;
 
@@ -179,12 +181,17 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
     if(type == &PyDict_Type)
         return PythonType<QVariantMap,Py::Dict>::toVariant(Py::Dict(obj.ptr()));
 
-    #ifdef KROSS_PYTHON_VARIANT_DEBUG
-        if(obj.isInstance()) {
-            krossdebug( QString("PythonType<QVariant>::toVariant IsInstance=TRUE") );
-            //return new PythonType(object);
-        }
-    #endif
+    if(obj.isInstance()) {
+        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+        krossdebug( QString("PythonType<QVariant>::toVariant IsInstance=TRUE") );
+        #endif
+        //return new PythonType(object);
+        QVariant result;
+        Kross::Object::Ptr p;
+        p.attach(new Kross::PythonObject(obj));
+        result.setValue(p);
+        return result;
+    }
 
     if(PythonExtension::check(obj.ptr())) {
         Py::ExtensionObject<PythonExtension> extobj(obj);
