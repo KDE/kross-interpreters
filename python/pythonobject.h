@@ -62,15 +62,15 @@ namespace Kross {
              *        the call.
              * \return The call-result as QVariant
              */
-            virtual QVariant call(const QString& name,
-                                  const QVariantList& args = QVariantList());
+            virtual QVariant callMethod(const QString& name,
+                    const QVariantList& args = QVariantList());
 
             /**
              * Return a list of supported callable objects.
              *
              * \return List of supported calls.
              */
-            virtual QStringList getCalls();
+            virtual QStringList methodNames();
 
          private:
             /// Private d-pointer class.

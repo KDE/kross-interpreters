@@ -75,7 +75,7 @@ PythonObject::~PythonObject()
     delete d;
 }
 
-QVariant PythonObject::call(const QString& name, const QVariantList& args)
+QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
 {
     krossdebug( QString("PythonObject::call(%1)").arg(name) );
 
@@ -109,7 +109,7 @@ QVariant PythonObject::call(const QString& name, const QVariantList& args)
     return QVariant();
 }
 
-QStringList PythonObject::getCalls()
+QStringList PythonObject::methodNames()
 {
     return d->m_calls;
 }
