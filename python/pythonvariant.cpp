@@ -109,6 +109,21 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return PythonType<double>::toPyObject(v.toDouble());
             }
 
+            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                #endif
+                Kross::Object::Ptr obj = v.value< Kross::Object::Ptr >();
+                Kross::PythonObject* pyobj = dynamic_cast< Kross::PythonObject* >(obj.data());
+                if(! obj) {
+                    #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                        krossdebug( QString("PythonType<QVariant>::toPyObject To Kross::PythonObject* casted '%1' is NULL").arg(v.typeName()) );
+                    #endif
+                    return Py::None();
+                }
+                return pyobj->pyObject();
+            }
+
             if( qVariantCanConvert< QWidget* >(v) ) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to QWidget").arg(v.typeName()) );
@@ -385,6 +400,11 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 if( strcmp(typeName,"KUrl") == 0 ) {
                     return new PythonMetaTypeVariant<QUrl>(object);
                 }
+            }
+
+            if( strcmp(typeName,"Kross::Object::Ptr") == 0 ) {
+                QVariant v = PythonType<QVariant>::toVariant(object);
+                return new MetaTypeVariant<Kross::Object::Ptr>(v.value<Kross::Object::Ptr>());
             }
 
             QVariant v = PythonType<QVariant>::toVariant(object);

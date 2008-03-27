@@ -114,3 +114,7 @@ QStringList PythonObject::methodNames()
     return d->m_calls;
 }
 
+Py::Object PythonObject::pyObject()
+{
+    return d->m_pyobject;
+}

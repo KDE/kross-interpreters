@@ -72,6 +72,13 @@ namespace Kross {
              */
             virtual QStringList methodNames();
 
+            /**
+             * Return python object used in this object.
+             *
+             * \return python object.
+             */
+            Py::Object pyObject();
+
          private:
             /// Private d-pointer class.
             class Private;
