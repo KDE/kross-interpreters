@@ -51,22 +51,18 @@ namespace Kross {
             virtual ~PythonObject();
 
             /**
-             * Pass a call to the object. Objects like \a Class
-             * are able to handle call's by just implementating
-             * this function.
+             * Call a method the object provides.
              *
-             * \param name Each call has a name that says what
-             *        should be called. In the case of a \a Class
-             *        the name is the functionname.
-             * \param args The list of arguments passed to
-             *        the call.
-             * \return The call-result as QVariant
+             * \param name Name of the method.
+             * \param args Optional list of arguments.
+             * \return The call-result.
              */
             virtual QVariant callMethod(const QString& name,
                     const QVariantList& args = QVariantList());
 
             /**
-             * Return a list of supported callable objects.
+             * Return a list of callable method-names this
+             * object provides.
              *
              * \return List of supported calls.
              */
