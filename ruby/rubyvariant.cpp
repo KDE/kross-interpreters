@@ -20,6 +20,7 @@
 
 #include "rubyvariant.h"
 #include "rubyextension.h"
+#include "rubyobject.h"
 
 #include <QWidget>
 
@@ -96,6 +97,21 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     krossdebug( QString("RubyType<QVariant>::toVALUE Casting '%1' to double").arg(v.typeName()) );
                 #endif
                 return RubyType<double>::toVALUE(v.toDouble());
+            }
+
+            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
+                    krossdebug( QString("RubyType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                #endif
+                Kross::Object::Ptr obj = v.value< Kross::Object::Ptr >();
+                Kross::RubyObject* rbobj = dynamic_cast< Kross::RubyObject* >(obj.data());
+                if(! obj) {
+                    #ifdef KROSS_RUBY_VARIANT_DEBUG
+                        krossdebug( QString("RubyType<QVariant>::toPyObject To Kross::RubyObject* casted '%1' is NULL").arg(v.typeName()) );
+                    #endif
+                    return 0;
+                }
+                return rbobj->rbObject();
             }
 
             if( qVariantCanConvert< QWidget* >(v) ) {
@@ -218,8 +234,19 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
             #endif
             return QVariant();
 
-        case T_MATCH:
         case T_OBJECT:
+        {
+            #ifdef KROSS_RUBY_VARIANT_DEBUG
+                krossdebug("  VALUE is a T_OBJECT.");
+            #endif
+            QVariant result;
+            Kross::Object::Ptr p;
+            p.attach(new Kross::RubyObject(value));
+            result.setValue(p);
+            return result;
+        }
+
+        case T_MATCH:
         case T_FILE:
         case T_STRUCT:
         case T_REGEXP:
@@ -246,7 +273,7 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, VALUE value)
 MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
 {
     #ifdef KROSS_RUBY_VARIANT_DEBUG
-        krossdebug( QString("RubyMetaTypeFactory::create typeId=%1 typeName=%2").arg(QMetaType::typeName(typeId)).arg(typeId) );
+        krossdebug( QString("RubyMetaTypeFactory::create typeName=%1 typeId=%2").arg(QMetaType::typeName(metaTypeId)).arg(metaTypeId) );
     #endif
 
     switch(typeId) {
@@ -333,12 +360,15 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                         default: break;
                     }
                 }
-                const char* typeName = QMetaType::typeName(typeId);
+                const char* typeName = QMetaType::typeName(metaTypeId);
+
                 if( strcmp(typeName,"KUrl") == 0 ) {
                     return new RubyMetaTypeVariant<QUrl>(value);
+                } else if( strcmp(typeName,"Kross::Object::Ptr") == 0 ) {
+                    QVariant v = RubyType<QVariant>::toVariant(value);
+                    return new Kross::MetaTypeVariant<Kross::Object::Ptr>(v.value<Kross::Object::Ptr>());
                 }
             }
-
             QVariant v = RubyType<QVariant>::toVariant(value);
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
