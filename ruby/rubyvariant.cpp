@@ -239,9 +239,9 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug("  VALUE is a T_OBJECT.");
             #endif
+            Kross::RubyObject* robj = new Kross::RubyObject(value);
+            Kross::Object::Ptr p(robj);
             QVariant result;
-            Kross::Object::Ptr p;
-            p.attach(new Kross::RubyObject(value));
             result.setValue(p);
             return result;
         }
@@ -360,18 +360,23 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                         default: break;
                     }
                 }
-                const char* typeName = QMetaType::typeName(metaTypeId);
 
+                const char* typeName = QMetaType::typeName(metaTypeId);
                 if( strcmp(typeName,"KUrl") == 0 ) {
                     return new RubyMetaTypeVariant<QUrl>(value);
-                } else if( strcmp(typeName,"Kross::Object::Ptr") == 0 ) {
-                    QVariant v = RubyType<QVariant>::toVariant(value);
-                    return new Kross::MetaTypeVariant<Kross::Object::Ptr>(v.value<Kross::Object::Ptr>());
                 }
             }
+
+            if( TYPE(value) == T_OBJECT ) {
+                QVariant v = RubyType<QVariant>::toVariant(value);
+                Kross::Object::Ptr ptr = v.value<Kross::Object::Ptr>();
+                if( ptr )
+                    return new Kross::MetaTypeVariant<Kross::Object::Ptr>(ptr);
+            }
+
             QVariant v = RubyType<QVariant>::toVariant(value);
             #ifdef KROSS_RUBY_VARIANT_DEBUG
-                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with type '%3 %4'").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.toString()).arg(v.typeName()) );
+                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.typeName()).arg(v.toString()) );
             #endif
             return new Kross::MetaTypeVariant< QVariant >( v );
         } break;

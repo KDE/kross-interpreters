@@ -500,7 +500,7 @@ namespace Kross {
     class RubyMetaTypeFactory
     {
         public:
-            static MetaType* create(int typeId, int metaTypeId, VALUE valueect = Qnil);
+            static MetaType* create(int typeId, int metaTypeId, VALUE value = Qnil);
     };
 
     /// \internal

@@ -129,7 +129,9 @@ void RubyInterpreter::finalizeRuby()
 
 VALUE RubyInterpreter::require (VALUE self, VALUE name)
 {
-    krossdebug( QString("RubyInterpreter::require self=%1 name=%2").arg(STR2CSTR(rb_inspect(self))).arg(STR2CSTR(rb_inspect(name))) );
+    #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+        krossdebug( QString("RubyInterpreter::require self=%1 name=%2").arg(STR2CSTR(rb_inspect(self))).arg(STR2CSTR(rb_inspect(name))) );
+    #endif
 
     QString modname = StringValuePtr(name);
 
@@ -142,21 +144,23 @@ VALUE RubyInterpreter::require (VALUE self, VALUE name)
         Q_ASSERT(action);
 
         if( action->hasObject(modname) ) {
-//             #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
                 krossdebug( QString("RubyInterpreter::require() module=%1 is internal local child").arg(modname) );
-//             #endif
+            #endif
             QObject* object = action->object(modname);
             Q_ASSERT(object);
             RubyModule* module = rubyscript->module(object, modname);
             Q_ASSERT(module);
             return Qtrue;
         } else {
-          krossdebug(QString("RubyInterpreter::require() module=%1 is not an internal local child").arg(modname));
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+                krossdebug(QString("RubyInterpreter::require() module=%1 is not an internal local child").arg(modname));
+            #endif
         }
         if( Kross::Manager::self().hasObject(modname) ) {
-//             #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
                 krossdebug( QString("RubyInterpreter::require() module=%1 is internal global child").arg(modname) );
-//             #endif
+            #endif
             QObject* object = Kross::Manager::self().object(modname);
             Q_ASSERT(object);
             RubyModule* module = d->modules.contains(modname) ? d->modules[modname] : 0;
@@ -171,10 +175,14 @@ VALUE RubyInterpreter::require (VALUE self, VALUE name)
             Q_ASSERT(module);
             return Qtrue;
         } else {
-          krossdebug(QString("RubyInterpreter::require() module=%1 is not an internal global child").arg(modname));
+            #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+                krossdebug(QString("RubyInterpreter::require() module=%1 is not an internal global child").arg(modname));
+            #endif
         }
     } else {
-      krossdebug("Self is not a ruby script, using ruby's require");
+        #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+            krossdebug("Self is not a ruby script, using ruby's require");
+        #endif
     }
 
     // We don't know about a module with such a name. So, let Ruby handle it...

@@ -24,12 +24,12 @@ using namespace Kross;
 
 static VALUE callExecuteException(VALUE self, VALUE error)
 {
-    //#ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
         krossdebug( QString("RubyScript::callExecuteException script=%1 error=%2")
                     .arg( STR2CSTR(rb_inspect(self)) ).arg( STR2CSTR(rb_inspect(error)) ) );
-    //#else
-        //Q_UNUSED(error);
-    //#endif
+    #else
+        Q_UNUSED(error);
+    #endif
 
     VALUE info = rb_gv_get("$!");
     VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
@@ -64,7 +64,7 @@ static VALUE callExecuteException(VALUE self, VALUE error)
 
 static VALUE callFunction2(VALUE args)
 {
-    #ifdef KROSS_RUBY_SCRIPT_DEBUG
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
         krossdebug( QString("RubyObject::callFunction2 args=%1").arg( STR2CSTR(rb_inspect(args)) ) );
     #endif
     Q_ASSERT( TYPE(args) == T_ARRAY );
@@ -83,40 +83,54 @@ public:
     Private(const VALUE& object) : rbobject(object) {};
     const VALUE rbobject;
     QStringList calls;
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
+        QString debug;
+    #endif
 };
 
 RubyObject::RubyObject()
     : Kross::Object()
     , d(new Private)
 {
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
+        d->debug = QString("type=NIL");
+        krossdebug( QString("RubyObject::RubyObject() constructor: %1").arg(d->debug) );
+    #endif
 }
+
 RubyObject::RubyObject(const VALUE& object)
     : Kross::Object()
     , d(new Private(object))
 {
-    krossdebug( QString("RubyObject::RubyObject() constructor") );
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
+        d->debug = QString("type=%1 value=%2").arg(TYPE(object)).arg(STR2CSTR(rb_inspect(object)));
+        krossdebug( QString("RubyObject::RubyObject(const VALUE& object) constructor: %1").arg(d->debug) );
+    #endif
 
     VALUE args[] = { Qfalse };
     VALUE methods;
     const char* method;
-
     methods = rb_class_instance_methods(1, args, CLASS_OF(object));
-
     for (int i = 0; i < RARRAY_LEN(methods); i++) {
         method = StringValuePtr(RARRAY(methods)->ptr[i]);
-        krossdebug( QString("RubyObject::RubyObject() method '%1'").arg( method ));
+        krossdebug( QString("RubyObject::RubyObject() method=%1").arg( method ));
         d->calls << method;
     }
 }
 
 RubyObject::~RubyObject()
 {
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
+        krossdebug( QString("RubyObject::~RubyObject() destructor: %1").arg(d->debug) );
+    #endif
     delete d;
 }
 
 QVariant RubyObject::callMethod(const QString& name, const QVariantList& args)
 {
-    krossdebug( QString("RubyObject::call(%1)").arg(name) );
+    #ifdef KROSS_RUBY_OBJECT_DEBUG
+        krossdebug( QString("RubyObject::call(%1): %2").arg(name).arg(d->debug) );
+    #endif
 
     QVariant result;
     const int rnargs = args.size();
