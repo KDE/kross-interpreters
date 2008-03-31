@@ -27,6 +27,7 @@
 #include <QStringList>
 
 namespace Kross {
+
     /**
      * The RubyObject class is used for Instances of Ruby
      * Classes by the \a RubyExtension class.
@@ -35,7 +36,11 @@ namespace Kross {
     {
         public:
 
+            /**
+             * Default constructor.
+             */
             explicit RubyObject();
+
             /**
              * Constructor.
              *

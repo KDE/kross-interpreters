@@ -361,6 +361,8 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                     }
                 }
 
+                // this is a dirty hack to downcast KUrl's to QUrl's
+                // without the need to link against kdelibs.
                 const char* typeName = QMetaType::typeName(metaTypeId);
                 if( strcmp(typeName,"KUrl") == 0 ) {
                     return new RubyMetaTypeVariant<QUrl>(value);

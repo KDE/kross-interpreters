@@ -62,6 +62,10 @@ namespace Kross {
             QObject* object() const;
 
         private:
+
+            /**
+            * Initialize our extension object.
+            */
             static void init();
 
             /**
@@ -92,12 +96,12 @@ namespace Kross {
             static VALUE call_method_missing(RubyExtension* extension, int argc, VALUE *argv, VALUE self);
 
             /**
-             * This function override the clone function behaviour
+             * This function override the clone function behaviour.
              */
             static VALUE clone(VALUE self);
-            
+
             /**
-             * Return a (void*) wraped objects of this
+             * Return a (void*) wraped objects of this.
              */
             static VALUE toVoidPtr(VALUE self);
             /**
@@ -106,7 +110,8 @@ namespace Kross {
             static VALUE fromVoidPtr(VALUE self, VALUE obj);
 
             /**
-             * Connect was called.
+             * Connect was called. This does connect a signal with
+             * a slot or a scripting function.
              */
             static VALUE callConnect(int argc, VALUE *argv, VALUE self);
 

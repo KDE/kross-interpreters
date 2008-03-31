@@ -397,6 +397,9 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                         default: break;
                     }
                 }
+
+                // this is a dirty hack to downcast KUrl's to QUrl's
+                // without the need to link against kdelibs.
                 if( strcmp(typeName,"KUrl") == 0 ) {
                     return new PythonMetaTypeVariant<QUrl>(object);
                 }

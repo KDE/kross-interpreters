@@ -29,15 +29,58 @@ class QVariant;
 namespace Kross {
 
     struct RubyCallCachePrivate;
+
+    /**
+    * The RubyCallCache class implements a cache for calling functions
+    * within the RubyExtension::callMetaMethod() method.
+    */
     class RubyCallCache
     {
         public:
+
+            /**
+            * Constructor.
+            *
+            * \param object The QObject that provides the method that
+            * should be called.
+            * \param methodindex The method-index. The methods are
+            * accessible by there index cause of performance reasons.
+            * \param hasreturnvalue If true then the method does
+            * provide a return-value else the method doesn't provide
+            * anything back (void).
+            * \param ntypes Array of QVariant::Type numbers for the
+            * return-value (index 0) and the arguments (index >=1).
+            * \param nmetatypes Array of QMetaType::Type numbers for the
+            * return-value (index 0) and the arguments (index >=1).
+            */
             RubyCallCache(QObject* object, int methodindex, bool hasreturnvalue, QVarLengthArray<int> ntypes, QVarLengthArray<int> nmetatypes);
+
+            /**
+            * Destructor.
+            */
             ~RubyCallCache();
+
+            /**
+            * Execute the method and pass \p argc numbers of
+            * arguments as \p argv array to the method.
+            */
             VALUE execfunction( int argc, VALUE *argv );
+
+            /**
+            * Executes the method using the call-cache.
+            */
             VALUE toValue();
+
+            /**
+            * Static function that executes the method using the call-cache.
+            */
             static VALUE method_cacheexec(int argc, VALUE *argv, VALUE self);
+
+            /**
+            * Called by Ruby if an call-cache object got destructed.
+            */
             static void delete_object(void* object);
+
         private:
             RubyCallCachePrivate * const d;
             VALUE m_self;
