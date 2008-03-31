@@ -367,14 +367,16 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                 }
             }
 
-            if( TYPE(value) == T_OBJECT ) {
-                QVariant v = RubyType<QVariant>::toVariant(value);
-                Kross::Object::Ptr ptr = v.value<Kross::Object::Ptr>();
-                if( ptr )
+            QVariant v = RubyType<QVariant>::toVariant(value);
+
+            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                #endif
+                if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
                     return new Kross::MetaTypeVariant<Kross::Object::Ptr>(ptr);
             }
 
-            QVariant v = RubyType<QVariant>::toVariant(value);
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.typeName()).arg(v.toString()) );
             #endif

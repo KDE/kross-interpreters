@@ -402,12 +402,16 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 }
             }
 
-            if( strcmp(typeName,"Kross::Object::Ptr") == 0 ) {
-                QVariant v = PythonType<QVariant>::toVariant(object);
-                return new MetaTypeVariant<Kross::Object::Ptr>(v.value<Kross::Object::Ptr>());
+            QVariant v = PythonType<QVariant>::toVariant(object);
+
+            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                #endif
+                if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
+                    return new MetaTypeVariant<Kross::Object::Ptr>(ptr);
             }
 
-            QVariant v = PythonType<QVariant>::toVariant(object);
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
                 krosswarning( QString("PythonMetaTypeFactory::create Convert Py::Object '%1' to QVariant v.toString='%2' v.typeName='%3' typeName='%4' typeId='%5'").arg(object.as_string().c_str()).arg(v.toString()).arg(v.typeName()).arg(typeName).arg(typeId) );
             #endif
