@@ -303,6 +303,9 @@ void RubyScript::execute()
     rb_ary_store(args, 1, src);
     rb_ary_store(args, 2, fileName);
 
+    if (ruby_in_eval == 0) {
+        RUBY_INIT_STACK
+    }
     ruby_in_eval++;
     rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, d->m_script, rb_eException, 0);
     ruby_in_eval--;
