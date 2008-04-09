@@ -56,8 +56,6 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
         case QVariant::ULongLong:
             return RubyType<qlonglong>::toVALUE(v.toULongLong());
 
-        case QVariant::Url:
-            return RubyType<QUrl>::toVALUE(v.toUrl());
         case QVariant::Size:
             return RubyType<QSize>::toVALUE(v.toSize());
         case QVariant::SizeF:
@@ -70,6 +68,11 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
             return RubyType<QRect>::toVALUE(v.toRect());
         case QVariant::RectF:
             return RubyType<QRectF>::toVALUE(v.toRectF());
+
+        case QVariant::Color:
+            return RubyType<QColor>::toVALUE( v.value<QColor>() );
+        case QVariant::Url:
+            return RubyType<QUrl>::toVALUE(v.toUrl());
 
         case QVariant::Date:
             return RubyType<QDate>::toVALUE( v.value<QDate>() );
@@ -303,8 +306,6 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
         case QVariant::ULongLong:
             return new RubyMetaTypeVariant<qulonglong>(value);
 
-        case QVariant::Url:
-            return new RubyMetaTypeVariant<QUrl>(value);
         case QVariant::Size:
             return new RubyMetaTypeVariant<QSize>(value);
         case QVariant::SizeF:
@@ -317,6 +318,11 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             return new RubyMetaTypeVariant<QRect>(value);
         case QVariant::RectF:
             return new RubyMetaTypeVariant<QRectF>(value);
+
+        case QVariant::Color:
+            return new RubyMetaTypeVariant<QColor>(value);
+        case QVariant::Url:
+            return new RubyMetaTypeVariant<QUrl>(value);
 
         case QVariant::Date:
             return new RubyMetaTypeVariant<QDate>(value);

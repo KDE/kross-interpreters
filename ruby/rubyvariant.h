@@ -59,6 +59,7 @@ namespace Kross {
      *   \li QVariant::PointF
      *   \li QVariant::Rect
      *   \li QVariant::RectF
+     *   \li QVariant::Color
      *   \li QVariant::Url
      *   \li QVariant::Date
      *   \li QVariant::Time
@@ -71,7 +72,6 @@ namespace Kross {
      *   \li QVariant::Bitmap
      *   \li QVariant::Brush
      *   \li QVariant::Char
-     *   \li QVariant::Color
      *   \li QVariant::Cursor
      *   \li QVariant::Font
      *   \li QVariant::Icon
@@ -367,6 +367,18 @@ namespace Kross {
             }
             return QRectF( RubyType<double>::toVariant( rb_ary_entry(value,0) ), RubyType<double>::toVariant( rb_ary_entry(value,1) ),
                            RubyType<double>::toVariant( rb_ary_entry(value,2) ), RubyType<double>::toVariant( rb_ary_entry(value,3) ) );
+        }
+    };
+
+    /// \internal
+    template<>
+    struct RubyType<QColor>
+    {
+        inline static VALUE toVALUE(const QColor& color) {
+            return color.isValid() ? RubyType<QString>::toVALUE(color.name()) : Qnil;
+        }
+        inline static QColor toVariant(VALUE value) {
+            return (TYPE(value) == T_STRING) ? QColor(RubyType<QString>::toVariant(value)) : QColor();
         }
     };
 

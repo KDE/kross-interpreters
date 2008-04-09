@@ -58,9 +58,6 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
         case QVariant::ULongLong:
             return PythonType<qlonglong>::toPyObject(v.toULongLong());
 
-        case QVariant::Url:
-            return PythonType<QUrl>::toPyObject(v.toUrl());
-
         case QVariant::Size:
             return PythonType<QSize>::toPyObject(v.toSize());
         case QVariant::SizeF:
@@ -74,12 +71,11 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
         case QVariant::RectF:
             return PythonType<QRectF>::toPyObject(v.toRectF());
 
-/*TODO
         case QVariant::Color:
-            return PythonType<QColor>::toPyObject( v.value<QColor>() );
-        case QVariant::Brush:
-        case QVariant::Font:
-*/
+            return PythonType<QColor>::toPyObject(v.value<QColor>());
+        case QVariant::Url:
+            return PythonType<QUrl>::toPyObject(v.toUrl());
+
         case QVariant::Date:
             return PythonType<QDate>::toPyObject( v.value<QDate>() );
         case QVariant::Time:
@@ -335,20 +331,11 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
             return new PythonMetaTypeVariant<QRect>(object);
         case QVariant::RectF:
             return new PythonMetaTypeVariant<QRectF>(object);
+
+        case QVariant::Color:
+            return new PythonMetaTypeVariant<QColor>(object);
         case QVariant::Url:
             return new PythonMetaTypeVariant<QUrl>(object);
-
-/*TODO
-        case QVariant::Color:
-            //QColor c = PythonType<QColor>::toVariant(object);
-            //return new PythonMetaTypeVariant<QColor>(c);
-            //return new MetaTypeVoidStar(typeId, &c);
-            return new PythonMetaTypeVariant<QColor>(object);
-        case QVariant::Brush:
-            return new PythonMetaTypeVariant<QBrush>(object);
-        case QVariant::Font:
-            return new PythonMetaTypeVariant<QFont>(object);
-*/
 
         case QVariant::Date:
             return new PythonMetaTypeVariant<QDate>(object);

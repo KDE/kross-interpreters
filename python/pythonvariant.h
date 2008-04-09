@@ -59,12 +59,13 @@ namespace Kross {
      *   \li QVariant::PointF
      *   \li QVariant::Rect
      *   \li QVariant::RectF
+     *   \li QVariant::Color
+     *   \li QVariant::Url
      *   \li QVariant::Date
      *   \li QVariant::Time
      *   \li QVariant::DateTime
      *   \li QVariant::String
      *   \li QVariant::StringList
-     *   \li QVariant::Url
      *   \li QVariant::List
      *   \li QVariant::Map
      *
@@ -73,7 +74,6 @@ namespace Kross {
      *   \li QVariant::Bitmap
      *   \li QVariant::Brush
      *   \li QVariant::Char
-     *   \li QVariant::Color
      *   \li QVariant::Cursor
      *   \li QVariant::Font
      *   \li QVariant::Icon
@@ -435,6 +435,18 @@ namespace Kross {
 
     /// \internal
     template<>
+    struct PythonType<QColor>
+    {
+        inline static Py::Object toPyObject(const QColor& color) {
+            return color.isValid() ? PythonType<QString>::toPyObject(color.name()) : Py::None();
+        }
+        inline static QColor toVariant(const Py::Object& obj) {
+            return obj.isString() ? QColor(PythonType<QString>::toVariant(obj)) : QColor();
+        }
+    };
+
+    /// \internal
+    template<>
     struct PythonType<QUrl>
     {
         inline static Py::Object toPyObject(const QUrl& url) {
@@ -444,31 +456,6 @@ namespace Kross {
             return QUrl( PythonType<QString>::toVariant(obj) );
         }
     };
-
-    /*
-    // this is a testcase and not activly used yet cause there seems to be still some
-    // open issues. Please see also the unittest.py which contains tests for all cases.
-    /// \internal
-    template<>
-    struct PythonType<QColor>
-    {
-        static Py::Object toPyObject(const QColor& color);
-        static QColor toVariant(const Py::Object& obj);
-    };
-
-    /// \internal
-    template<>
-    struct PythonType<QFont>
-    {
-        inline static Py::Object toPyObject(const QFont& font) {
-            //TODO
-            return Py::asObject(new PythonExtension(new Font(font)));
-        }
-        inline static QFont toVariant(const Py::Object& obj) {
-            //TODO
-        }
-    };
-    */
 
     /// \internal
     template<>
