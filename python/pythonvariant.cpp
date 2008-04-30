@@ -371,19 +371,17 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
             int metaid = QMetaType::type(typeName);
             if( metaid > 0 ) {
-                //if( object.isNone() ) {
-                    switch(metaid) {
-                        case QMetaType::QObjectStar: // fall through
-                        case QMetaType::QWidgetStar: {
-                            #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                                krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
-                            #endif
-                            void* ptr = 0; //QMetaType::construct(metaid, 0);
-                            return new MetaTypeVoidStar( metaid, ptr, owner );
-                        } break;
-                        default: break;
-                    }
-                //}
+                switch(metaid) {
+                    case QMetaType::QObjectStar: // fall through
+                    case QMetaType::QWidgetStar: {
+                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
+                        #endif
+                        void* ptr = 0; //QMetaType::construct(metaid, 0);
+                        return new MetaTypeVoidStar( metaid, ptr, owner );
+                    } break;
+                    default: break;
+                }
 
                 // this is a dirty hack to downcast KUrl's to QUrl's
                 // without the need to link against kdelibs.
