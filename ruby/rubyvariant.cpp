@@ -112,7 +112,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     #ifdef KROSS_RUBY_VARIANT_DEBUG
                         krossdebug( QString("RubyType<QVariant>::toPyObject To Kross::RubyObject* casted '%1' is NULL").arg(v.typeName()) );
                     #endif
-                    return 0;
+                    return Qnil;
                 }
                 return rbobj->rbObject();
             }
@@ -126,7 +126,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     #ifdef KROSS_RUBY_VARIANT_DEBUG
                         krosswarning( QString("RubyType<QVariant>::toVALUE To QWidget casted '%1' is NULL").arg(v.typeName()) );
                     #endif
-                    return 0;
+                    return Qnil;
                 }
                 return RubyExtension::toVALUE( new RubyExtension(widget), true /*owner*/ );
             }
@@ -140,7 +140,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                     #ifdef KROSS_RUBY_VARIANT_DEBUG
                         krosswarning( QString("RubyType<QVariant>::toVALUE To QObject casted '%1' is NULL").arg(v.typeName()) );
                     #endif
-                    return 0;
+                    return Qnil;
                 }
                 return RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ );
             }
@@ -353,18 +353,16 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             if( metaTypeId > 0 ) {
-                if( TYPE(value) == T_NIL ) {
-                    switch(metaTypeId) {
-                        case QMetaType::QObjectStar: // fall through
-                        case QMetaType::QWidgetStar: {
-                            #ifdef KROSS_RUBY_VARIANT_DEBUG
-                                krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
-                            #endif
-                            void* ptr = QMetaType::construct( metaTypeId, 0 );
-                            return new MetaTypeVoidStar( metaTypeId, ptr, false );
-                        } break;
-                        default: break;
-                    }
+                switch(metaTypeId) {
+                    case QMetaType::QObjectStar: // fall through
+                    case QMetaType::QWidgetStar: {
+                        #ifdef KROSS_RUBY_VARIANT_DEBUG
+                            krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                        #endif
+                        void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
+                        return new MetaTypeVoidStar( metaTypeId, ptr, true );
+                    } break;
+                    default: break;
                 }
 
                 // this is a dirty hack to downcast KUrl's to QUrl's
@@ -386,7 +384,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             #ifdef KROSS_RUBY_VARIANT_DEBUG
-                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(v.typeName()).arg(v.toString()) );
+                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2 %3' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(metaTypeId).arg(v.typeName()).arg(v.toString()) );
             #endif
             return new Kross::MetaTypeVariant< QVariant >( v );
         } break;
