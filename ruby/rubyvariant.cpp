@@ -353,7 +353,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             if( metaTypeId > 0 ) {
-                if( TYPE(value) == T_NIL ) {
+                //if( TYPE(value) == T_NIL ) {
                     switch(metaTypeId) {
                         case QMetaType::QObjectStar: // fall through
                         case QMetaType::QWidgetStar: {
@@ -361,11 +361,11 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                                 krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
                             #endif
                             void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
-                            return new MetaTypeVoidStar( metaTypeId, ptr, true );
+                            return new MetaTypeVoidStar( metaTypeId, ptr, false /* owner */ );
                         } break;
                         default: break;
                     }
-                }
+                //}
 
                 // this is a dirty hack to downcast KUrl's to QUrl's
                 // without the need to link against kdelibs.
