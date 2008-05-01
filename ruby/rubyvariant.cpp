@@ -353,16 +353,18 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             if( metaTypeId > 0 ) {
-                switch(metaTypeId) {
-                    case QMetaType::QObjectStar: // fall through
-                    case QMetaType::QWidgetStar: {
-                        #ifdef KROSS_RUBY_VARIANT_DEBUG
-                            krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
-                        #endif
-                        void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
-                        return new MetaTypeVoidStar( metaTypeId, ptr, true );
-                    } break;
-                    default: break;
+                if( TYPE(value) == T_NIL ) {
+                    switch(metaTypeId) {
+                        case QMetaType::QObjectStar: // fall through
+                        case QMetaType::QWidgetStar: {
+                            #ifdef KROSS_RUBY_VARIANT_DEBUG
+                                krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
+                            #endif
+                            void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
+                            return new MetaTypeVoidStar( metaTypeId, ptr, true );
+                        } break;
+                        default: break;
+                    }
                 }
 
                 // this is a dirty hack to downcast KUrl's to QUrl's
