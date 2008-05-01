@@ -378,7 +378,7 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                             krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
                         #endif
                         void* ptr = 0; //QMetaType::construct(metaid, 0);
-                        return new MetaTypeVoidStar( metaid, ptr, owner );
+                        return new MetaTypeVoidStar( metaid, ptr, false /*owner*/ );
                     } break;
                     default: break;
                 }
