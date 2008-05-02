@@ -190,6 +190,19 @@ VALUE RubyExtension::fromVoidPtr(VALUE /*self*/, VALUE obj)
     return RubyExtension::toVALUE( new RubyExtension(qobj), true /*owner*/ );
 }
 
+VALUE RubyExtension::callFindChildren(int argc, VALUE *argv, VALUE self)
+{
+    if( argc < 1 || (TYPE(argv[0]) != T_STRING && (argc < 2 || TYPE(argv[1]) != T_STRING)) ) {
+        rb_raise(rb_eTypeError, "Expected at the objectName as argument.");
+        return Qnil;
+    }
+    RubyExtension* extension = toExtension(self);
+    Q_ASSERT(extension);
+    QString name = RubyType<QString>::toVariant( TYPE(argv[0]) == T_STRING ? argv[0] : argv[1] );
+    QObject* object = extension->d->m_object->findChild<QObject*>(name);
+    return object ? RubyExtension::toVALUE( new RubyExtension(object), true /*owner*/ ) : Qnil;
+}
+
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 {
     #ifdef KROSS_RUBY_EXTENSION_CALLCONNECT_DEBUG
@@ -529,6 +542,7 @@ void RubyExtension::init()
     rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "findChildren", (VALUE (*)(...))RubyExtension::callFindChildren, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
     rb_define_module_function(RubyExtensionPrivate::s_krossObject, "fromVoidPtr", (VALUE (*)(...))RubyExtension::fromVoidPtr, 1);

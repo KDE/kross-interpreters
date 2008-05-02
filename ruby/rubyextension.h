@@ -110,6 +110,11 @@ namespace Kross {
             static VALUE fromVoidPtr(VALUE self, VALUE obj);
 
             /**
+             * Find and return a child object of this object.
+             */
+            static VALUE callFindChildren(int argc, VALUE *argv, VALUE self);
+
+            /**
              * Connect was called. This does connect a signal with
              * a slot or a scripting function.
              */
