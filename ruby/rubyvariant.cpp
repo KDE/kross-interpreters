@@ -257,7 +257,7 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
         case T_ICLASS:
         case T_CLASS:
         default:
-            krosswarning(QString("This ruby type '%1' cannot be converted to a Kross::Object").arg(TYPE(value)));
+            krosswarning(QString("Cannot convert the ruby type '%1'").arg(TYPE(value)));
             return QVariant();
     }
 }

@@ -112,7 +112,7 @@ namespace Kross {
             /**
              * Find and return a child object of this object.
              */
-            static VALUE callFindChildren(int argc, VALUE *argv, VALUE self);
+            static VALUE callFindChild(int argc, VALUE *argv, VALUE self);
 
             /**
              * Connect was called. This does connect a signal with
