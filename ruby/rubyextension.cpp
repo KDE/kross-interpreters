@@ -198,7 +198,7 @@ VALUE RubyExtension::callFindChildren(int argc, VALUE *argv, VALUE self)
     }
     RubyExtension* extension = toExtension(self);
     Q_ASSERT(extension);
-    QString name = RubyType<QString>::toVariant( TYPE(argv[0]) == T_STRING ? argv[0] : argv[1] );
+    QString name = RubyType<QString>::toVariant( argc > 1 ? argv[1] : argv[0] );
     QObject* object = extension->d->m_object->findChild<QObject*>(name);
     return object ? RubyExtension::toVALUE( new RubyExtension(object), true /*owner*/ ) : Qnil;
 }
