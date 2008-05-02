@@ -193,7 +193,7 @@ VALUE RubyExtension::fromVoidPtr(VALUE /*self*/, VALUE obj)
 VALUE RubyExtension::callFindChildren(int argc, VALUE *argv, VALUE self)
 {
     if( argc < 1 || (TYPE(argv[0]) != T_STRING && (argc < 2 || TYPE(argv[1]) != T_STRING)) ) {
-        rb_raise(rb_eTypeError, "Expected at the objectName as argument.");
+        rb_raise(rb_eTypeError, "Expected the objectName as argument.");
         return Qnil;
     }
     RubyExtension* extension = toExtension(self);
