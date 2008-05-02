@@ -23,8 +23,6 @@
 //#include <kross/core/variant.h>
 
 #include <QWidget>
-#include <KDebug>
-#include <KSharedPtr>
 
 using namespace Kross;
 

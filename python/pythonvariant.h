@@ -35,6 +35,7 @@
 #include <QDate>
 #include <QTime>
 #include <QDateTime>
+#include <QColor>
 
 #include <typeinfo>
 

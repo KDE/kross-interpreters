@@ -443,6 +443,12 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
         return RubyType<int>::toVALUE( extension->d->m_enumerations[name] );
     }
 
+    // look if the name refers to a child object
+    QObject* object = extension->d->m_object->findChild<QObject*>(name);
+    if( object ) {
+        return RubyExtension::toVALUE( new RubyExtension(object), true /*owner*/ );
+    }
+
     rb_raise(rb_eNameError, QString("No such method or variable \"%1\".").arg(name.constData()).toLatin1().constData());
     return Qnil;
 }
