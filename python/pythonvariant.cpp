@@ -372,6 +372,45 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 switch(metaid) {
                     case QMetaType::QObjectStar: // fall through
                     case QMetaType::QWidgetStar: {
+                        Py::Object pyobjtype( PyObject_Type(object.ptr()), true /* owner */ );
+                        const QString pyobjtypename( pyobjtype.repr().as_string().c_str() );
+                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object is %1").arg(pyobjtypename) );
+                        #endif
+                        if( pyobjtypename.startsWith("<class 'PyQt4.") ) {
+                            try {
+                                Py::Module mainmod( PyImport_AddModule( (char*)"sip" ) );
+                                Py::Callable func = mainmod.getDict().getItem("unwrapinstance");
+                                Py::Tuple args(1);
+                                args[0] = object; //pyqtobject pointer
+                                Py::Object result = func.apply(args);
+                                void* ptr = PyLong_AsVoidPtr( result.ptr() );
+                                switch(metaid) {
+                                    case QMetaType::QObjectStar: {
+                                        QObject* o = static_cast< QObject* >(ptr);
+                                        if( o && ! o->parent() )
+                                            o->setParent(new QObject());
+                                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                            krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(o ? o->metaObject()->className() : "NULL").arg(long(ptr)));
+                                        #endif
+                                        return new MetaTypeVoidStar( metaid, o, false /*owner*/ );
+                                    }
+                                    case QMetaType::QWidgetStar: {
+                                        QWidget* w = static_cast< QWidget* >(ptr);
+                                        if( w && ! w->parent() )
+                                            w->setParent(new QWidget());
+                                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                            krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(w ? w->metaObject()->className() : "NULL").arg(long(ptr)));
+                                        #endif
+                                        return new MetaTypeVoidStar( metaid, w, false /*owner*/ );
+                                    }
+                                    default:
+                                        break;
+                                }
+                            } catch(Py::Exception& e) {
+                                krosswarning(QString("PythonMetaTypeFactory::create %1").arg(Py::value(e).as_string().c_str()));
+                            }
+                        }
                         #ifdef KROSS_PYTHON_VARIANT_DEBUG
                             krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
                         #endif

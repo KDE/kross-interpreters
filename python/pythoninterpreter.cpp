@@ -166,6 +166,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "import __main__\n"
         "import traceback\n"
         "sys.modules['_oldmain'] = sys.modules['__main__']\n"
+        "_main_builtin_import_ = __main__.__builtin__.__import__\n"
         "class _Importer:\n"
         "   def __init__(self, script):\n"
         "       self.script = script\n"

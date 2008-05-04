@@ -201,23 +201,24 @@ bool PythonScript::initialize()
                 if( options & ChildrenInterface::AutoConnectSignals )
                     d->m_autoconnect.append( moit.value() );
             }
+
+            /*
+            // Prepare the local context.
+            QString s =
+                //"import sys\n"
+                //"if self.has(\"stdout\"):\n"
+                //"  self.stdout = Redirect( self.get(\"stdout\") )\n"
+                //"if self.has(\"stderr\"):\n"
+                //"  self.stderr = Redirect( self.get(\"stderr\") )\n"
+                ;
+            Py::Dict mainmoduledict = ((PythonInterpreter*)interpreter())->mainModule()->getDict();
+            PyObject* pyrun = PyRun_String((char*)s.toLatin1().data(), Py_file_input, mainmoduledict.ptr(), moduledict.ptr());
+            if(! pyrun)
+                throw Py::Exception(); // throw exception
+            Py_XDECREF(pyrun); // free the reference.
+            */
         }
 
-        /*
-        // Prepare the local context.
-        QString s =
-            //"import sys\n"
-            //"if self.has(\"stdout\"):\n"
-            //"  self.stdout = Redirect( self.get(\"stdout\") )\n"
-            //"if self.has(\"stderr\"):\n"
-            //"  self.stderr = Redirect( self.get(\"stderr\") )\n"
-            ;
-        Py::Dict mainmoduledict = ((PythonInterpreter*)interpreter())->mainModule()->getDict();
-        PyObject* pyrun = PyRun_StringFlags((char*)s.toLatin1().data(), Py_file_input, mainmoduledict.ptr(), moduledict.ptr());
-        if(! pyrun)
-            throw Py::Exception(); // throw exception
-        Py_XDECREF(pyrun); // free the reference.
-        */
 
         #ifdef KROSS_PYTHON_SCRIPT_INIT_DEBUG
             krossdebug( QString("PythonScript::initialize() name=%1").arg(action()->objectName()) );
