@@ -173,20 +173,16 @@ namespace Py
             // release pointer if not the right type
             if (! accepts (p))
             {
-                assert( ! PyErr_Occurred() );
+                std::string err("CXX : Error creating object of type ");
                 PyObject* ps = PyObject_Repr(p);
-                std::string clazz = PyString_AsString(ps);
+                err += PyString_AsString(ps);
                 Py::_XDECREF(ps);
-                assert( ! PyErr_Occurred() );
 
                 release ();
                 if(PyErr_Occurred())
                 { // Error message already set
                     throw Exception();
                 }
-
-                std::string err("CXX : Error creating object of type ");
-                err += clazz;
 
                 // Better error message if RTTI available
 #if defined( _CPPRTTI ) || defined(__GNUG__)
