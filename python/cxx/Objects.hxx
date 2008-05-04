@@ -175,8 +175,7 @@ namespace Py
             {
                 assert( ! PyErr_Occurred() );
                 PyObject* ps = PyObject_Repr(p);
-                std::string s("CXX : Error creating object of type ");
-                s += PyString_AsString(ps);
+                std::string clazz = PyString_AsString(ps);
                 Py::_XDECREF(ps);
                 assert( ! PyErr_Occurred() );
 
@@ -186,17 +185,17 @@ namespace Py
                     throw Exception();
                 }
 
-                throw TypeError (s);
-/*sebsauer; use the more detailed error-message above
+                std::string err("CXX : Error creating object of type ");
+                err += clazz;
+
                 // Better error message if RTTI available
 #if defined( _CPPRTTI ) || defined(__GNUG__)
-                std::string s("CXX : Error creating object of type ");
-                s += (typeid (*this)).name();
-                throw TypeError (s);
-#else
-                throw TypeError ("CXX: type error.");
+                err += " [";
+                err += (typeid (*this)).name();
+                err += "]";
 #endif
-*/
+
+                throw TypeError (err);
             }
         }
 
