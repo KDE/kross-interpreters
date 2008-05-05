@@ -391,6 +391,10 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                                 switch(metaid) {
                                     case QMetaType::QObjectStar: {
                                         obj = static_cast<QObject*>(ptr);
+                                        /*
+                                        // This is disabled cause users should be forced to solve
+                                        // the parent-handling within there python-code rather
+                                        // then introducing dirty hacks here.
                                         if( obj && ! obj->parent() ) {
                                             // This is a dirty hack to provide a parent to the passed
                                             // QObject/QWidget instance to be sure it doesn't went away.
@@ -398,14 +402,17 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                                             QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
                                             obj->setParent(parent);
                                         }
+                                        */
                                     } break;
                                     case QMetaType::QWidgetStar: {
                                         obj = static_cast<QWidget*>(ptr);
+                                        /*
                                         if( obj && ! obj->parent() ) {
                                             QWidget* parent = new QWidget();
                                             QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
                                             static_cast<QWidget*>(obj)->setParent(parent);
-                                       }
+                                        }
+                                        */
                                     } break;
                                     default:
                                         break;

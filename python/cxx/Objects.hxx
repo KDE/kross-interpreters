@@ -2476,7 +2476,8 @@ namespace Py
         // Queries
         List keys () const
         {
-            return List(PyMapping_Keys(ptr()), true);
+            PyObject* keys = PyObject_CallMethod(ptr(),const_cast<char*>("keys"),NULL);
+            return List(keys, true);
         }
 
         List values () const
