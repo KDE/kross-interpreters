@@ -379,17 +379,21 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                         #endif
                         if( pyobjtypename.startsWith("<class 'PyQt4.") ) {
                             try {
+                                // We got a PyQt4 class and are using now the sip module
+                                // to unwrapinstance those PyQt4 QObject/QWidget.
                                 Py::Module mainmod( PyImport_AddModule( (char*)"sip" ) );
                                 Py::Callable func = mainmod.getDict().getItem("unwrapinstance");
-                                Py::Tuple args(1);
-                                args[0] = object; //pyqtobject pointer
-                                Py::Object result = func.apply(args);
-                                void* ptr = PyLong_AsVoidPtr( result.ptr() );
+                                Py::Tuple arguments(1);
+                                arguments[0] = object; //pyqtobject pointer
+                                Py::Object result = func.apply(arguments); // call the sip.unwrapinstance function
+                                void* ptr = PyLong_AsVoidPtr( result.ptr() ); // the result is a void* pointer to our QObject/QWidget instance
                                 QObject* obj = 0;
                                 switch(metaid) {
                                     case QMetaType::QObjectStar: {
                                         obj = static_cast<QObject*>(ptr);
                                         if( obj && ! obj->parent() ) {
+                                            // This is a dirty hack to provide a parent to the passed
+                                            // QObject/QWidget instance to be sure it doesn't went away.
                                             QObject* parent = new QObject();
                                             QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
                                             obj->setParent(parent);
