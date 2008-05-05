@@ -385,30 +385,34 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                                 args[0] = object; //pyqtobject pointer
                                 Py::Object result = func.apply(args);
                                 void* ptr = PyLong_AsVoidPtr( result.ptr() );
+                                QObject* obj = 0;
                                 switch(metaid) {
                                     case QMetaType::QObjectStar: {
-                                        QObject* o = static_cast< QObject* >(ptr);
-                                        if( o && ! o->parent() )
-                                            o->setParent(new QObject());
-                                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                                            krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(o ? o->metaObject()->className() : "NULL").arg(long(ptr)));
-                                        #endif
-                                        return new MetaTypeVoidStar( metaid, o, false /*owner*/ );
-                                    }
+                                        obj = static_cast<QObject*>(ptr);
+                                        if( obj && ! obj->parent() ) {
+                                            QObject* parent = new QObject();
+                                            QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
+                                            obj->setParent(parent);
+                                        }
+                                    } break;
                                     case QMetaType::QWidgetStar: {
-                                        QWidget* w = static_cast< QWidget* >(ptr);
-                                        if( w && ! w->parent() )
-                                            w->setParent(new QWidget());
-                                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                                            krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(w ? w->metaObject()->className() : "NULL").arg(long(ptr)));
-                                        #endif
-                                        return new MetaTypeVoidStar( metaid, w, false /*owner*/ );
-                                    }
+                                        obj = static_cast<QWidget*>(ptr);
+                                        if( obj && ! obj->parent() ) {
+                                            QWidget* parent = new QWidget();
+                                            QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
+                                            static_cast<QWidget*>(obj)->setParent(parent);
+                                       }
+                                    } break;
                                     default:
                                         break;
                                 }
-                            } catch(Py::Exception& e) {
-                                krosswarning(QString("PythonMetaTypeFactory::create %1").arg(Py::value(e).as_string().c_str()));
+                                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                    krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(obj ? obj->metaObject()->className() : "NULL").arg(long(ptr)));
+                                #endif
+                                return new MetaTypeVoidStar( metaid, obj, false /*owner*/ );
+                            }
+                            catch(Py::Exception& e) {
+                                krosswarning(QString("PythonMetaTypeFactory::create EXCEPTION %1").arg(Py::value(e).as_string().c_str()));
                             }
                         }
                         #ifdef KROSS_PYTHON_VARIANT_DEBUG
@@ -417,7 +421,8 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                         void* ptr = 0; //QMetaType::construct(metaid, 0);
                         return new MetaTypeVoidStar( metaid, ptr, false /*owner*/ );
                     } break;
-                    default: break;
+                    default:
+                        break;
                 }
 
                 // this is a dirty hack to downcast KUrl's to QUrl's
