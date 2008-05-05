@@ -560,7 +560,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
                     v = PythonType<QVariant>::toVariant( argstuple[i] );
                 }
                 catch(Py::Exception& e) {
-                    v = Py::value(Py::Exception()).as_string().c_str();
+                    v = Py::value(e).as_string().c_str();
                 }
                 krossdebug( QString("  Argument index=%1 variant.toString=%2 variant.typeName=%3").arg(i).arg(v.toString()).arg(v.typeName()) );
             }
