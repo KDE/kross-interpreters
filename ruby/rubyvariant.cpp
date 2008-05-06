@@ -168,7 +168,6 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
         case T_DATA: {
             if(! RubyExtension::isRubyExtension(value)) {
                 QByteArray clazzname = rb_class2name(CLASS_OF(value));
-
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyType<QVariant>::toVariant VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
                 #endif
@@ -184,7 +183,9 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
                     QWidget* widget;
                     Data_Get_Struct(result, QWidget, widget);
                     if( widget ) {
-                        krossdebug( QString("RubyType<QVariant>::toVariant QWidget class='%1'").arg(widget ? widget->metaObject()->className() : "NULL") );
+                        #ifdef KROSS_RUBY_VARIANT_DEBUG
+                            krossdebug( QString("RubyType<QVariant>::toVariant QWidget class='%1'").arg(widget ? widget->metaObject()->className() : "NULL") );
+                        #endif
                         QVariant v;
                         v.setValue(widget);
                         return v;
@@ -192,13 +193,17 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
                     QObject* object;
                     Data_Get_Struct(result, QObject, object);
                     if( object ) {
-                        krossdebug( QString("RubyType<QVariant>::toVariant QObject class='%1'").arg(object ? object->metaObject()->className() : "NULL") );
+                        #ifdef KROSS_RUBY_VARIANT_DEBUG
+                            krossdebug( QString("RubyType<QVariant>::toVariant QObject class='%1'").arg(object ? object->metaObject()->className() : "NULL") );
+                        #endif
                         QVariant v;
                         v.setValue(object);
                         return v;
                     }
                 }
-                krosswarning("Cannot yet convert standard ruby type to Kross::RubyExtension object.");
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
+                    krosswarning("Cannot yet convert standard ruby type to Kross::RubyExtension object.");
+                #endif
                 return QVariant();
             }
 
