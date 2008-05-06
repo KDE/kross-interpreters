@@ -371,9 +371,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                                     QObject* obj = 0;
                                     switch(metaTypeId) {
                                         case QMetaType::QWidgetStar:
-                                            QWidget* widget;
-                                            Data_Get_Struct(result, QWidget, widget);
-                                            obj = widget;
+                                            Data_Get_Struct(result, QWidget, obj);
                                             break;
                                         case QMetaType::QObjectStar:
                                             Data_Get_Struct(result, QObject, obj);
