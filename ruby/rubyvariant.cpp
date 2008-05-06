@@ -163,18 +163,48 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
         krossdebug(QString("RubyType<QVariant>::toVariant of type=%1 inspect=%2").arg(TYPE(value)).arg(STR2CSTR(rb_inspect(value))));
     #endif
 
-    switch( TYPE( value ) )
+    switch( TYPE(value) )
     {
         case T_DATA: {
-            #ifdef KROSS_RUBY_VARIANT_DEBUG
-                krossdebug("  VALUE is a Kross::RubyExtension");
-            #endif
-
             if(! RubyExtension::isRubyExtension(value)) {
+                QByteArray clazzname = rb_class2name(CLASS_OF(value));
+
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
+                    krossdebug( QString("RubyType<QVariant>::toVariant VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
+                #endif
+
+                if( clazzname.startsWith("Qt::") ) { // QtRuby
+                    VALUE src = RubyType<QString>::toVALUE("Qt::Internal");
+                    VALUE module = rb_funcall(CLASS_OF(value),rb_intern("module_eval"), 1, src);
+                    VALUE result = rb_funcall(module, rb_intern("smoke2kross"), 1, value);
+                    #ifdef KROSS_RUBY_VARIANT_DEBUG
+                        krossdebug( QString("RubyType<QVariant>::toVariant result=%1 [%2]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))) );
+                    #endif
+
+                    QWidget* widget;
+                    Data_Get_Struct(result, QWidget, widget);
+                    if( widget ) {
+                        krossdebug( QString("RubyType<QVariant>::toVariant QWidget class='%1'").arg(widget ? widget->metaObject()->className() : "NULL") );
+                        QVariant v;
+                        v.setValue(widget);
+                        return v;
+                    }
+                    QObject* object;
+                    Data_Get_Struct(result, QObject, object);
+                    if( object ) {
+                        krossdebug( QString("RubyType<QVariant>::toVariant QObject class='%1'").arg(object ? object->metaObject()->className() : "NULL") );
+                        QVariant v;
+                        v.setValue(object);
+                        return v;
+                    }
+                }
                 krosswarning("Cannot yet convert standard ruby type to Kross::RubyExtension object.");
-                return 0;
+                return QVariant();
             }
 
+            #ifdef KROSS_RUBY_VARIANT_DEBUG
+                krossdebug("RubyType<QVariant>::toVariant VALUE is a Kross::RubyExtension");
+            #endif
             RubyExtension* extension;
             Data_Get_Struct(value, RubyExtension, extension);
             Q_ASSERT(extension);
@@ -357,13 +387,26 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                     switch(metaTypeId) {
                         case QMetaType::QObjectStar: // fall through
                         case QMetaType::QWidgetStar: {
+                            if( TYPE(value) == T_DATA ) {
+                                QVariant v = RubyType<QVariant>::toVariant(value);
+                                if( v.isValid() ) {
+                                    #ifdef KROSS_RUBY_VARIANT_DEBUG
+                                        krossdebug( QString("RubyMetaTypeFactory::create VALUE is QVariant type '%1'").arg(v.typeName()) );
+                                    #endif
+                                    if( QWidget* w = v.value<QWidget*>() )
+                                        return new MetaTypeVoidStar( metaTypeId, w, false /*owner*/ );
+                                    if( QObject* obj = v.value<QObject*>() )
+                                        return new MetaTypeVoidStar( metaTypeId, obj, false /*owner*/ );
+                                }
+                            }
                             #ifdef KROSS_RUBY_VARIANT_DEBUG
                                 krossdebug( QString("RubyMetaTypeFactory::create VALUE is T_NIL. Create empty type '%1'").arg(metaTypeId) );
                             #endif
                             void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
                             return new MetaTypeVoidStar( metaTypeId, ptr, false /* owner */ );
                         } break;
-                        default: break;
+                        default:
+                            break;
                     }
                 //}
 
