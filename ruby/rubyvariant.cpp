@@ -364,10 +364,10 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                                     krossdebug( QString("RubyType<QVariant>::toVariant VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
                                 #endif
 
-                                if( clazzname.startsWith("Qt::") ) {
-                                    // If we got a QtRuby QObject/QWidget we need to call the
-                                    // Qt::Internal.smoke2kross(VALUE) function to convert the
-                                    // value into a raw pointer to the QObject/QWidget instance.
+                                if( clazzname.startsWith("Qt::") || clazzname.startsWith("KDE::") ) {
+                                    // If we got a QtRuby/Korundum4 QObject/QWidget we need to call
+                                    // the Qt::Internal.smoke2kross(VALUE) function to convert the
+                                    // VALUE into a pointer to the QObject/QWidget instance.
                                     VALUE src = RubyType<QString>::toVALUE("Qt::Internal");
                                     VALUE module = rb_funcall(CLASS_OF(value),rb_intern("module_eval"), 1, src);
                                     VALUE result = rb_funcall(module, rb_intern("smoke2kross"), 1, value);
