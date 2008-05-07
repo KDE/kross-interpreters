@@ -2810,7 +2810,7 @@ namespace Py
 
         Object apply(PyObject* pargs = 0) const
         {
-            return apply (Tuple(pargs));
+            return apply(pargs ? Tuple(pargs) : Tuple());
         }
     };
 
