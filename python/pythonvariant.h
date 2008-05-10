@@ -192,9 +192,12 @@ namespace Kross {
             return Py::String(ba.constData(), ba.size());
         }
         inline static QByteArray toVariant(const Py::Object& obj) {
-            char* s = PyString_AS_STRING(obj.ptr());
             int size = PyString_Size(obj.ptr());
-            return QByteArray(s, size);
+            if( size >= 0 )
+                return QByteArray(PyString_AS_STRING(obj.ptr()), size);
+            if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtCore.QByteArray'>") == 0 )
+                return PythonType<QByteArray>::toVariant( Py::Callable(obj.getAttr("data")).apply() );
+            return QByteArray();
         }
     };
 
@@ -223,7 +226,11 @@ namespace Kross {
                     return s;
                 }
             #endif
-            return obj.isString() ? Py::String(obj).as_string().c_str() : QString();
+            if( obj.isString() )
+                return Py::String(obj).as_string().c_str();
+            if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtCore.QString'>") == 0 )
+                return PythonType<QString>::toVariant( Py::Callable(obj.getAttr("__str__")).apply() );
+            return QString();
         }
     };
 
@@ -442,7 +449,9 @@ namespace Kross {
             return color.isValid() ? PythonType<QString>::toPyObject(color.name()) : Py::None();
         }
         inline static QColor toVariant(const Py::Object& obj) {
-            return obj.isString() ? QColor(PythonType<QString>::toVariant(obj)) : QColor();
+            if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtGui.QColor'>") == 0 )
+                return PythonType<QColor>::toVariant( Py::Callable(obj.getAttr("name")).apply() );
+            return QColor(PythonType<QString>::toVariant(obj));
         }
     };
 
@@ -454,6 +463,9 @@ namespace Kross {
             return PythonType<QString>::toPyObject( url.toString() );
         }
         inline static QUrl toVariant(const Py::Object& obj) {
+            if( ! obj.isString() )
+                if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtCore.QUrl'>") == 0 )
+                    return PythonType<QString>::toVariant( Py::Callable(obj.getAttr("toString")).apply() );
             return QUrl( PythonType<QString>::toVariant(obj) );
         }
     };

@@ -372,15 +372,19 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 switch(metaid) {
                     case QMetaType::QObjectStar: // fall through
                     case QMetaType::QWidgetStar: {
-                        Py::Object pyobjtype( PyObject_Type(object.ptr()), true /* owner */ );
-                        const QString pyobjtypename( pyobjtype.repr().as_string().c_str() );
                         #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                            Py::Object pyobjtype( PyObject_Type(object.ptr()), true /* owner */ );
+                            const QString pyobjtypename( pyobjtype.repr().as_string().c_str() );
                             krossdebug( QString("PythonMetaTypeFactory::create Py::Object is %1").arg(pyobjtypename) );
                         #endif
-                        if( pyobjtypename.startsWith("<class 'PyQt4.") ) {
+                        if( object.hasAttr("metaObject") ) {
+                            // It seems the best way to determinate a PyQt4/PyKDE4 QObject/QWidget is by
+                            // just looking if the passed in PyObject has a metaObject-attribute. That
+                            // way we are sure to also catch classes that inheritate from such PyQt
+                            // widgets. So, if the PyObject has such an attribute we try to use the
+                            // with PyQt together delivered sip.unwrapinstance() function to fetch
+                            // the QObject/QWidget-pointer.
                             try {
-                                // We got a PyQt4 class and are using now the sip module
-                                // to unwrapinstance those PyQt4 QObject/QWidget.
                                 Py::Module mainmod( PyImport_AddModule( (char*)"sip" ) );
                                 Py::Callable func = mainmod.getDict().getItem("unwrapinstance");
                                 Py::Tuple arguments(1);
@@ -391,28 +395,9 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                                 switch(metaid) {
                                     case QMetaType::QObjectStar: {
                                         obj = static_cast<QObject*>(ptr);
-                                        /*
-                                        // This is disabled cause users should be forced to solve
-                                        // the parent-handling within there python-code rather
-                                        // then introducing dirty hacks here.
-                                        if( obj && ! obj->parent() ) {
-                                            // This is a dirty hack to provide a parent to the passed
-                                            // QObject/QWidget instance to be sure it doesn't went away.
-                                            QObject* parent = new QObject();
-                                            QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
-                                            obj->setParent(parent);
-                                        }
-                                        */
                                     } break;
                                     case QMetaType::QWidgetStar: {
                                         obj = static_cast<QWidget*>(ptr);
-                                        /*
-                                        if( obj && ! obj->parent() ) {
-                                            QWidget* parent = new QWidget();
-                                            QObject::connect(obj, SIGNAL(destroyed(QObject*)), parent, SLOT(deleteLater()));
-                                            static_cast<QWidget*>(obj)->setParent(parent);
-                                        }
-                                        */
                                     } break;
                                     default:
                                         break;
@@ -423,7 +408,9 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                                 return new MetaTypeVoidStar( metaid, obj, false /*owner*/ );
                             }
                             catch(Py::Exception& e) {
-                                krosswarning(QString("PythonMetaTypeFactory::create EXCEPTION %1").arg(Py::value(e).as_string().c_str()));
+                                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                    krossdebug(QString("PythonMetaTypeFactory::create EXCEPTION %1").arg(Py::value(e).as_string().c_str()));
+                                #endif
                             }
                         }
                         #ifdef KROSS_PYTHON_VARIANT_DEBUG
