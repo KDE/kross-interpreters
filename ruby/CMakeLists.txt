@@ -1,4 +1,4 @@
-include_directories( ${RUBY_INCLUDE_PATH} ${CMAKE_SOURCE_DIR}/libs/kross )
+include_directories( ${RUBY_INCLUDE_PATH} )
 
 set(krossruby_PART_SRCS
    rubyvariant.cpp

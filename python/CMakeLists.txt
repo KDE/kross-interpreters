@@ -1,9 +1,5 @@
 PROJECT(KROSSPYTHON)
 
-find_package(KDE4 REQUIRED)
-find_package(Qt4 REQUIRED)
-include(KDE4Defaults)
-include(MacroLibrary)
 find_package(PythonLibrary REQUIRED)
 include(PythonMacros)
 
