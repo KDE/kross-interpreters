@@ -182,7 +182,9 @@ namespace Kross {
 
                             //TODO optimize
                             if (ruby_in_eval == 0) {
+#ifdef RUBY_INIT_STACK
                                 RUBY_INIT_STACK
+#endif
                             }
                             ruby_in_eval++;
                             VALUE argarray = rb_ary_new2(3);
