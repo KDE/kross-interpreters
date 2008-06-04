@@ -73,41 +73,46 @@ namespace Kross {
                             QMetaMethod method = metaObject()->method( metaObject()->indexOfMethod(m_signature) );
                             QList<QByteArray> params = method.parameterTypes();
                             Py::Tuple args( params.size() );
-                            int idx = 1;
+                            int idx = 0;
                             foreach(QByteArray param, params) {
+                                ++idx;
                                 int tp = QVariant::nameToType( param.constData() );
                                 switch(tp) {
                                     case QVariant::Invalid: // fall through
                                     case QVariant::UserType: {
                                         tp = QMetaType::type( param.constData() );
                                         #ifdef KROSS_PYTHON_FUNCTION_DEBUG
-                                            krossdebug( QString("PythonFunction::qt_metacall: metatypeId=%1").arg(tp) );
+                                            krossdebug( QString("PythonFunction::qt_metacall: param=%1 metatypeId=%2").arg(param.constData()).arg(tp) );
                                         #endif
                                         switch( tp ) {
                                             case QMetaType::QObjectStar: {
                                                 QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
                                                 //args[idx-1] = Py::asObject(new PythonExtension(obj, false));
                                                 args[idx-1] = Py::asObject(new PythonExtension(obj));
+                                                continue;
                                             } break;
                                             case QMetaType::QWidgetStar: {
                                                 QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
                                                 //args[idx-1] = Py::asObject(new PythonExtension(obj, false));
                                                 args[idx-1] = Py::asObject(new PythonExtension(obj));
+                                                continue;
                                             } break;
-                                            default: {
-                                                args[idx-1] = Py::None();
-                                            } break;
+                                            default:
+                                                break;
                                         }
-                                    } break;
+                                    } // fall through
                                     default: {
                                         QVariant v(tp, _a[idx]);
+                                        if( v.type() == QVariant::Invalid && QByteArray(param.constData()).endsWith("*") ) {
+                                            QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
+                                            v.setValue( (QObject*) obj );
+                                        }
                                         #ifdef KROSS_PYTHON_FUNCTION_DEBUG
                                             krossdebug( QString("PythonFunction::qt_metacall argument param=%1 typeId=%2").arg(param.constData()).arg(tp) );
                                         #endif
                                         args[idx-1] = PythonType<QVariant>::toPyObject(v);
                                     } break;
                                 }
-                                ++idx;
                             }
 
                             Py::Object result;

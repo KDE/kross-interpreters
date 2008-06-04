@@ -88,7 +88,6 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
             //return Py::Object();
             return Py::None(); //FIXME should we fall through here?
         } break;
-
         case QVariant::UserType: {
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
                 krossdebug( QString("PythonType<QVariant>::toPyObject variant=%1 is QVariant::UserType. Trying to cast now.").arg(v.toString()) );
