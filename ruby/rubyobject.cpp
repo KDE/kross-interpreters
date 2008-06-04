@@ -111,7 +111,7 @@ RubyObject::RubyObject(const VALUE& object)
     VALUE methods;
     const char* method;
     methods = rb_class_instance_methods(1, args, CLASS_OF(object));
-    for (int i = 0; i < RARRAY_LEN(methods); i++) {
+    for (int i = 0; i < RARRAY(methods)->len; i++) {
         method = StringValuePtr(RARRAY(methods)->ptr[i]);
         krossdebug( QString("RubyObject::RubyObject() method=%1").arg( method ));
         d->calls << method;
