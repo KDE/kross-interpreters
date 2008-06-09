@@ -22,7 +22,7 @@
 
 using namespace Kross;
 
-static VALUE callExecuteException(VALUE self, VALUE error)
+static VALUE callExecuteException(VALUE /* self */, VALUE error)
 {
     #ifdef KROSS_RUBY_OBJECT_DEBUG
         krossdebug( QString("RubyScript::callExecuteException script=%1 error=%2")

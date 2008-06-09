@@ -122,7 +122,7 @@ namespace Kross {
             VALUE module = rb_funcall(self, rb_intern("module_function"), 1, unit);
             Q_ASSERT( TYPE(module) == TYPE(self) );
 
-            char *methodname = rb_id2name(SYM2ID(unit));
+            const char *methodname = rb_id2name(SYM2ID(unit));
             #ifdef KROSS_RUBY_SCRIPT_METHODADDED_DEBUG
                 krossdebug(QString("RubyScriptPrivate::method_added methodname=%1 self=%2 module=%3").arg(methodname).arg(STR2CSTR( rb_inspect(self) )).arg(STR2CSTR( rb_inspect(module) )));
             #endif
