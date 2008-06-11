@@ -355,7 +355,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                             if( TYPE(value) == T_DATA ) {
                                 QByteArray clazzname = rb_class2name(CLASS_OF(value));
                                 #ifdef KROSS_RUBY_VARIANT_DEBUG
-                                    krossdebug( QString("RubyType<QVariant>::toVariant VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
+                                    krossdebug( QString("RubyMetaTypeFactory::create VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
                                 #endif
 
                                 if( clazzname.startsWith("Qt::") || clazzname.startsWith("KDE::") ) {
@@ -377,7 +377,7 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                                             break;
                                     }
                                     #ifdef KROSS_RUBY_VARIANT_DEBUG
-                                        krossdebug( QString("RubyType<QVariant>::toVariant QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))).arg(obj ? obj->objectName() : "NULL").arg(obj ? obj->metaObject()->className() : "NULL") );
+                                        krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))).arg(obj ? obj->objectName() : "NULL").arg(obj ? obj->metaObject()->className() : "NULL") );
                                     #endif
                                     return new MetaTypeVoidStar( metaTypeId, obj, false /*owner*/ );
                                 }
@@ -404,14 +404,14 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             QVariant v = RubyType<QVariant>::toVariant(value);
             if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                    krossdebug( QString("RubyMetaTypeFactory::create Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif
                 if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
                     return new Kross::MetaTypeVariant<Kross::Object::Ptr>(ptr);
             }
 
             #ifdef KROSS_RUBY_VARIANT_DEBUG
-                krossdebug( QString("RubyVariant::create Converted VALUE with type '%1 %2 %3' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(metaTypeId).arg(v.typeName()).arg(v.toString()) );
+                krossdebug( QString("RubyMetaTypeFactory::create Converted VALUE with type '%1 %2 %3' to QVariant with typename=%3 toString=%4").arg(QMetaType::typeName(typeId)).arg(typeId).arg(metaTypeId).arg(v.typeName()).arg(v.toString()) );
             #endif
             return new Kross::MetaTypeVariant< QVariant >( v );
         } break;
