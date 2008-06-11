@@ -31,6 +31,7 @@
 
 namespace Kross {
 
+    class RubyExtension;
     class RubyModulePrivate;
 
     /**
@@ -54,6 +55,11 @@ namespace Kross {
             * Destructor.
             */
             ~RubyModule();
+
+            /**
+            * \return the \a RubyExtension instance used for this module.
+            */
+            RubyExtension* extension() const;
 
         private:
 

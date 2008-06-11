@@ -84,7 +84,7 @@ namespace Kross {
         // set the return value
         if(d->hasreturnvalue)
         {
-            //krossdebug( QString("-----------> %1").arg(argc > 1 ? STR2CSTR(rb_inspect(argv[1])) : "") );
+            //krossdebug( QString("RubyCallCache::execfunction argv[1]=%1").arg(argc > 1 ? STR2CSTR(rb_inspect(argv[1])) : "") );
             MetaType* returntype = RubyMetaTypeFactory::create( d->types[0], d->metatypes[0] );
             //MetaType* returntype = RubyMetaTypeFactory::create( d->types[0], d->metatypes[0], argc > 1 ? argv[1] : Qnil );
             variantargs[0] = returntype;
@@ -150,6 +150,12 @@ namespace Kross {
             }
 #else
             result = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
+            /*
+            if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
+                QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
+                result.setValue( (QObject*) obj );
+            }
+            */
 #endif
             #ifdef KROSS_RUBY_CALLCACHE_DEBUG
                 QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);

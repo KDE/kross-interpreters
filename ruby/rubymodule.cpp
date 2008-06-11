@@ -68,6 +68,11 @@ RubyModule::~RubyModule()
     delete d;
 }
 
+RubyExtension* RubyModule::extension() const
+{
+    return d->extension;
+}
+
 VALUE RubyModule::method_missing(int argc, VALUE *argv, VALUE self)
 {
     #ifdef KROSS_RUBY_MODULE_DEBUG

@@ -20,6 +20,7 @@
 
 #include "rubyvariant.h"
 #include "rubyextension.h"
+#include "rubymodule.h"
 #include "rubyobject.h"
 
 #include <QWidget>
@@ -165,8 +166,10 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
 
     switch( TYPE(value) )
     {
+        case T_MODULE:
         case T_DATA: {
-            if(! RubyExtension::isRubyExtension(value)) {
+            RubyExtension* extension = RubyExtension::toExtension(value);
+            if(! extension) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krosswarning("Cannot yet convert standard ruby type to Kross::RubyExtension object.");
                 #endif
@@ -176,9 +179,6 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
             #ifdef KROSS_RUBY_VARIANT_DEBUG
                 krossdebug("RubyType<QVariant>::toVariant VALUE is a Kross::RubyExtension");
             #endif
-            RubyExtension* extension;
-            Data_Get_Struct(value, RubyExtension, extension);
-            Q_ASSERT(extension);
             QObject* object = extension->object();
             if(! object) {
                 krossdebug("RubyType<QVariant>::toVariant QObject is NULL. Returning QVariant::Invalid.");
@@ -254,7 +254,6 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
         case T_FILE:
         case T_STRUCT:
         case T_REGEXP:
-        case T_MODULE:
         case T_ICLASS:
         case T_CLASS:
         default:
@@ -335,21 +334,16 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
         case QVariant::Invalid: // fall through
         case QVariant::UserType: // fall through
         default: {
-            if( RubyExtension::isRubyExtension(value) ) {
+
+            if( RubyExtension* extension = RubyExtension::toExtension(value) ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyMetaTypeFactory::create VALUE with typeId '%1' is a RubyExtension object").arg(typeId) );
                 #endif
-
-                RubyExtension* extension;
-                Data_Get_Struct(value, RubyExtension, extension);
-                Q_ASSERT(extension);
-
                 QObject* object = extension->object();
                 if(! object) {
                     krosswarning("RubyMetaTypeFactory::create QObject is NULL.");
                     return 0;
                 }
-
                 return new MetaTypeVoidStar( typeId, object, false /*owner*/ );
             }
 
@@ -408,9 +402,8 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
             }
 
             QVariant v = RubyType<QVariant>::toVariant(value);
-
             if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif
                 if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )

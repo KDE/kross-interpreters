@@ -68,10 +68,10 @@ namespace Kross {
         QList< RubyCallCache* > m_cachelist;
     };
 
-}
+    VALUE RubyExtensionPrivate::s_krossObject = 0;
+    //VALUE RubyExtensionPrivate::s_krossException = 0;
 
-VALUE RubyExtensionPrivate::s_krossObject = 0;
-//VALUE RubyExtensionPrivate::s_krossException = 0;
+}
 
 RubyExtension::RubyExtension(QObject* object)
     : d(new RubyExtensionPrivate())
@@ -385,17 +385,16 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
     for(int idx = 1; idx <= typelistcount; ++idx) {
         const char* typeName = typelist[idx - 1].constData();
         types[idx] = QVariant::nameToType(typeName);
-
         if( types[idx] == QVariant::Invalid || types[idx] == QVariant::UserType ) {
             metatypes[idx] = QMetaType::type(typeName);
             #ifdef KROSS_RUBY_EXTENSION_DEBUG
-                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3").arg(idx).arg(metamethod.typeName()).arg(metatypes[idx]) );
+                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3").arg(idx).arg(typeName).arg(metatypes[idx]) );
             #endif
         }
         else {
             metatypes[idx] = QMetaType::Void; //FIXME: disable before release
             #ifdef KROSS_RUBY_EXTENSION_DEBUG
-                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3 set metatype=QMetaType::Void").arg(idx).arg(metamethod.typeName()).arg(metatypes[idx]) );
+                krossdebug( QString("  RubyExtension::callMetaMethod argument idx=%1 typeName=%2 typeId=%3 set metatype=QMetaType::Void").arg(idx).arg(typeName).arg(metatypes[idx]) );
             #endif
         }
     }
@@ -481,7 +480,16 @@ void RubyExtension::delete_exception(void* object)
 bool RubyExtension::isRubyExtension(VALUE value)
 {
     VALUE result = rb_funcall(value, rb_intern("kind_of?"), 1, RubyExtensionPrivate::s_krossObject );
-    return (TYPE(result) == T_TRUE);
+    if( TYPE(result) == T_TRUE )
+        return true;
+    result = rb_funcall(value, rb_intern("const_defined?"), 1, ID2SYM(rb_intern("MODULEOBJ") ));
+    if(TYPE(result) == T_TRUE) {
+        value = rb_funcall(value, rb_intern("const_get"), 1, ID2SYM(rb_intern("MODULEOBJ")));
+        result = rb_funcall(value, rb_intern("kind_of?"), 1, RubyExtensionPrivate::s_krossObject );
+        if(TYPE(result) == T_TRUE)
+            return true;
+    }
+    return false;
 }
 
 #if 0
@@ -510,11 +518,20 @@ VALUE RubyExtension::convertFromException(Kross::Exception::Ptr exc)
 
 RubyExtension* RubyExtension::toExtension(VALUE value)
 {
-    if( ! isRubyExtension(value) )
-        return 0;
+    VALUE result = rb_funcall(value, rb_intern("kind_of?"), 1, RubyExtensionPrivate::s_krossObject );
+    if( TYPE(result) != T_TRUE ) {
+        if( TYPE(value) != T_MODULE )
+            return 0;
+        result = rb_funcall(value, rb_intern("const_defined?"), 1, ID2SYM(rb_intern("MODULEOBJ") ));
+        if(TYPE(result) != T_TRUE)
+            return 0;
+        value = rb_funcall( value, rb_intern("const_get"), 1, ID2SYM(rb_intern("MODULEOBJ")) );
+        result = rb_funcall(value, rb_intern("kind_of?"), 1, RubyExtensionPrivate::s_krossObject );
+        if(TYPE(result) != T_TRUE)
+            return 0;
+    }
     RubyExtension* extension;
     Data_Get_Struct(value, RubyExtension, extension);
-    Q_ASSERT(extension);
     return extension;
 }
 
@@ -522,7 +539,7 @@ VALUE RubyExtension::toVALUE(RubyExtension* extension, bool owner)
 {
     QObject* object = extension->d->m_object;
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
-        krossdebug( QString("RubyExtension::toVALUE RubyExtension.QObject=%1 owner=%2").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()).arg(owner) : "NULL" ) );
+        krossdebug( QString("RubyExtension::toVALUE RubyExtension.QObject=%1 owner=%2").arg( object ? QString("%1 %2").arg(object->objectName()).arg(object->metaObject()->className()).arg(owner) : "NULL" ).arg(owner) );
     #endif
     if( ! object )
         return 0;
@@ -532,7 +549,7 @@ VALUE RubyExtension::toVALUE(RubyExtension* extension, bool owner)
 
 void RubyExtension::init()
 {
-    RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject );
+    RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
