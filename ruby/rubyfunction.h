@@ -177,15 +177,18 @@ namespace Kross {
                                 ++idx;
                             }
 
+                            /* makes no sense to init the stack here since we share one stack anyway and it's handled in the interpreter already
+                            if (ruby_in_eval == 0) {
+                                #ifdef RUBY_INIT_STACK
+                                    RUBY_INIT_STACK
+                                #endif
+                            }
+                            */
+
                             // call the ruby function
                             //VALUE result = rb_funcall2(m_method, rb_intern("call"), argsize, args);
 
                             //TODO optimize
-                            if (ruby_in_eval == 0) {
-#ifdef RUBY_INIT_STACK
-                                RUBY_INIT_STACK
-#endif
-                            }
                             ruby_in_eval++;
                             VALUE argarray = rb_ary_new2(3);
                             rb_ary_store(argarray, 0, m_method); //self

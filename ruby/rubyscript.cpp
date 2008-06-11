@@ -303,7 +303,7 @@ void RubyScript::execute()
     rb_ary_store(args, 1, src);
     rb_ary_store(args, 2, fileName);
 
-    /* makes not sense to init the stack here since we share one stack, right?!
+    /* makes no sense to init the stack here since we share one stack anyway and it's handled in the interpreter already
     if (ruby_in_eval == 0) {
         #ifdef RUBY_INIT_STACK
                 RUBY_INIT_STACK
