@@ -20,8 +20,10 @@
 #include "falconkfvm.h"
 #include <falcon/autocstring.h>
 
+#include <QPoint>
 #include <QChar>
 #include <QString>
+#include <QStringList>
 #include <QVariant>
 #include <QMetaType>
 
