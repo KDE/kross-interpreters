@@ -1,7 +1,12 @@
 /***************************************************************************
- * falconkerror.cpp
+ * mainwindow.h
+ * Test for Kross - Falcon actions.
+ *
  * This file is part of the KDE project
- * copyright (C)2007-2008 by Giancarlo Niccolai (jonnymind@falconpl.org)
+ * copyright (C)2006 by Sebastian Sauer (mail@dipe.org)
+ *
+ * Parts of the code are from kjsembed4 SlotProxy
+ * Copyright (C) 2005, 2006 KJSEmbed Authors.
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Library General Public
@@ -17,25 +22,26 @@
  * Boston, MA 02110-1301, USA.
  ***************************************************************************/
 
-#include "falconkerror.h"
-#include <falcon/cobject.h>
-#include <falcon/vm.h>
 
-namespace Kross {
-
-    static void _falcon_KrossError_init ( ::Falcon::VMachine *vm )
-    {
-        Falcon::CoreObject *einst = vm->self().asObject();
-        if( einst->getUserData() == 0 )
-            einst->setUserData( new FalconKrossError );
-        
-        ::Falcon::core::Error_init( vm );
-    }
-
-    void DeclareFalconKrossError( ::Falcon::Module *self )
-    {
-        Falcon::Symbol *error_class = self->addExternalRef( "Error" ); // it's external
-        Falcon::Symbol *kerr_cls = self->addClass( "KrossError", _falcon_KrossError_init );
-        kerr_cls->getClassDef()->addInheritance(  new Falcon::InheritDef( error_class ) );
-    }
-}
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
+ 
+#include <QComboBox>
+#include <QLabel>
+ 
+// The main window to display our combobox and the label.
+class MainWindow : public QWidget
+{
+    Q_OBJECT
+  public:
+    // The constructor.
+    MainWindow(QWidget *parent=0);
+  private Q_SLOTS:
+    // This slot is called when the item in the combobox is changed.
+    void scriptActivated(const QString &);
+  private:
+    QLabel* lblHello;
+    QComboBox* cmbScripts;
+};
+ 
+#endif

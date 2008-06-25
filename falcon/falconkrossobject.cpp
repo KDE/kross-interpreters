@@ -253,6 +253,7 @@ namespace Kross
     void DeclareFalconKrossObject( Falcon::Module *self )
     {
         Falcon::Symbol *ko_class = self->addClass( "KrossObject", _falcon_ko_init );
+        ko_class->carryFalconData();
         
         self->addClassMethod( ko_class, "className", _falcon_ko_className );
         self->addClassMethod( ko_class, "signalNames", _falcon_ko_signalNames );
@@ -262,5 +263,15 @@ namespace Kross
         self->addClassMethod( ko_class, "setProperty", _falcon_ko_setProperty );
         self->addClassMethod( ko_class, "connect", _falcon_ko_connect );
         self->addClassMethod( ko_class, "disconnect", _falcon_ko_disconnect );
+    }
+    
+    
+    Falcon::FalconData *FalconCarrier::clone() const
+    {
+        return 0;
+    }
+    
+    void FalconCarrier::gcMark( Falcon::VMachine* ) 
+    {
     }
 }

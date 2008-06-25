@@ -39,7 +39,7 @@ namespace Kross {
     * This class hasn't a d-> pointer as it IS the d pointer for the
     * CoreObject class...
     */
-    class FalconCarrier: public Falcon::UserData
+    class FalconCarrier: public Falcon::FalconData
     {
         QObject *m_carried;
         
@@ -55,6 +55,9 @@ namespace Kross {
         QObject *qobject() const {
             return m_carried;
         }
+        
+        virtual Falcon::FalconData *clone() const;
+        virtual void gcMark( Falcon::VMachine* );
     };
     
     /**

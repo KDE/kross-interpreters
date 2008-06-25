@@ -65,17 +65,17 @@ namespace Kross {
             return;
         }
         
+        Falcon::Item i_other_x, i_other_y, i_x, i_y;
+        
         // if the other item has an X and an Y (regarless of class), order it.
-        Falcon::Item *i_other_x = i_other->asObject()->getProperty( "x" );
-        if ( i_other_x == 0 )
+        if ( ! i_other->asObject()->getProperty( "x", i_other_x ) )
         {
             // let the VM do normal comparation
             vm->retnil();
             return;
         }
 
-        Falcon::Item *i_other_y = i_other->asObject()->getProperty( "y" );
-        if ( i_other_y == 0 )
+        if ( ! i_other->asObject()->getProperty( "y", i_other_y ) )
         {
             // let the VM do normal comparation (again)
             vm->retnil();
@@ -83,13 +83,11 @@ namespace Kross {
         }
         
         // get our data; we know we have X and Y
-        Falcon::Item *i_x = self->getProperty( "x" );
-        Falcon::Item *i_y = self->getProperty( "y" );
-        
-        Q_ASSERT( i_x != 0 && i_y != 0 );
+        self->getProperty( "x", i_x );
+        self->getProperty( "y", i_y );
         
         // Let's use VM comparation, that would eventually resolve to other calls
-        int cmp = vm->compareItems( *i_x, *i_other_x );
+        int cmp = vm->compareItems( i_x, i_other_x );
         if ( cmp != 0 || vm->hadError() ) 
         {
             vm->retval( (Falcon::int64) cmp ); // if we had error, the retval has no meaning
@@ -97,7 +95,7 @@ namespace Kross {
         }
 
         // VM decided that X are the same; try the same for y.
-        cmp = vm->compareItems( *i_y, *i_other_y );
+        cmp = vm->compareItems( i_y, i_other_y );
         
         // again, if we had error, the VM will take care to unroll up to the correct frame. 
         vm->retval( (Falcon::int64) cmp );
@@ -109,24 +107,23 @@ namespace Kross {
         Falcon::CoreObject *self = vm->self().asObject();
     
         // get our data; we know we have X and Y
-        Falcon::Item *i_x = self->getProperty( "x" );
-        Falcon::Item *i_y = self->getProperty( "y" );
-        
-        Q_ASSERT( i_x != 0 && i_y != 0 );
+        Falcon::Item i_x, i_y;
+        self->getProperty( "x", i_x );
+        self->getProperty( "y", i_y );
         
         // Numeric?
-        if ( i_x->isNumeric() || i_y->isNumeric() )
+        if ( i_x.isNumeric() || i_y.isNumeric() )
         {
-            double x = i_x->forceNumeric();
-            double y = i_y->forceNumeric();
+            double x = i_x.forceNumeric();
+            double y = i_y.forceNumeric();
             if ( x < 0 ) x = -x;
             if ( y < 0 ) y = -y;
             vm->retval( x + y );
         }
         else {
             // integer?
-            Falcon::int64 x = i_x->forceInteger();
-            Falcon::int64 y = i_y->forceInteger();
+            Falcon::int64 x = i_x.forceInteger();
+            Falcon::int64 y = i_y.forceInteger();
             if ( x < 0 ) x = -x;
             if ( y < 0 ) y = -y;
             vm->retval( x + y );

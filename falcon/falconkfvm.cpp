@@ -118,16 +118,17 @@ namespace Kross {
                 Falcon::CoreObject *cobj = item.asObject();
                 if ( cobj->derivedFrom( "QPoint" ) )
                 {
-                    Falcon::Item *i_x = cobj->getProperty( "x" );
-                    Falcon::Item *i_y = cobj->getProperty( "y" );
-                    Q_ASSERT( i_x != 0 & i_y != 0 );
+                    Falcon::Item i_x, i_y; 
+                    cobj->getProperty( "x", i_x );
+                    cobj->getProperty( "y", i_y );
+                    
                     // have we a numeric instance? -- return a QPointF 
-                    if ( i_x->isNumeric() || i_y->isNumeric() )
+                    if ( i_x.isNumeric() || i_y.isNumeric() )
                     {
-                        variant.setValue( QPointF( i_x->forceNumeric(), i_y->forceNumeric() ) );
+                        variant.setValue( QPointF( i_x.forceNumeric(), i_y.forceNumeric() ) );
                     }
                     else {
-                        variant.setValue( QPoint( i_x->forceInteger(), i_y->forceInteger() ) );
+                        variant.setValue( QPoint( i_x.forceInteger(), i_y.forceInteger() ) );
                     }
                 }
             }

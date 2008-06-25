@@ -25,6 +25,7 @@ set(krossfalcon_PART_SRCS
    falconmodule.cpp
    falconkerror.cpp
    falconfunction.cpp
+   falconprovider.cpp
    
    falconkross.cpp
    falconkrossobject.cpp

@@ -22,10 +22,10 @@
 #include "falconkfvm.h"
 #include <kross/core/action.h>
 
-//TODO move that functionality to FalconExtension!
 #include <QMetaObject>
 #include <QMetaMethod>
 #include "falconerrhand.h"
+#include "falconprovider.h"
 
 using namespace Kross;
 
@@ -44,16 +44,24 @@ namespace Kross {
             /// true when initialization has been performed.
             bool m_bInitialized;
             
-            FalconScriptPrivate() :
+            /// Our dynamic object import provider.
+            Falcon::Module *m_symProvider;
+            
+            FalconScriptPrivate( Action* action ):
                 m_vm(0),
                 m_mainModule(0),
-                m_bInitialized( false )
+                m_bInitialized( false ),
+                m_symProvider( new FalconProvider( action ) )
             {}
+            
+            ~FalconScriptPrivate() {
+                m_symProvider->decref();
+            }
     };
 
 FalconScript::FalconScript(Kross::Interpreter* interpreter, Kross::Action* action)
     : Kross::Script(interpreter, action),
-    d(new FalconScriptPrivate())
+    d(new FalconScriptPrivate( action ))
 {
     #ifdef KROSS_FALCON_SCRIPT_CTOR_DEBUG
         krossdebug("FalconScript::Constructor.");
@@ -69,6 +77,7 @@ FalconScript::FalconScript(Kross::Interpreter* interpreter, Kross::Action* actio
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->coreModule() );
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->rtlModule() );
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->krossModule() );
+    d->m_vm->link( d->m_symProvider );
 }
 
 FalconScript::~FalconScript()
