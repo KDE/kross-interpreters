@@ -57,6 +57,11 @@ namespace Kross {
             */
             virtual Falcon::Symbol *onSymbolRequest( const Falcon::String &name );
 
+            /**
+            * This is a very useful utility to reflect a QObject instance into a Falcon Symbol.
+            */
+            Falcon::Symbol *reflectObject( const Falcon::String &objName, QObject *obj );
+            
         private:
             /// Private d-pointer class.
             FalconProviderPrivate * const d;

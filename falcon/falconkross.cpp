@@ -24,7 +24,7 @@
 
 namespace Kross
 {
-    static void _falcon_Kross_action( Falcon::VMachine *vm )
+    static void _falcon_Kross_action( Falcon::VMachine * )
     {
     }
     

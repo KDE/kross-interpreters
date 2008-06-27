@@ -77,6 +77,7 @@ namespace Kross {
         
         // and then load the rtl.
         d->m_rtl_module = d->m_loader->loadName( "falcon_rtl" );
+        Q_ASSERT( d->m_rtl_module );
         
         // on error, the error handler is invoked, and it will call our setError method.
         //    d->m_rtl_module will be 0.
@@ -124,10 +125,10 @@ namespace Kross {
         // nothing to do in Falcon.
     }
     
-    Kross::Script* FalconInterpreter::createScript(Kross::Action* Action)
+    Kross::Script* FalconInterpreter::createScript(Kross::Action* action)
     {
         //if(hadError()) return 0;
-        return new FalconScript(this, Action);
+        return new FalconScript(this, action);
     }
     
     ::Falcon::Module* FalconInterpreter::coreModule()
