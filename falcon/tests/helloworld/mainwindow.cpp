@@ -17,8 +17,12 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent)
   
   // add some script that should be in this dir:
   
-  cmbScripts->addItem( "Hello!" );
- 
+  cmbScripts->addItem( "Set property" );
+  cmbScripts->addItem( "Show" );
+  cmbScripts->addItem( "Hide" );
+  cmbScripts->addItem( "Inspect" );
+  cmbScripts->addItem( "setText" );
+
   // Connect the combobox signal with our slot to be able to
   // do something if the active item in the combobox changed.
   connect(cmbScripts, SIGNAL(activated(const QString &)),
@@ -56,8 +60,16 @@ void MainWindow::scriptActivated(const QString &strSelectedScript)
   // depending on the choosen script. You are also able to
   // use action.setFile("/path/scriptfile") here to execute
   // an external scriptfile, as shown later in this tutorial.
-  if(strSelectedScript == "Hello!")
-    action.setCode("inspect( MyLabel ); MyLabel.text = 'ciao'");
+  if(strSelectedScript == "Set property")
+    action.setCode("MyLabel.text = 'Property changed'");
+  else if(strSelectedScript == "Show")
+    action.setCode("MyLabel.setVisible(true)");
+  else if(strSelectedScript == "Hide")
+    action.setCode("MyLabel.setVisible(false)");
+  else if(strSelectedScript == "Inspect")
+    action.setCode("inspectShort( MyLabel )");
+  else if(strSelectedScript == "setText")
+    action.setCode("MyLabel.setText( 'Text now changed' )");
   else
     return;
  

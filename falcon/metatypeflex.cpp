@@ -51,7 +51,8 @@ void* MetaTypeFlex::toVoidStar()
     switch( m_type )
     {
         case QMetaType::Void: return 0;
-
+        
+        case QMetaType::Bool: return (void *) &m_data.dBool;
         case QMetaType::Char: return (void *) &m_data.dChar;
         case QMetaType::UChar: return (void *) &m_data.dUChar;
         case QMetaType::Short: return (void *) &m_data.dShort;

@@ -40,6 +40,7 @@ namespace Kross {
         virtual ~MetaTypeFlex();
         void clear();
 
+        void setBool( bool b ) { m_type = QMetaType::Bool; m_data.dBool = b; }
         void setChar( char c ) { m_type = QMetaType::Char; m_data.dChar = c; }
         void setUChar( unsigned char c ) { m_type = QMetaType::UChar; m_data.dUChar = c; }
         void setShort( short s ) { m_type = QMetaType::Short; m_data.dShort = s; }
@@ -83,6 +84,7 @@ namespace Kross {
             float dFloat;
             double dDouble;
             void *dVoidStar;
+            bool dBool;
         } m_data;
     };
 }

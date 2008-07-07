@@ -503,7 +503,7 @@ bool KFVM::itemToVariant( const Falcon::Item &item, QVariant &variant )
                 }
                 QString skey;
                 Falcon::AutoCString ctgt( tgt );
-                skey.fromUtf8( ctgt.c_str() );
+                skey = QString::fromUtf8( ctgt.c_str() );
                 
                 // Create the entry
                 ret[ skey ] = value;
@@ -617,7 +617,7 @@ bool KFVM::variantToItem( const QVariant &variant, Falcon::Item &item )
             while( qliter != qlist.constEnd() )
             {
                 Falcon::String *value = new Falcon::GarbageString( this );
-                value->fromUTF8( qliter->toUtf8() );
+                value->fromUTF8( qliter->toUtf8().data() );
                 array->append( value );
                 ++qliter;
             }
@@ -636,7 +636,7 @@ bool KFVM::variantToItem( const QVariant &variant, Falcon::Item &item )
                     return false;
                 
                 Falcon::String *key = new Falcon::GarbageString( this );
-                key->fromUTF8( qmiter.key().toUtf8() );
+                key->fromUTF8( qmiter.key().toUtf8().data() );
                 map->insert( key, value );
                 ++qmiter;
             }
@@ -1055,11 +1055,23 @@ bool KFVM::reflectIntoMetaType( const Falcon::Item &source, MetaTypeFlex &flex, 
                 return true;
             }
             return false;
+            
+        case FLC_ITEM_BOOL:
+            if ( type == QMetaType::Void || type == QMetaType::Bool)
+            {
+                flex.setBool( (bool) source.isTrue() ); 
+                return true;
+            }
+            return true;
         
         case FLC_ITEM_INT:
             // thre are MANY type of int we may return
             switch( type )
             {
+                case QMetaType::Bool:
+                    flex.setBool( (bool) source.isTrue() );
+                    return true;
+                    
                 case QMetaType::Int:
                     flex.setInt( (int) source.asInteger() );
                     return true;
@@ -1114,6 +1126,10 @@ bool KFVM::reflectIntoMetaType( const Falcon::Item &source, MetaTypeFlex &flex, 
         case FLC_ITEM_NUM:
             switch( type )
             {
+                case QMetaType::Bool:
+                    flex.setBool( (bool) source.isTrue() );
+                    return true;
+                    
                 case QMetaType::Int:
                     flex.setInt( (int) source.asNumeric() );
                     return true;
@@ -1165,11 +1181,16 @@ bool KFVM::reflectIntoMetaType( const Falcon::Item &source, MetaTypeFlex &flex, 
             return 0;
         
         case FLC_ITEM_STRING:
+            if ( type == QMetaType::Bool )
+            {
+                flex.setBool( (bool) source.isTrue() );
+                return true;
+            }
             if ( type == QMetaType::Void || type == QMetaType::QString )
             {
                 Falcon::AutoCString fstring( *source.asString() );
                 QString* qstring = new QString;
-                qstring->fromUtf8( fstring.c_str() );
+                *qstring = QString::fromUtf8( fstring.c_str());
                 flex.setUserType( QMetaType::QString, qstring, true );
                 return true;
             }
@@ -1206,6 +1227,11 @@ bool KFVM::reflectIntoMetaType( const Falcon::Item &source, MetaTypeFlex &flex, 
         
         case FLC_ITEM_OBJECT:
             {
+                if( type == QMetaType::Bool ) {
+                    flex.setBool( true );
+                    return true;
+                }
+                
                 Falcon::CoreObject *obj = source.asObject();
                 if ( obj->derivedFrom( "KrossOpaque" ) )
                 {
@@ -1271,9 +1297,13 @@ bool KFVM::isReflectionPossible( const Falcon::Item &source, int type )
         case FLC_ITEM_NIL:
             return type == QMetaType::Void;
         
+        case FLC_ITEM_BOOL:
+            return type == QMetaType::Bool;
+        
         case FLC_ITEM_NUM:
         case FLC_ITEM_INT:
-            return type == QMetaType::Int ||
+            return type == QMetaType::Bool ||
+                   type == QMetaType::Int ||
                    type == QMetaType::UInt ||
                    type == QMetaType::Double ||
                    type == QMetaType::Long ||
@@ -1287,11 +1317,16 @@ bool KFVM::isReflectionPossible( const Falcon::Item &source, int type )
                    type == QMetaType::Float;
         
         case FLC_ITEM_STRING:
-            return  type == QMetaType::QString ||
+            return  type == QMetaType::Bool ||
+                    type == QMetaType::QString ||
                     type == QMetaType::QByteArray ||
                     type == QMetaType::QChar;
             
         case FLC_ITEM_OBJECT:
+            // In Falcon, objects are always true
+            if ( type == QMetaType::Bool )
+                return true;
+                
             // we know only objects derived from KrossOpaque or from QObject.
             // However, we don't provide the reflection of the inheritance (if
             // the reflection is dynamic).
@@ -1513,6 +1548,11 @@ static void reflect_object_method( Falcon::VMachine *vm )
     // if there is a return value, we must convert it and return to the vm.
     if( returnMetaType != 0 )
     {
+        #ifdef KROSS_FALCON_VM_DEBUG
+            krossdebug( QString("Return metatype: %1").arg(returnMetaType) );
+        #else
+            Q_UNUSED(r);
+        #endif
         // TODO: Is there a way to know if we have ownership?
         kvm->reflectFromMetaType( returnMetaType, voidArgs[0], kvm->regA(), false );
         // reflectFrom is always succesful
