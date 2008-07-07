@@ -62,6 +62,8 @@ class QObjectPtrManager: public Falcon::ObjectManager
         if ( ptr->isNull() )
             return 0;
         
+        // TODO: Use dynamic clone call
+        
         // Otherwise, return 
         return new QPointer<QObject>( ptr->data() );
     }
@@ -71,7 +73,18 @@ static QObjectPtrManager qobject_ptr_manager;
 
 
 namespace Kross {
-
+    
+    /// We need this class to record meta methods (we need their parameter types) and their IDs.
+    class QMetaMethodWithID: public QMetaMethod {
+    public:
+        int m_id;
+        
+        QMetaMethodWithID( int id, const QMetaMethod &other ):
+            QMetaMethod( other ),
+            m_id( id )
+        {}
+    };
+    
     /// \internal
     class FalconProviderPrivate {
         friend class FalconProvider;
@@ -81,7 +94,7 @@ namespace Kross {
         
         /** Place to store Meta* things so that they can be released at module termination. */
         QList<QMetaProperty> m_metaProps;
-        QList<QMetaMethod> m_metaMethods;
+        QList<QMetaMethodWithID> m_metaMethods;
     };
 }
 
@@ -126,8 +139,6 @@ Falcon::Symbol *FalconProvider::reflectObject( const Falcon::String &objName, QO
         krossdebug(QString("FalconProvider::reflectObject( \"%1\" )").arg(obj->objectName()));
     #endif
     
-    const QMetaObject* metaobject = obj->metaObject();
-    
     // First, we must create a constructor for our reflected object that 
     // will take care to set the object instance in the reflected class
     Falcon::Symbol *ctor = addExtFunc( objName + "._init", init_reflect_object_func, false );
@@ -138,8 +149,29 @@ Falcon::Symbol *FalconProvider::reflectObject( const Falcon::String &objName, QO
     
     // let's create a singleton instance that will receive the object we just created.
     Falcon::Symbol *falinst = addSingleton( objName, ctor );
+    
+    // Singleton instances have a skeleton class; getInstance() in this semantics means
+    // "get the lone-insatnce class".
     Falcon::Symbol *falcls = falinst->getInstance();
+    
+    // Declare that this class will handle qobjects.
     falcls->getClassDef()->setObjectManager( &qobject_ptr_manager );
+    
+    // complete the class reflection
+    reflectClassData( obj, falcls );
+    
+    return falinst;
+}
+
+Falcon::Symbol* FalconProvider::reflectClass( const Falcon::String &clsName, QObject *obj )
+{
+    // TODO
+    return 0;
+}
+
+void FalconProvider::reflectClassData( const QObject *obj, Falcon::Symbol* falcls )
+{
+    const QMetaObject* metaobject = obj->metaObject();
     
     { // initialize methods.
         const int count = metaobject->methodCount();
@@ -165,7 +197,7 @@ Falcon::Symbol *FalconProvider::reflectObject( const Falcon::String &objName, QO
 
             
             // Save our method in a place that will be safe for all the execution.
-            d->m_metaMethods.push_back( member );
+            d->m_metaMethods.push_back( Kross::QMetaMethodWithID( i, member ) );
 
             // reflect it into our method;
             // Get the method symbol so that we can...
@@ -238,9 +270,6 @@ Falcon::Symbol *FalconProvider::reflectObject( const Falcon::String &objName, QO
             }
         }
     }
-    
-    // Return our instance.
-    return falinst;
 }
 
 //===========================================================0
@@ -288,6 +317,56 @@ void reflect_object_method( Falcon::VMachine *vm )
             extra( self->instanceOf()->name() ) ) );
         return;
     }
+    
+    // maximum size allowed by QT dynamic calls.
+    #define KROSS_DYNCALLS_MAXARGS 10
+    
+    // get the extra data of this call (our metamethod with id).
+    Kross::QMetaMethodWithID &method = *static_cast<Kross::QMetaMethodWithID*>( 
+        vm->currentSymbol()->getExtFunc()->extra() );
+    
+    const QList<QByteArray>& types = method.parameterTypes();
+    
+    // Now we got to check our types and be sure they can be reflected from falcon.
+    bool matches = true;
+    
+    // First: do our method call matches the declaration?
+    Falcon::uint32 pcount = vm->paramCount();
+    if ( pcount != types.size() )
+    {
+        // no, wrong number of parameters
+        matches = false;
+    }
+    else {
+        // see if our types can work
+        for ( int i = 0; i < pcount; i++ )
+        {
+            if ( ! kvm->itemToVariantType( 0 ) )
+            {
+                matches = false;
+                break;
+            }
+        }
+    }
+
+    // if we can't make it, report error.
+    if ( ! matches )
+    {
+        // Show also the signature, so the user knows what to do to fix the program.
+        vm->raiseModError( new Falcon::ParamError( 
+            Falcon::ErrorParam( Falcon::e_inv_params, __LINE__ ).
+            origin( Falcon::e_orig_runtime ).
+            extra( method.signature()) ) );
+        return;
+    }
+
+    // Ok, we made id through.
+    // so we can finally perform all the needed conversions.
+    
+    // prepare the arguments
+    void* args[KROSS_DYNCALLS_MAXARGS];
+
+    
 }
 
 

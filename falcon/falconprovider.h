@@ -57,14 +57,25 @@ namespace Kross {
             */
             virtual Falcon::Symbol *onSymbolRequest( const Falcon::String &name );
 
-            /**
-            * This is a very useful utility to reflect a QObject instance into a Falcon Symbol.
-            */
-            Falcon::Symbol *reflectObject( const Falcon::String &objName, QObject *obj );
+            
+
             
         private:
             /// Private d-pointer class.
-            FalconProviderPrivate * const d;
+            FalconProviderPrivate* const d;
+            
+            /**
+            * Fills a QObject class into a Falcon class.
+            *
+            * This method expects an already created ClassDef Falcon symbol and an QObject from which
+            * to extract the class metadata. The method may be invoked either by reflectObject
+            * (that will create a singleton instance with a private inner class) or by reflectClass
+            * (which will create a publically available class), as this just fills the class symbol
+            * with data as they are exposed by the interface of QObject.
+            * \param obj The object to be reflected.
+            * \param falcls The Falcon symbol referencing the class definition.
+            */
+            void reflectClassData( const QObject *obj, Falcon::Symbol* falcls );
     };
 }
 

@@ -18,6 +18,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}  ${KDE4_ENABLE_EXCEPTIONS}")
 ########### next target ###############
 
 set(krossfalcon_PART_SRCS
+   metatypeflex.cpp
    falconinterpreter.cpp
    falconerrhand.cpp
    falconscript.cpp
@@ -25,7 +26,8 @@ set(krossfalcon_PART_SRCS
    falconmodule.cpp
    falconkerror.cpp
    falconfunction.cpp
-   falconprovider.cpp
+   falconobjman.cpp
+   falconkopaque.cpp
    
    falconkross.cpp
    falconkrossobject.cpp
