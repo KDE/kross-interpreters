@@ -144,13 +144,21 @@ bool KFVM::linkSymbolDynamic( const Falcon::String &name, Falcon::SymModule &sym
     
     if( d->m_action->hasObject(qsName) ) 
     {
-        #ifdef KROSS_FALCON_PROVIDER_DEBUG
+        #ifdef KROSS_FALCON_VM_DEBUG
             krossdebug( QString("KFVM::linkSymbolDynamic() object=%1 is internally provided").arg(qsName) );
         #endif
         QObject* object = d->m_action->object(qsName);
         Q_ASSERT(object);
-        Falcon::CoreObject *obj = reflectSingleton( name, object );
-        return obj != 0;
+        Falcon::Symbol *sym = reflectSingleton( name, object );
+        if ( sym != 0 )
+        {
+            #ifdef KROSS_FALCON_VM_DEBUG
+                krossdebug( QString("KFVM::linkSymbolDynamic singleton object \"%1\" reflection succesful").arg(qsName) );
+            #endif
+            symdata = Falcon::SymModule( d->m_liveProvider, sym );
+            return true;
+        }
+        return false;
     }
     
     // fallback to the base class dynamic providers
@@ -161,10 +169,11 @@ bool KFVM::linkSymbolDynamic( const Falcon::String &name, Falcon::SymModule &sym
 // KFVM class reflection
 //===============================================================
 
-Falcon::CoreObject *KFVM::reflectSingleton( const Falcon::String &objName, QObject *obj )
+Falcon::Symbol *KFVM::reflectSingleton( const Falcon::String &objName, QObject *obj )
 {
     #ifdef KROSS_FALCON_VM_DEBUG
-        krossdebug(QString("FalconProvider::reflectSingleton( \"%1\" )").arg(obj->objectName()));
+        Falcon::AutoCString cstr_name( objName );
+        krossdebug(QString("KFVM::reflectSingleton( \"%1(%2)\" )").arg(cstr_name.c_str()).arg(obj->objectName()));
     #endif
     
     // First, assert that the object name and class name are different.
@@ -172,7 +181,8 @@ Falcon::CoreObject *KFVM::reflectSingleton( const Falcon::String &objName, QObje
     if( metaobject->className() == objName )
     {
         #ifdef KROSS_FALCON_VM_DEBUG
-            krossdebug(QString("FalconProvider::reflectSingleton( \"%1\" ) - failed to provide the singleton object.").arg(obj->objectName()));
+            krossdebug(QString("KFVM::reflectSingleton( \"%1\" ) - failed to provide the singleton object.")
+                .arg(cstr_name.c_str()));
         #endif
         return 0;
     }
@@ -184,6 +194,11 @@ Falcon::CoreObject *KFVM::reflectSingleton( const Falcon::String &objName, QObje
     
     // create a symbol for the variable that will hold our item.
     Falcon::Symbol *singleSym = d->m_symProvider->addGlobal( objName );
+    // be sure to allocate enough space in the module global table.
+    if ( singleSym->itemId() >= d->m_liveProvider->globals().size() )
+    {
+        d->m_liveProvider->globals().resize( singleSym->itemId() );
+    }
     
     // link the symbol; as we know that it's just a global variable (now), the
     // net effect will just be that of exporting the symbol name to the global
@@ -192,7 +207,8 @@ Falcon::CoreObject *KFVM::reflectSingleton( const Falcon::String &objName, QObje
     {
         // failure means the name is already taken.
         #ifdef KROSS_FALCON_VM_DEBUG
-            krossdebug(QString("FalconProvider::reflectSingleton( \"%1\" ) - failed to link name for the singleton object.").arg(obj->objectName()));
+            krossdebug(QString("KFVM::reflectSingleton( \"%1\" ) - failed to link name for the singleton object.")
+                    .arg(cstr_name.c_str()));
         #endif
         return 0;
     }
@@ -201,15 +217,19 @@ Falcon::CoreObject *KFVM::reflectSingleton( const Falcon::String &objName, QObje
     // at the position indicated by the symbol id.
     d->m_liveProvider->globals().itemAt( singleSym->itemId() ).dereference()
         ->setObject( falobj );
-
-    return falobj;
+    
+    #ifdef KROSS_FALCON_VM_DEBUG
+        krossdebug(QString("KFVM::reflectSingleton created singleton \"%1\"")
+            .arg(cstr_name.c_str()) );
+    #endif
+    return singleSym;
 }
 
 
 Falcon::CoreObject *KFVM::reflectObject( QObject *obj, bool bOwn )
 {
     #ifdef KROSS_FALCON_VM_DEBUG
-        krossdebug(QString("FalconProvider::reflectObject( %1, %2 )").arg(obj->objectName()).arg( bOwn ) );
+        krossdebug(QString("KFVM::reflectObject( %1, %2 )").arg(obj->objectName()).arg( bOwn ) );
     #endif
     
     // get (or create) the class of this object.
@@ -217,11 +237,18 @@ Falcon::CoreObject *KFVM::reflectObject( QObject *obj, bool bOwn )
     
     // could the class be reflected?
     if( cls == 0 )
+    {
+        #ifdef KROSS_FALCON_VM_DEBUG
+            krossdebug(QString("KFVM::reflectObject - failed to reflect class for %1").arg(obj->objectName()) );
+        #endif
         return 0;
-    
+    }
     // create the instance
     Falcon::CoreObject *cobj = cls->createInstance();
     
+    #ifdef KROSS_FALCON_VM_DEBUG
+        krossdebug(QString("KFVM::reflectObject created instance for %1").arg(obj->objectName()) );
+    #endif
     // pass the appropriate user data
     cobj->setUserData( new OwnerPointer( obj, bOwn ) );
     
@@ -237,6 +264,9 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
 {
     const QMetaObject *metaobject = obj->metaObject();
     
+    #ifdef KROSS_FALCON_VM_DEBUG
+        krossdebug(QString("KFVM::reflectClass(%1) -> %2").arg(obj->objectName()).arg(metaobject->className()));
+    #endif
     // First, is our class an exported - well known symbol?
     Falcon::Item *wki = findWKI( metaobject->className() );
     
@@ -246,6 +276,9 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
         if ( ! wki->isClass() )
             return 0;
         
+        #ifdef KROSS_FALCON_VM_DEBUG
+            krossdebug(QString("KFVM::reflectClass - already provided class %1").arg(metaobject->className()));
+        #endif
         // ok, we can return the pre-existing class.
         return wki->asClass();
     }
@@ -274,6 +307,9 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
     // make it available to future instance requests.
     dyncls->setWKS( true );
     
+    // and tell the world we'll be managing OwnerPointer(s)
+    dyncls->getClassDef()->setObjectManager( &qobject_ptr_manager );
+    
     { // initialize methods.
         const int count = metaobject->methodCount();
         for(int i = 0; i < count; ++i) {
@@ -286,12 +322,12 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
             mthName.fromUTF8( name.toUtf8() );
             if ( dyncls->getClassDef()->hasProperty( mthName ) )
             {
-                #ifdef KROSS_FALCON_PROVIDER_DEBUG
+                #ifdef KROSS_FALCON_VM_DEBUG
                     krossdebug(QString("FalconProvider::reflectObject - skipping method \"%1\" ").arg(signature));
                 #endif
                 continue;
             }
-            #ifdef KROSS_FALCON_PROVIDER_DEBUG
+            #ifdef KROSS_FALCON_VM_DEBUG
             else
                 krossdebug(QString("FalconProvider::reflectObject - adding method \"%1\" ").arg(signature));
             #endif
@@ -319,13 +355,13 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
             propName.bufferize( prop.name() );
             if ( dyncls->getClassDef()->hasProperty( propName ) )
             {
-                #ifdef KROSS_FALCON_PROVIDER_DEBUG
+                #ifdef KROSS_FALCON_VM_DEBUG
                     Falcon::AutoCString mc( propName );
                     krossdebug(QString("FalconProvider::reflectClass - skipping property \"%1\" ").arg(mc.c_str()));
                 #endif
                 continue;
             }
-            #ifdef KROSS_FALCON_PROVIDER_DEBUG
+            #ifdef KROSS_FALCON_VM_DEBUG
             else
                 krossdebug(QString("FalconProvider::reflectClass - adding property \"%1\" ").arg(prop.name()));
             #endif
@@ -354,13 +390,13 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
                 enumName.bufferize( e.key(k) );
                 if ( dyncls->getClassDef()->hasProperty( enumName ) )
                 {
-                    #ifdef KROSS_FALCON_PROVIDER_DEBUG
+                    #ifdef KROSS_FALCON_VM_DEBUG
                         Falcon::AutoCString mc( enumName );
                         krossdebug(QString("FalconProvider::reflectClass - skipping enum, \"%1\" ").arg(mc.c_str()));
                     #endif
                     continue;
                 }
-                #ifdef KROSS_FALCON_PROVIDER_DEBUG
+                #ifdef KROSS_FALCON_VM_DEBUG
                 else
                     krossdebug(QString("FalconProvider::reflectClass - adding enum, \"%1\" ").arg(e.key(k)));
                 #endif
@@ -374,6 +410,12 @@ Falcon::CoreClass* KFVM::reflectClass( QObject *obj )
     
     // now our class is ready to be linked.
     // We know that the livemodule for our dynamic module is in m_liveProvider
+    // be sure to allocate enough space in the module global table.
+    if ( dyncls->itemId() >= d->m_liveProvider->globals().size() )
+    {
+        d->m_liveProvider->globals().resize( dyncls->itemId() );
+    }
+    
     if ( ! linkCompleteSymbol( dyncls, d->m_liveProvider ) )
     {
         // Well, should not happen
@@ -651,12 +693,14 @@ bool KFVM::variantToItem( const QVariant &variant, Falcon::Item &item )
         break;
 
         default:
-            raiseError( new Falcon::ParamError( Falcon::ErrorParam( Falcon::e_param_type ).
+            reflectFromMetaType( variant.userType(), variant.value<void*>(), item, false );
+            
+            /*raiseError( new Falcon::ParamError( Falcon::ErrorParam( Falcon::e_param_type ).
                     origin( Falcon::e_orig_vm ).
                     extra( "Can't convert QVariant into Falcon::Item" ) )
                 );
                 
-                return false;
+                return false;*/
     }
     
     return true;
@@ -1338,6 +1382,10 @@ static void init_reflect_object_func( Falcon::VMachine *vm )
 // Calls a reflected method
 static void reflect_object_method( Falcon::VMachine *vm )
 {
+    #ifdef KROSS_FALCON_VM_DEBUG
+        krossdebug( QString("reflect_object_method - begin") );
+    #endif
+
     // maximum size allowed by QT dynamic calls.
     #define KROSS_DYNCALLS_MAXARGS 11
     
@@ -1456,7 +1504,7 @@ static void reflect_object_method( Falcon::VMachine *vm )
     // The id of the method is in our "method" var, and the object is in the pointer.
     QObject *obj = ptr->data();
     int r = obj->qt_metacall(QMetaObject::InvokeMetaMethod, method.m_id, &voidArgs[0]);
-    #ifdef KROSS_FALCON_PROVIDER_DEBUG
+    #ifdef KROSS_FALCON_VM_DEBUG
         krossdebug( QString("Call result nr=%1").arg(r) );
     #else
         Q_UNUSED(r);
@@ -1483,6 +1531,12 @@ static void reflect_object_prop_from(
         Falcon::Item &property, 
         const Falcon::PropEntry& entry )
 {
+    #ifdef KROSS_FALCON_VM_DEBUG
+        Falcon::AutoCString cstr_key( *entry.m_name );
+        krossdebug( QString("reflect_object_prop_from: reflecting property \"%1\"").arg(cstr_key.c_str()) );
+    #endif
+
+
     OwnerPointer *ptr = (OwnerPointer*) user_data;
     KFVM *kvm = (KFVM*) self->origin();
     
@@ -1532,6 +1586,11 @@ static void reflect_object_prop_to(
         Falcon::Item &property, 
         const Falcon::PropEntry& entry )
 {
+    #ifdef KROSS_FALCON_VM_DEBUG
+        Falcon::AutoCString cstr_key( *entry.m_name );
+        krossdebug( QString("reflect_object_prop_to: reflecting property \"%1\"").arg(cstr_key.c_str()) );
+    #endif
+            
     OwnerPointer *ptr = (OwnerPointer*) user_data;
     KFVM *kvm = (KFVM*) self->origin();
     

@@ -57,7 +57,7 @@ void MainWindow::scriptActivated(const QString &strSelectedScript)
   // use action.setFile("/path/scriptfile") here to execute
   // an external scriptfile, as shown later in this tutorial.
   if(strSelectedScript == "Hello!")
-    action.setCode("MyLabel.text = 'ciao'");
+    action.setCode("inspect( MyLabel ); MyLabel.text = 'ciao'");
   else
     return;
  

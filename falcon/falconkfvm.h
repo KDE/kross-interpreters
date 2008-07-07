@@ -214,9 +214,9 @@ namespace Kross {
         *
         * \param objName The name under which the object should be known to the VM.
         * \param obj The QObject to be reflected.
-        * \return The singleton object.
+        * \return The symbol hosting the singleton object.
         */
-        Falcon::CoreObject *reflectSingleton( const Falcon::String &objName, QObject *obj );
+        Falcon::Symbol *reflectSingleton( const Falcon::String &objName, QObject *obj );
         
         /**
         * Reflects an anonymous QObject instance into a Falcon item.
