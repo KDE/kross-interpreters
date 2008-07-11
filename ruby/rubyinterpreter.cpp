@@ -188,6 +188,16 @@ VALUE RubyInterpreter::require (VALUE self, VALUE name)
         #endif
     }
 
+    if( modname == "Qt" || modname == "Qt4" || modname == "korundum4" )
+    {
+        VALUE val = rb_f_require(self, name);
+        if( val == Qtrue )
+        {
+          rb_eval_string("Qt::Internal::set_qtruby_embedded( true )");
+        }
+        return val;
+    }
+    
     // We don't know about a module with such a name. So, let Ruby handle it...
     return rb_f_require(self, name);
 }
