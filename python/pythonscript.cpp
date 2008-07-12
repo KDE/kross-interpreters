@@ -453,7 +453,7 @@ QVariant PythonScript::callFunction(const QString& name, const QVariantList& arg
         }
 
         // Check if the object is really a function and callable.
-        Py::Callable funcobject(func, true);
+        Py::Callable funcobject(func, false);
         if(! funcobject.isCallable()) {
             Py::AttributeError( ::QString("Function '%1' is not callable.").arg(name).toLatin1().constData() );
             //setError( QString("Function '%1' is not callable.").arg(name) );
