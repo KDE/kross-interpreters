@@ -403,7 +403,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     #endif
 
     #ifdef KROSS_RUBY_EXPLICIT_GC
-        rb_gc();
+//         rb_gc(); // This one is plainly wrong, since there is a good deal of chance that it will delete the content of result before it is used
     #endif
 
     ruby_in_eval--;
