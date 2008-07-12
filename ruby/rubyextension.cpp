@@ -251,7 +251,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
         } break;
     }
 
-    QObject* receiver; // the receiver object
+    QObject* receiver = 0; // the receiver object
     QByteArray receiverslot; // the receiver slot
     if( TYPE(argv[idx]) == T_DATA ) {
 #if(RUBY_VERSION_MAJOR==1 && RUBY_VERSION_MINOR==8 && RUBY_VERSION_TEENY==4)
