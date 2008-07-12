@@ -127,7 +127,7 @@ void RubyInterpreter::finalizeRuby()
     }
     delete d;
     d = 0;
-    ruby_finalize();
+//     ruby_finalize(); // <-- this trigger a crash when using QtRuby, since for some reason, smoke static objects are deleted first, then ruby_finalize() call the garbage collector, which call function that neeed smoke static objects
 }
 
 VALUE RubyInterpreter::require (VALUE self, VALUE name)
