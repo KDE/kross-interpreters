@@ -357,29 +357,26 @@ MetaType* RubyMetaTypeFactory::create(int typeId, int metaTypeId, VALUE value)
                                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                                     krossdebug( QString("RubyMetaTypeFactory::create VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
                                 #endif
+                                VALUE qt_module = rb_define_module("Qt");
+                                VALUE qt_base_class = rb_define_class_under(qt_module, "Base", rb_cObject);
 
-                                if( clazzname.startsWith("Qt::") || clazzname.startsWith("KDE::") ) {
-                                    // If we got a QtRuby/Korundum4 QObject/QWidget we need to call
-                                    // the Qt::Internal.smoke2kross(VALUE) function to convert the
-                                    // VALUE into a pointer to the QObject/QWidget instance.
-                                    VALUE src = RubyType<QString>::toVALUE("Qt::Internal");
-                                    VALUE module = rb_funcall(CLASS_OF(value),rb_intern("module_eval"), 1, src);
-                                    VALUE result = rb_funcall(module, rb_intern("smoke2kross"), 1, value);
-                                    QObject* obj = 0;
-                                    switch(metaTypeId) {
-                                        case QMetaType::QWidgetStar:
-                                            Data_Get_Struct(result, QWidget, obj);
-                                            break;
-                                        case QMetaType::QObjectStar:
-                                            Data_Get_Struct(result, QObject, obj);
-                                            break;
-                                        default:
-                                            break;
-                                    }
+                                if ( rb_funcall(value, rb_intern("kind_of?"), 1, qt_base_class) == Qtrue ) {
+                                    if ( metaTypeId == QMetaType::QWidgetStar ) {
+                                        QWidget** wobj = 0;
+                                        Data_Get_Struct(value, QWidget*, wobj);
                                     #ifdef KROSS_RUBY_VARIANT_DEBUG
-                                        krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))).arg(obj ? obj->objectName() : "NULL").arg(obj ? obj->metaObject()->className() : "NULL") );
+                                        krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))).arg(wobj ? *wobj->objectName() : "NULL").arg(*wobj ? *wobj->metaObject()->className() : "NULL") );
                                     #endif
-                                    return new MetaTypeVoidStar( metaTypeId, obj, false /*owner*/ );
+                                        return new MetaTypeVoidStar( metaTypeId, *wobj, false /*owner*/ );
+                                    } else if ( metaTypeId == QMetaType::QObjectStar ) {
+                                        QObject** qobj = 0;
+                                        Data_Get_Struct(value, QObject*, qobj);
+                                        return new MetaTypeVoidStar( metaTypeId, *qobj, false /*owner*/ );
+                                    #ifdef KROSS_RUBY_VARIANT_DEBUG
+                                        krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(result))).arg(STR2CSTR(rb_inspect(CLASS_OF(result)))).arg(qobj ? *qobj->objectName() : "NULL").arg(*qobj ? *qobj->metaObject()->className() : "NULL") );
+                                    #endif
+                                    }
+                                    return new MetaTypeVoidStar( metaTypeId, 0, false /*owner*/ );;
                                 }
                             }
                             #ifdef KROSS_RUBY_VARIANT_DEBUG
