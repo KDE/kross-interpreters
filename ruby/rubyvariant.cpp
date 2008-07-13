@@ -145,6 +145,10 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                 }
                 return RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ );
             }
+            
+            if( qVariantCanConvert< void* >(v) ) {
+              return Data_Wrap_Struct( rb_cObject, 0, 0, qvariant_cast<void*>(v));
+            }
 
             //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
             //PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) variantargs[0]->toVoidStar() );
