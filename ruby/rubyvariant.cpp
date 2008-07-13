@@ -1,7 +1,7 @@
 /***************************************************************************
  * rubyvariant.cpp
  * This file is part of the KDE project
- * copyright (C)2005 by Cyrille Berger (cberger@cberger.net)
+ * copyright (C)2005,2008 by Cyrille Berger (cberger@cberger.net)
  * copyright (C)2006 by Sebastian Sauer (mail@dipe.org)
  *
  * This program is free software; you can redistribute it and/or
@@ -174,6 +174,18 @@ QVariant RubyType<QVariant>::toVariant(VALUE value)
         case T_DATA: {
             RubyExtension* extension = RubyExtension::toExtension(value);
             if(! extension) {
+                VALUE qt_module = rb_define_module("Qt");
+                VALUE qt_base_class = rb_define_class_under(qt_module, "Base", rb_cObject);
+
+                if ( rb_funcall(value, rb_intern("kind_of?"), 1, qt_base_class) == Qtrue ) {
+                    VALUE value_methods = rb_funcall( value, rb_intern("methods"), 0);
+                    if( rb_funcall( value_methods, rb_intern("include?"), 1, rb_str_new2("metaObject") ) )
+                    { // Then it's a QtRuby object
+                      QObject** qobj = 0;
+                      Data_Get_Struct(value, QObject*, qobj);
+                      return qVariantFromValue( *qobj );
+                    }
+                }
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krosswarning("Cannot yet convert standard ruby type to Kross::RubyExtension object.");
                 #endif
