@@ -127,7 +127,10 @@ void RubyInterpreter::finalizeRuby()
     }
     delete d;
     d = 0;
-    ruby_finalize();
+    
+    #ifdef KROSS_RUBY_FINALIZE
+        ruby_finalize();
+    #endif
 }
 
 VALUE RubyInterpreter::require (VALUE self, VALUE name)

@@ -31,6 +31,16 @@
 
 #include <kross/core/krossconfig.h>
 
+// ruby_finalize() in rubyinterpreter.cpp may trigger a crash on exit when
+// using QtRuby, since for some reason, smoke static objects are deleted
+// first, then ruby_finalize() call the garbage collector, which call
+// function that neeed smoke static objects.
+// Cause most (all?) modern systems do free the mem on exit anyway, we
+// just introduced via this switch a way to allow to enable/disable the
+// finalize and work that way around the crash-on-exit. For sure the
+// proper way would be to gain a useful backtrace and fix it ;)
+//#define KROSS_RUBY_FINALIZE
+
 // If this is defined we call explicit rb_gc() manualy on many places. This is
 // normaly not needed and Ruby will handle the garbage collection for you. So,
 // while it's probably better/faster to don't rb_gc() manualy it's still useful
