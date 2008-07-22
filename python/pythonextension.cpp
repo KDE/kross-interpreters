@@ -618,11 +618,15 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
             // eval the return-value
             if(hasreturnvalue) {
                 QVariant v(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
+		
+		/*obsolete by handlers
 //FIXME pythonfunction.h and pythonextension.h are duplicating code here + port that logic also to the other backends, probably it would be more wise to move it to the kross-core.
                 if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
                     QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
                     v.setValue( (QObject*) obj );
                 }
+		*/
+
                 #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
                     krossdebug( QString("Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4 pyobject=%5").arg(variantargs[0]->typeId()).arg(metamethod.typeName()).arg(v.toString()).arg(v.typeName()).arg(pyresult.as_string().c_str()) );
                 #endif
