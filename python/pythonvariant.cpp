@@ -117,16 +117,16 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return PythonType<double>::toPyObject(v.toDouble());
             }
 
-            if( strcmp(v.typeName(),"VoidList") == 0 ) {
+            if( strcmp(v.typeName(),"Kross::VoidList") == 0 ) {
                 VoidList list = v.value<VoidList>();
-                Kross::Manager::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(list.typeName);
+                Kross::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(list.typeName);
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to QList<%2> with %3 items, hasHandler=%4").arg(v.typeName()).arg(list.typeName.constData()).arg(list.count()).arg(handler ? "true" : "false") );
                 #endif
                 QVariantList l;
                 foreach(void* ptr, list) {
                     if( handler ) {
-                        l << handler(ptr);
+                        l << handler->call(ptr);
                     }
                     else {
                         QVariant v;

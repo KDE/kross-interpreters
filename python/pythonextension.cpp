@@ -618,22 +618,22 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
             // eval the return-value
             if(hasreturnvalue) {
                 QVariant v;
-                if( Kross::Manager::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(metamethod.typeName()) ) {
+                if( Kross::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(metamethod.typeName()) ) {
                     #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
                         krossdebug( QString("Returnvalue of type '%2' has a handler").arg(metamethod.typeName()) );
                     #endif
                     void *ptr = (*reinterpret_cast<void*(*)>( variantargs[0]->toVoidStar() ));
-                    v = handler(ptr);
+                    v = handler->call(ptr);
                 }
                 else {
                     v = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
 
-                    /* obsolete by handlers
-                    if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
-                        QObject* obj = (*reinterpret_cast<QObject*(*)>( variantargs[0]->toVoidStar() ));
-                        v.setValue( (QObject*) obj );
+                    if( ! Kross::Manager::self().strictTypesEnabled() ) {
+                        if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
+                            QObject* obj = (*reinterpret_cast<QObject*(*)>( variantargs[0]->toVoidStar() ));
+                            v.setValue( (QObject*) obj );
+                        }
                     }
-                    */
                 }
                 pyresult = PythonType<QVariant>::toPyObject(v);
                 #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
