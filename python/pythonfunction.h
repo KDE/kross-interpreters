@@ -103,10 +103,14 @@ namespace Kross {
                                     } // fall through
                                     default: {
                                         QVariant v(tp, _a[idx]);
+
+                                        /* obsolete by handlers
                                         if( v.type() == QVariant::Invalid && QByteArray(param.constData()).endsWith("*") ) {
                                             QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
                                             v.setValue( (QObject*) obj );
                                         }
+                                        */
+
                                         #ifdef KROSS_PYTHON_FUNCTION_DEBUG
                                             krossdebug( QString("PythonFunction::qt_metacall argument param=%1 typeId=%2").arg(param.constData()).arg(tp) );
                                         #endif

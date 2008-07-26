@@ -20,11 +20,26 @@
 #include "pythonvariant.h"
 #include "pythonextension.h"
 
-//#include <kross/core/variant.h>
+#include <kross/core/manager.h>
+#include <kross/core/wrapperinterface.h>
 
 #include <QWidget>
 
 using namespace Kross;
+
+namespace Kross {
+
+    /// \internal helper class to deal with generic QList-types.
+    class VoidList : public QList<void*> {
+        public:
+            VoidList() : QList<void*>() {}
+            VoidList(QList<void*> list, const QByteArray& typeName) : QList<void*>(list), typeName(typeName) {}
+            QByteArray typeName;
+    };
+
+}
+
+Q_DECLARE_METATYPE(Kross::VoidList)
 
 Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
 {
@@ -102,6 +117,26 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return PythonType<double>::toPyObject(v.toDouble());
             }
 
+            if( strcmp(v.typeName(),"VoidList") == 0 ) {
+                VoidList list = v.value<VoidList>();
+                Kross::Manager::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(list.typeName);
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to QList<%2> with %3 items, hasHandler=%4").arg(v.typeName()).arg(list.typeName.constData()).arg(list.count()).arg(handler ? "true" : "false") );
+                #endif
+                QVariantList l;
+                foreach(void* ptr, list) {
+                    if( handler ) {
+                        l << handler(ptr);
+                    }
+                    else {
+                        QVariant v;
+                        v.setValue(ptr);
+                        l << v;
+                    }
+                }
+                return PythonType<QVariantList>::toPyObject(l);
+            }
+
             if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
@@ -145,8 +180,13 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return Py::asObject(new PythonExtension(obj));
             }
 
-            //QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
-            //PyObject* qobjectptr = PyLong_FromVoidPtr( (void*) variantargs[0]->toVoidStar() );
+            if( qVariantCanConvert< void* >(v) ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to VoidStar").arg(v.typeName()) );
+                #endif
+                PyObject* voidptr = PyLong_FromVoidPtr( (void*) qvariant_cast<void*>(v) );
+                return Py::asObject( voidptr );
+            }
 
             //if(v.type() == QVariant::Invalid) return Py::None();
 
@@ -281,6 +321,20 @@ QColor PythonType<QColor>::toVariant(const Py::Object& obj)
 }
 #endif
 
+void* extractVoidStar(const Py::Object& object)
+{
+    QVariant v = PythonType<QVariant>::toVariant(object);
+    if( QObject* obj = qVariantCanConvert< QWidget* >(v) ? qvariant_cast< QWidget* >(v) : qVariantCanConvert< QObject* >(v) ? qvariant_cast< QObject* >(v) : 0 ) {
+        if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
+            return wrapper->wrappedObject();
+        return obj;
+    }
+    if( void* ptr = v.value< void* >() ) {
+        return ptr;
+    }
+    return 0; //TODO handle other cases?!
+}
+
 MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& object, bool owner)
 {
     int typeId = QVariant::nameToType(typeName);
@@ -351,9 +405,12 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
                 Py::ExtensionObject<PythonExtension> extobj(object);
                 PythonExtension* extension = extobj.extensionObject();
-                if( ! extension->object() )
+                QObject* obj = extension->object();
+                if( ! obj )
                     throw Py::RuntimeError( QString("Underlying QObject instance of the PythonExtension was removed.").toLatin1().constData() );
-                return new MetaTypeVoidStar( typeId, extension->object(), owner );
+                if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
+                    return new MetaTypeVoidStar( typeId, wrapper->wrappedObject(), owner );
+                return new MetaTypeVoidStar( typeId, obj, owner );
             }
 
             /*
@@ -440,6 +497,29 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 #endif
                 if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
                     return new MetaTypeVariant<Kross::Object::Ptr>(ptr);
+            }
+
+            // handle custom types within a QList by converting the list of pointers into a QList<void*>
+            QByteArray tn(typeName);
+            if( tn.startsWith("QList<") && tn.endsWith("*>") ) {
+                QByteArray itemTypeName = tn.mid(6, tn.length()-7);
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krosswarning( QString("PythonMetaTypeFactory::create Convert Py::Object '%1' to QList<void*> with typeName='%2' and itemTypeName='%3'").arg(object.as_string().c_str()).arg(typeName).arg(itemTypeName.constData()) );
+                #endif
+                QList<void*> list;
+                if( object.isTuple() ) {
+                    Py::Tuple t(object);
+                    for(uint i = 0; i < t.size(); ++i)
+                        if( void *ptr = extractVoidStar(t[i]) )
+                            list << ptr;
+                }
+                else if( object.isList() ) {
+                    Py::List l(object);
+                    for(uint i = 0; i < l.length(); ++i)
+                        if( void *ptr = extractVoidStar(l[i]) )
+                            list << ptr;
+                }
+                return new Kross::MetaTypeImpl< VoidList >(VoidList(list, itemTypeName));
             }
 
             #ifdef KROSS_PYTHON_VARIANT_DEBUG

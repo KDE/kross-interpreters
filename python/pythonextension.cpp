@@ -218,7 +218,7 @@ Py::Object PythonExtension::getattr(const char* n)
         QMetaProperty property = d->properties[n];
 
         #ifdef KROSS_PYTHON_EXTENSION_GETATTR_DEBUG
-            krossdebug( QString("PythonExtension::getattr name='%1' is a property: type=%2 valid=%3 readable=%4 scriptable=%5 writable=%6 usertype=%7")
+            krossdebug( QString("PythonExtension::getattr name='%1' is a property: type=%2 valid=%3 readable=%4 scriptable=%5 writable=%6 user=%7 usertype=%8")
                         .arg(n).arg(property.typeName()).arg(property.isValid())
                         .arg(property.isReadable()).arg(property.isScriptable(d->object)).arg(property.isWritable())
                         .arg(property.isUser(d->object)).arg(property.userType())
@@ -617,16 +617,28 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
 
             // eval the return-value
             if(hasreturnvalue) {
-                QVariant v(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
-//FIXME pythonfunction.h and pythonextension.h are duplicating code here + port that logic also to the other backends, probably it would be more wise to move it to the kross-core.
-                if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
-                    QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
-                    v.setValue( (QObject*) obj );
+                QVariant v;
+                if( Kross::Manager::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(metamethod.typeName()) ) {
+                    #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
+                        krossdebug( QString("Returnvalue of type '%2' has a handler").arg(metamethod.typeName()) );
+                    #endif
+                    void *ptr = (*reinterpret_cast<void*(*)>( variantargs[0]->toVoidStar() ));
+                    v = handler(ptr);
                 }
+                else {
+                    v = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
+
+                    /* obsolete by handlers
+                    if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
+                        QObject* obj = (*reinterpret_cast<QObject*(*)>( variantargs[0]->toVoidStar() ));
+                        v.setValue( (QObject*) obj );
+                    }
+                    */
+                }
+                pyresult = PythonType<QVariant>::toPyObject(v);
                 #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
                     krossdebug( QString("Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4 pyobject=%5").arg(variantargs[0]->typeId()).arg(metamethod.typeName()).arg(v.toString()).arg(v.typeName()).arg(pyresult.as_string().c_str()) );
                 #endif
-                pyresult = PythonType<QVariant>::toPyObject(v);
             }
 
             // finally free the PythonVariable instances
