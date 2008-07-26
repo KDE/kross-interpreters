@@ -623,7 +623,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
                         krossdebug( QString("Returnvalue of type '%2' has a handler").arg(metamethod.typeName()) );
                     #endif
                     void *ptr = (*reinterpret_cast<void*(*)>( variantargs[0]->toVoidStar() ));
-                    v = handler->call(ptr);
+                    v = handler->callHandler(ptr);
                 }
                 else {
                     v = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());

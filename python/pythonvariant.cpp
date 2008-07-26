@@ -126,7 +126,7 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 QVariantList l;
                 foreach(void* ptr, list) {
                     if( handler ) {
-                        l << handler->call(ptr);
+                        l << handler->callHandler(ptr);
                     }
                     else {
                         QVariant v;
