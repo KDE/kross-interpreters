@@ -35,6 +35,21 @@ namespace Kross {
             VoidList() : QList<void*>() {}
             VoidList(QList<void*> list, const QByteArray& typeName) : QList<void*>(list), typeName(typeName) {}
             QByteArray typeName;
+
+            static void* extractVoidStar(const Py::Object& object)
+            {
+                QVariant v = PythonType<QVariant>::toVariant(object);
+                if( QObject* obj = qVariantCanConvert< QWidget* >(v) ? qvariant_cast< QWidget* >(v) : qVariantCanConvert< QObject* >(v) ? qvariant_cast< QObject* >(v) : 0 ) {
+                    if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
+                        return wrapper->wrappedObject();
+                    return obj;
+                }
+                if( void* ptr = v.value< void* >() ) {
+                    return ptr;
+                }
+                return 0; //TODO handle other cases?!
+            }
+
     };
 
 }
@@ -321,20 +336,6 @@ QColor PythonType<QColor>::toVariant(const Py::Object& obj)
 }
 #endif
 
-void* extractVoidStar(const Py::Object& object)
-{
-    QVariant v = PythonType<QVariant>::toVariant(object);
-    if( QObject* obj = qVariantCanConvert< QWidget* >(v) ? qvariant_cast< QWidget* >(v) : qVariantCanConvert< QObject* >(v) ? qvariant_cast< QObject* >(v) : 0 ) {
-        if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
-            return wrapper->wrappedObject();
-        return obj;
-    }
-    if( void* ptr = v.value< void* >() ) {
-        return ptr;
-    }
-    return 0; //TODO handle other cases?!
-}
-
 MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& object, bool owner)
 {
     int typeId = QVariant::nameToType(typeName);
@@ -510,13 +511,13 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 if( object.isTuple() ) {
                     Py::Tuple t(object);
                     for(uint i = 0; i < t.size(); ++i)
-                        if( void *ptr = extractVoidStar(t[i]) )
+                        if( void *ptr = VoidList::extractVoidStar(t[i]) )
                             list << ptr;
                 }
                 else if( object.isList() ) {
                     Py::List l(object);
                     for(uint i = 0; i < l.length(); ++i)
-                        if( void *ptr = extractVoidStar(l[i]) )
+                        if( void *ptr = VoidList::extractVoidStar(l[i]) )
                             list << ptr;
                 }
                 return new Kross::MetaTypeImpl< VoidList >(VoidList(list, itemTypeName));

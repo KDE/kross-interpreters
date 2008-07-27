@@ -630,6 +630,9 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
 
                     if( ! Kross::Manager::self().strictTypesEnabled() ) {
                         if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
+                            #ifdef KROSS_PYTHON_EXTENSION_CALL_DEBUG
+                                krossdebug( QString("Returnvalue of type '%2' will be reinterpret_cast<QObject*>").arg(d->metamethod.typeName()) );
+                            #endif
                             QObject* obj = (*reinterpret_cast<QObject*(*)>( variantargs[0]->toVoidStar() ));
                             v.setValue( (QObject*) obj );
                         }
