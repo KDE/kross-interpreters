@@ -21,6 +21,9 @@
 #include "rubyvariant.h"
 #include "rubyinterpreter.h"
 
+#include <kross/core/manager.h>
+#include <kross/core/metatype.h>
+
 #include <QVariant>
 #include <QMetaObject>
 #include <QMetaMethod>
@@ -35,6 +38,7 @@ namespace Kross {
         }
         QObject* object;
         int methodindex;
+        QMetaMethod metamethod;
         bool hasreturnvalue;
         QVarLengthArray<int> types, metatypes;
         static VALUE s_rccObject;
@@ -51,9 +55,9 @@ namespace Kross {
         : d(new RubyCallCachePrivate(object, methodindex, hasreturnvalue, ntypes, nmetatypes)), m_self(0)
     {
         Q_ASSERT(object);
+        d->metamethod = d->object->metaObject()->method(d->methodindex);
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
-            d->debuginfo = QString("name=%1 class=%2 methodindex=%3 signature=%4").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex).arg(metamethod.signature());
+            d->debuginfo = QString("name=%1 class=%2 methodindex=%3 signature=%4").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex).arg(d->metamethod.signature());
             krossdebug( QString("RubyCallCache Ctor %1 ").arg(d->debuginfo) );
         #endif
     }
@@ -73,8 +77,7 @@ namespace Kross {
         QVarLengthArray<void*> voidstarargs( typelistcount );
 
         #ifdef KROSS_RUBY_CALLCACHE_DEBUG
-            QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
-            krossdebug( QString("RubyCallCache::execfunction signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(metamethod.signature()).arg(metamethod.typeName()).arg(argc).arg(typelistcount) );
+            krossdebug( QString("RubyCallCache::execfunction signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(d->metamethod.signature()).arg(d->metamethod.typeName()).arg(argc).arg(typelistcount) );
             for(int i = 0; i < d->types.count(); ++i)
                 krossdebug( QString("  argument index=%1 typeId=%2 typeName=%3 metaTypeId=%4").arg(i).arg(d->types[i]).arg(QVariant::typeToName( (QVariant::Type)d->types[i] )).arg(d->metatypes[i]) );
         #endif
@@ -85,7 +88,7 @@ namespace Kross {
         if(d->hasreturnvalue)
         {
             //krossdebug( QString("RubyCallCache::execfunction argv[1]=%1").arg(argc > 1 ? STR2CSTR(rb_inspect(argv[1])) : "") );
-            MetaType* returntype = RubyMetaTypeFactory::create( d->types[0], d->metatypes[0] );
+            MetaType* returntype = RubyMetaTypeFactory::create( d->metamethod.typeName(), d->types[0], d->metatypes[0] );
             //MetaType* returntype = RubyMetaTypeFactory::create( d->types[0], d->metatypes[0], argc > 1 ? argv[1] : Qnil );
             variantargs[0] = returntype;
             voidstarargs[0] = returntype->toVoidStar();
@@ -97,13 +100,14 @@ namespace Kross {
         }
 
         // set the arguments values
+        QList<QByteArray> typelist = d->metamethod.parameterTypes();
         for(int idx = 1; idx < typelistcount; ++idx)
         {
             #ifdef KROSS_RUBY_CALLCACHE_DEBUG
                 krossdebug( QString("RubyCallCache::execfunction param idx=%1 inspect=%2 QVariantType=%3 QMetaType=%4").arg(idx).arg(STR2CSTR(rb_inspect(argv[idx]))).arg(QVariant::typeToName((QVariant::Type)d->types[idx])).arg(QMetaType::typeName(d->metatypes[idx])) );
             #endif
 
-            MetaType* metatype = RubyMetaTypeFactory::create( d->types[idx], d->metatypes[idx], argv[idx] );
+            MetaType* metatype = RubyMetaTypeFactory::create( typelist[idx-1], d->types[idx], d->metatypes[idx], argv[idx] );
             if(! metatype) { // Seems RubyMetaTypeFactory::create returned an invalid RubyType.
                 krosswarning( QString("RubyCallCache::execfunction Aborting cause RubyMetaTypeFactory::create returned NULL.") );
                 for(int i = 0; i < idx; ++i) // Clear already allocated instances.
@@ -122,54 +126,50 @@ namespace Kross {
             Q_UNUSED(r);
         #endif
 
-        // free the arguments
-        for(int idx = 1; idx < typelistcount; ++idx)
-        {
-            delete variantargs[idx];
-        }
+        // the return value
+        VALUE retvalue = 0;
 
         // eval the return-value
         if(d->hasreturnvalue)
         {
             QVariant result;
-#if 0
-            const int resultTypeId = variantargs[0]->typeId();
-            switch( resultTypeId ) {
-                case QMetaType::QObjectStar: {
-                    QObject* obj = (*reinterpret_cast< QObject*(*)>(variantargs[0]->toVoidStar()));
-                    //krossdebug(QString("VALUE RubyType<QVariant>::toVALUE =================> objectName=%1").arg(obj->objectName()));
-                    result.setValue(obj);
-                } break;
-                case QMetaType::QWidgetStar: {
-                    QWidget* obj = (*reinterpret_cast< QWidget*(*)>( variantargs[0]->toVoidStar() ));
-                    result.setValue(obj);
-                } break;
-                default: {
-                    result = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
-                } break;
+
+            if( Kross::MetaTypeHandler* handler = Kross::Manager::self().metaTypeHandler(d->metamethod.typeName()) ) {
+                #ifdef KROSS_RUBY_CALLCACHE_DEBUG
+                    krossdebug( QString("Returnvalue of type '%2' has a handler").arg(d->metamethod.typeName()) );
+                #endif
+                void *ptr = (*reinterpret_cast<void*(*)>( variantargs[0]->toVoidStar() ));
+                result = handler->callHandler(ptr);
             }
-#else
-            result = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
-            /*
-            if( v.type() == QVariant::Invalid && QByteArray(metamethod.typeName()).endsWith("*") ) {
-                QObject* obj = (*reinterpret_cast< QObject*(*)>( variantargs[0]->toVoidStar() ));
-                result.setValue( (QObject*) obj );
+            else {
+                result = QVariant(variantargs[0]->typeId(), variantargs[0]->toVoidStar());
+
+                if( ! Kross::Manager::self().strictTypesEnabled() ) {
+                    if( result.type() == QVariant::Invalid && QByteArray(d->metamethod.typeName()).endsWith("*") ) {
+                        //#ifdef KROSS_RUBY_CALLCACHE_DEBUG
+                            krossdebug( QString("Returnvalue of type '%2' will be reinterpret_cast<QObject*>").arg(d->metamethod.typeName()) );
+                        //#endif
+                        QObject* obj = (*reinterpret_cast<QObject*(*)>( variantargs[0]->toVoidStar() ));
+                        result.setValue( (QObject*) obj );
+                    }
+                }
             }
-            */
-#endif
+
             #ifdef KROSS_RUBY_CALLCACHE_DEBUG
-                QMetaMethod metamethod = d->object->metaObject()->method(d->methodindex);
-                krossdebug( QString("RubyCallCache::execfunction Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4").arg(variantargs[0]->typeId()).arg(metamethod.typeName()).arg(result.toString()).arg(result.typeName()) );
+                krossdebug( QString("RubyCallCache::execfunction Returnvalue typeId=%1 metamethod.typename=%2 variant.toString=%3 variant.typeName=%4").arg(variantargs[0]->typeId()).arg(d->metamethod.typeName()).arg(result.toString()).arg(result.typeName()) );
             #endif
 
-            // free the return argument
-            delete variantargs[0];
-
-            // return the result
-            return result.isNull() ? 0 : RubyType<QVariant>::toVALUE(result);
+            // set the return value
+            retvalue = RubyType<QVariant>::toVALUE(result);
         }
 
-        return 0;
+        // free the return-value and the arguments
+        for(int idx = 0; idx < typelistcount; ++idx)
+        {
+            delete variantargs[idx];
+        }
+
+        return retvalue;
     }
 
     void RubyCallCache::delete_object(void* object)

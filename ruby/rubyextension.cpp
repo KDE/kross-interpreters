@@ -23,6 +23,7 @@
 #include "rubyvariant.h"
 #include "rubyinterpreter.h"
 #include "rubyfunction.h"
+
 #include <kross/core/metatype.h>
 
 #include <QMap>
