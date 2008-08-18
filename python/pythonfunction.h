@@ -51,12 +51,23 @@ namespace Kross {
             * be executed if the QObject emits the signal.
             */
             PythonFunction(QObject* sender, const QByteArray& signal, const Py::Callable& callable)
-                : MetaFunction(sender, signal), m_callable(callable) {}
+                : MetaFunction(sender, signal), m_callable(callable)
+            {
+                #ifdef KROSS_PYTHON_FUNCTION_DEBUG
+                    m_debuginfo = QString("sender=%1 [%2] signal=%3").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(signal.constData());
+                    krossdebug( QString("PythonFunction::Constructor: %1").arg(m_debuginfo) );
+                #endif
+            }
 
             /**
             * Destructor.
             */
-            virtual ~PythonFunction() {}
+            virtual ~PythonFunction()
+            {
+                #ifdef KROSS_PYTHON_FUNCTION_DEBUG
+                    krossdebug( QString("PythonFunction::Destructor: %1").arg(m_debuginfo) );
+                #endif
+            }
 
             /**
             * This method got called if a method this QObject instance
@@ -149,6 +160,10 @@ namespace Kross {
         private:
             Py::Callable m_callable;
             QVariant m_tmpResult;
+
+            #ifdef KROSS_PYTHON_FUNCTION_DEBUG
+                QString m_debuginfo;
+            #endif
     };
 
 }
