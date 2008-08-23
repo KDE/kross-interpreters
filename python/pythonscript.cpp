@@ -88,8 +88,10 @@ PythonScript::~PythonScript()
         krossdebug("PythonScript::Destructor.");
     #endif
     qDeleteAll( d->m_functions );
-    if( d->m_module )
+
+    if( Py_IsInitialized() && d->m_module )
         d->m_module->getDict().clear();
+
     delete d->m_module; d->m_module = 0;
     delete d->m_code; d->m_code = 0;
     delete d;

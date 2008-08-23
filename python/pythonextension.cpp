@@ -561,6 +561,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
                 }
                 catch(Py::Exception& e) {
                     v = Py::value(e).as_string().c_str();
+                    e.clear();
                 }
                 krossdebug( QString("  Argument index=%1 variant.toString=%2 variant.typeName=%3").arg(i).arg(v.toString()).arg(v.typeName()) );
             }
