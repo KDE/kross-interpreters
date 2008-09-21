@@ -163,8 +163,10 @@ PythonExtension::~PythonExtension()
         krossdebug( QString("PythonExtension::Destructor object=%1").arg(d->debuginfo) );
     #endif
     if( d->owner )
+    {
         delete d->object;
-    qDeleteAll(d->functions);
+        qDeleteAll(d->functions);
+    }
     delete d->proxymethod;
     delete d;
 }
