@@ -163,10 +163,9 @@ PythonExtension::~PythonExtension()
         krossdebug( QString("PythonExtension::Destructor object=%1").arg(d->debuginfo) );
     #endif
     if( d->owner )
-    {
         delete d->object;
-        qDeleteAll(d->functions);
-    }
+
+    qDeleteAll(d->functions);//FIXME curently it may delete connections (i.e. PythonFunctions) that we want to stay!
     delete d->proxymethod;
     delete d;
 }
