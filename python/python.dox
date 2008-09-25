@@ -14,7 +14,7 @@
  * The @a Kross::PythonModule class is the __main__ Python environment used
  * as global object namespace. This module is shared between the different
  * @a Kross::PythonScript instances which run in there own module namespace.
- * The @a Kross::PythonModule also spends access to the the whole Kross
+ * The @a Kross::PythonModule also spends access to the whole Kross
  * functionality and manages all the @a Kross::PythonExtension modules.
  *
  * The @a Kross::PythonExtension class implements a Py::Object to wrap a

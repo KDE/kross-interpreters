@@ -14,7 +14,7 @@
  * The @a Kross::RubyModule class is the __main__ Ruby environment used
  * as global object namespace. This module is shared between the different
  * @a Kross::RubyScript instances which run in there own module namespace.
- * The @a Kross::RubyModule also spends access to the the whole Kross
+ * The @a Kross::RubyModule also spends access to the whole Kross
  * functionality and manages all the @a Kross::RubyExtension modules.
  *
  * The @a Kross::RubyExtension class implements a Ruby VALUE object to wrap a
