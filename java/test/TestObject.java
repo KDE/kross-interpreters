@@ -21,7 +21,7 @@ public class TestObject extends KrossQExtension {
 
     // Following lines are samples for arguments... The question is, if it wouldn't be easier
     // to provide multiple invoke's for every number of arguments one (afair signals and slots
-    // are not able to handle more then 9 anyway + we would work around the rather expensive
+    // are not able to handle more than 9 anyway + we would work around the rather expensive
     // list packing/unpacking.
 
     public void func_void(){ invoke("func_void"); }
