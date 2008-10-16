@@ -88,8 +88,8 @@ namespace Kross {
              * Compare two objects.
              *
              * \param other The object this object should be compared with.
-             * \return 0 if the equal, 1 if self is bigger then other and -1
-             * if self is smaller then other.
+             * \return 0 if the equal, 1 if self is bigger than other and -1
+             * if self is smaller than other.
              */
             virtual int compare(const Py::Object& other);
 
