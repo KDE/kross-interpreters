@@ -519,6 +519,7 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 return new Kross::MetaTypeImpl< VoidList >(VoidList(list, itemTypeName));
             }
 
+            // still no success. So, let's try to guess the content...
             QVariant v = PythonType<QVariant>::toVariant(object);
             if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
