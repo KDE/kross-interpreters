@@ -215,47 +215,36 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
 
 QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
 {
-    if(obj == Py::None()) {
-        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-            krossdebug( QString("PythonType<QVariant>::toVariant Py::None") );
-        #endif
-        return QVariant();
-    }
-
-    PyTypeObject *type = (PyTypeObject*) obj.type().ptr();
     #ifdef KROSS_PYTHON_VARIANT_DEBUG
-        krossdebug( QString("PythonType<QVariant>::toVariant type=%1").arg(type->tp_name) );
+        krossdebug( QString("PythonType<QVariant>::toVariant str=%1").arg(obj.as_string().c_str()) );
     #endif
 
-    if(type == &PyInt_Type)
+    // check for None
+    if(obj == Py::None())
+        return QVariant();
+
+    PyObject* pyobj = obj.ptr();
+    Q_ASSERT(pyobj);
+
+    // check for some basic buildin types
+    if( PyObject_TypeCheck(pyobj, &PyInt_Type) )
         return PythonType<int>::toVariant(obj);
-    if(type == &PyLong_Type)
+    if( PyObject_TypeCheck(pyobj, &PyLong_Type) )
         return PythonType<qlonglong>::toVariant(obj);
-    if(type == &PyFloat_Type)
+    if( PyObject_TypeCheck(pyobj, &PyFloat_Type) )
         return PythonType<double>::toVariant(obj);
-    if(type == &PyBool_Type)
+    if( PyObject_TypeCheck(pyobj, &PyBool_Type) )
         return PythonType<bool>::toVariant(obj);
-    if(obj.isString())
+    if( obj.isString() )
         return PythonType<QString>::toVariant(obj);
-    if(type == &PyTuple_Type)
+    if( PyObject_TypeCheck(pyobj, &PyTuple_Type) )
         return PythonType<QVariantList,Py::Tuple>::toVariant(Py::Tuple(obj));
-    if(type == &PyList_Type)
+    if( PyObject_TypeCheck(pyobj, &PyList_Type) )
         return PythonType<QVariantList,Py::List>::toVariant(Py::List(obj));
-    if(type == &PyDict_Type)
+    if( PyObject_TypeCheck(pyobj, &PyDict_Type) )
         return PythonType<QVariantMap,Py::Dict>::toVariant(Py::Dict(obj.ptr()));
 
-    if(obj.isInstance()) {
-        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-        krossdebug( QString("PythonType<QVariant>::toVariant IsInstance=TRUE") );
-        #endif
-        //return new PythonType(object);
-        QVariant result;
-        Kross::Object::Ptr p;
-        p.attach(new Kross::PythonObject(obj));
-        result.setValue(p);
-        return result;
-    }
-
+    // check if it's an extension
     if(PythonExtension::check(obj.ptr())) {
         Py::ExtensionObject<PythonExtension> extobj(obj);
         PythonExtension* extension = extobj.extensionObject();
@@ -276,7 +265,27 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
         return variant;
     }
 
-    throw Py::RuntimeError( QString("Invalid object of type '%1'.").arg(type->tp_name).toLatin1().constData() );
+    // This is a bit messy. We are only interested in instances here but newer Python versions don't care
+    // any longer and don't really make any difference between buildin types and class-instances. To have
+    // at least some kind of safety we check for the Py_TPFLAGS_HEAPTYPE flag and if defined, just put
+    // the PyObject into a Kross::Object then.
+
+    //PyTypeObject *type = (PyTypeObject*) obj.type().ptr(); // can throw a Py::TypeError
+    //if( obj.isInstance() || PyClass_Check(pytype) || PyObject_TypeCheck(pyobj, &PyBaseObject_Type) ) {
+    //if( PyObject_TypeCheck(pyobj, &PyBaseObject_Type) ) {
+    if(obj.ptr()->ob_type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
+        #ifdef KROSS_PYTHON_VARIANT_DEBUG
+        krossdebug( QString("PythonType<QVariant>::toVariant IsInstance=TRUE") );
+        #endif
+        //return new PythonType(object);
+        QVariant result;
+        Kross::Object::Ptr p;
+        p.attach(new Kross::PythonObject(obj));
+        result.setValue(p);
+        return result;
+    }
+
+    throw Py::RuntimeError( QString("Invalid object of type '%1'.").arg(obj.as_string().c_str()).toLatin1().constData() );
     return QVariant();
 }
 
