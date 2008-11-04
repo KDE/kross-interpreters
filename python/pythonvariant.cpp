@@ -273,20 +273,16 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
     //PyTypeObject *type = (PyTypeObject*) obj.type().ptr(); // can throw a Py::TypeError
     //if( obj.isInstance() || PyClass_Check(pytype) || PyObject_TypeCheck(pyobj, &PyBaseObject_Type) ) {
     //if( PyObject_TypeCheck(pyobj, &PyBaseObject_Type) ) {
-    if(obj.ptr()->ob_type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
-        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-        krossdebug( QString("PythonType<QVariant>::toVariant IsInstance=TRUE") );
-        #endif
-        //return new PythonType(object);
-        QVariant result;
-        Kross::Object::Ptr p;
-        p.attach(new Kross::PythonObject(obj));
-        result.setValue(p);
-        return result;
-    }
-
-    throw Py::RuntimeError( QString("Invalid object of type '%1'.").arg(obj.as_string().c_str()).toLatin1().constData() );
-    return QVariant();
+    //if(obj.ptr()->ob_type->tp_flags & Py_TPFLAGS_HEAPTYPE) {
+    #ifdef KROSS_PYTHON_VARIANT_DEBUG
+    krossdebug( QString("PythonType<QVariant>::toVariant convert to Kross::PythonObject") );
+    #endif
+    //return new PythonType(object);
+    QVariant result;
+    Kross::Object::Ptr p;
+    p.attach(new Kross::PythonObject(obj));
+    result.setValue(p);
+    return result;
 }
 
 #if 0
@@ -500,15 +496,6 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 }
             }
 
-            QVariant v = PythonType<QVariant>::toVariant(object);
-            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
-                #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
-                #endif
-                if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
-                    return new MetaTypeVariant<Kross::Object::Ptr>(ptr);
-            }
-
             // handle custom types within a QList by converting the list of pointers into a QList<void*>
             QByteArray tn(typeName);
             if( tn.startsWith("QList<") && tn.endsWith("*>") ) {
@@ -530,6 +517,15 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                             list << ptr;
                 }
                 return new Kross::MetaTypeImpl< VoidList >(VoidList(list, itemTypeName));
+            }
+
+            QVariant v = PythonType<QVariant>::toVariant(object);
+            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+                #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                    krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
+                #endif
+                if( Kross::Object::Ptr ptr = v.value< Kross::Object::Ptr >() )
+                    return new MetaTypeVariant<Kross::Object::Ptr>(ptr);
             }
 
             #ifdef KROSS_PYTHON_VARIANT_DEBUG
