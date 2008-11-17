@@ -422,8 +422,8 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
                         case QMetaType::QObjectStar: // fall through
                         case QMetaType::QWidgetStar: {
                             if( TYPE(value) == T_DATA ) {
-                                QByteArray clazzname = rb_class2name(CLASS_OF(value));
                                 #ifdef KROSS_RUBY_VARIANT_DEBUG
+                                    QByteArray clazzname = rb_class2name(CLASS_OF(value));
                                     krossdebug( QString("RubyMetaTypeFactory::create VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
                                 #endif
 
