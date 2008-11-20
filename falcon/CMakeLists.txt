@@ -1,12 +1,5 @@
 project(krossfalcon)
-set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules )
 
-# search packages used by KDE
-find_package(KDE4 REQUIRED)
-find_package(FALCON REQUIRED)
-include (KDE4Defaults)
-include (MacroLibrary)
-include(MacroOptionalAddSubdirectory)
 include_directories (${CMAKE_SOURCE_DIR} ${CMAKE_BINARY_DIR} ${KDE4_INCLUDES})
 
 include_directories(
