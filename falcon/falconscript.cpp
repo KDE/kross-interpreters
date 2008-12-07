@@ -69,7 +69,6 @@ FalconScript::FalconScript(Kross::Interpreter* interpreter, Kross::Action* actio
     
     // Linking in the relevant modules
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->coreModule() );
-    d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->rtlModule() );
     d->m_vm->link( static_cast<FalconInterpreter *>( interpreter )->krossModule() );
 }
 

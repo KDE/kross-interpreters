@@ -67,7 +67,7 @@ void MainWindow::scriptActivated(const QString &strSelectedScript)
   else if(strSelectedScript == "Hide")
     action.setCode("MyLabel.setVisible(false)");
   else if(strSelectedScript == "Inspect")
-    action.setCode("inspectShort( MyLabel )");
+    action.setCode("inspect( MyLabel )");
   else if(strSelectedScript == "setText")
     action.setCode("MyLabel.setText( 'Text now changed' )");
   else

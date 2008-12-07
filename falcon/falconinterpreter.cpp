@@ -39,9 +39,6 @@ namespace Kross {
             /// Falcon standard module: the core module
             Falcon::Module *m_core_module;
             
-            /// Falcon standard module: the runtime library
-            Falcon::Module *m_rtl_module;
-            
             /// Module used by Falcon scripts being run by Kross
             Falcon::Module *m_kross_module;
             
@@ -49,7 +46,6 @@ namespace Kross {
                 m_loader(0),
                 m_errHandler(0),
                 m_core_module(0),
-                m_rtl_module(0),
                 m_kross_module(0)
             {}
     };
@@ -75,13 +71,6 @@ namespace Kross {
         // we can create an instance of the built-in core module
         d->m_core_module = Falcon::core_module_init();
         
-        // and then load the rtl.
-        d->m_rtl_module = d->m_loader->loadName( "falcon_rtl" );
-        Q_ASSERT( d->m_rtl_module );
-        
-        // on error, the error handler is invoked, and it will call our setError method.
-        //    d->m_rtl_module will be 0.
-        
         // and get an instance of our module
         d->m_kross_module = CreateKrossModule();
         
@@ -99,10 +88,6 @@ namespace Kross {
         
         // remove our reference (and probably delete) for loaded modules.
         d->m_core_module->decref();
-        
-        // we may have not loaded it
-        if ( d->m_rtl_module != 0 )
-            d->m_rtl_module->decref();
         
         d->m_kross_module->decref();
         delete d;
@@ -134,11 +119,6 @@ namespace Kross {
     ::Falcon::Module* FalconInterpreter::coreModule()
     {
         return d->m_core_module;
-    }
-    
-    ::Falcon::Module* FalconInterpreter::rtlModule()
-    {
-        return d->m_rtl_module;
     }
     
     ::Falcon::Module* FalconInterpreter::krossModule()
