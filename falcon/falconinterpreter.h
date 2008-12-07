@@ -71,11 +71,6 @@ namespace Kross {
             virtual ::Falcon::Module* coreModule();
             
             /**
-             * \return the instance of the RTL module available for all the scripts.
-             */
-            virtual ::Falcon::Module* rtlModule();
-            
-            /**
              * \return the instance of the Kross integration module available for all the scripts.
              */
             virtual ::Falcon::Module* krossModule();
