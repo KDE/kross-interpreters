@@ -1404,7 +1404,7 @@ static void init_reflect_object_func( Falcon::VMachine *vm )
     {
         vm->raiseModError( new Falcon::CodeError( 
             Falcon::ErrorParam( 5000, __LINE__ ).
-            desc( "Not enough dynamic informations to create this object." ).
+            desc( "Not enough dynamic information to create this object." ).
             origin( Falcon::e_orig_runtime ).
             extra( self->instanceOf()->name() ) ) );
         return;

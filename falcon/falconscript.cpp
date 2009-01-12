@@ -143,7 +143,7 @@ bool FalconScript::initialize()
         return false;
     }
     
-    // Setting Falcon module informations
+    // Setting Falcon module information
     Falcon::String modName, modPath;
     modName.fromUTF8( name );
     modPath.fromUTF8( action()->file().toUtf8().data() );
