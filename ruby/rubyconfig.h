@@ -45,7 +45,8 @@
 // normaly not needed and Ruby will handle the garbage collection for you. So,
 // while it's probably better/faster to don't rb_gc() manualy it's still useful
 // for debugging to detect and catch problems faster.
-#define KROSS_RUBY_EXPLICIT_GC
+// With ruby 1.8.7 calling the garbage collector outside of a script always crashes, so don't ever do EXPLICIT_GC with 1.8.7
+// #define KROSS_RUBY_EXPLICIT_GC
 
 // Following defines are for debugging only. If defined, we are more verbose.
 //#define KROSS_RUBY_SCRIPT_CTORDTOR_DEBUG
