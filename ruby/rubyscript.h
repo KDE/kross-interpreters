@@ -88,6 +88,14 @@ namespace Kross {
             */
             virtual QVariant callFunction(const QString& name, const QVariantList& args = QVariantList());
 
+            /**
+             * Evaluate some scripting code.
+             *
+             * \param code The scripting code to evaluate.
+             * \return The return value of the evaluation.
+             */
+            virtual QVariant evaluate(const QByteArray& code);
+
             #if 0
             /**
             * Return a list of class types this script supports.

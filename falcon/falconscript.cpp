@@ -323,5 +323,12 @@ QVariant FalconScript::callFunction(const QString& name, const QVariantList& arg
     return retvar;
 }
 
+QVariant FalconScript::evaluate(const QByteArray& code)
+{
+    //TODO
+    Q_UNUSED(code);
+    return QVariant();
+}
+
 }
 

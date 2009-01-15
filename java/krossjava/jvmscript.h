@@ -60,6 +60,7 @@ namespace Kross {
             * Return a list of methodnames the java code provides.
             */
             virtual QStringList functionNames() {
+                //TODO
                 return QStringList();
             }
 
@@ -67,8 +68,21 @@ namespace Kross {
             * Call a method in the java code.
             */
             virtual QVariant callFunction(const QString& name, const QVariantList& args = QVariantList()) {
+                //TODO
                 Q_UNUSED(name);
                 Q_UNUSED(args);
+                return QVariant();
+            }
+
+            /**
+             * Evaluate some scripting code.
+             *
+             * \param code The scripting code to evaluate.
+             * \return The return value of the evaluation.
+             */
+            virtual QVariant evaluate(const QByteArray& code) {
+                //TODO
+                Q_UNUSED(code);
                 return QVariant();
             }
 

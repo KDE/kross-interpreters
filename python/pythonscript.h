@@ -76,33 +76,13 @@ namespace Kross {
              */
             virtual QVariant callFunction(const QString& name, const QVariantList& args = QVariantList());
 
-#if 0
             /**
-             * Return a list of callable functionnames this
-             * script spends.
+             * Evaluate some scripting code.
+             *
+             * \param code The scripting code to evaluate.
+             * \return The return value of the evaluation.
              */
-            virtual const QStringList& getFunctionNames();
-
-            /**
-             * Execute the script.
-             */
-            virtual Kross::Object::Ptr execute();
-
-            /**
-             * Call a function.
-             */
-            virtual Kross::Object::Ptr callFunction(const QString& name, Kross::List::Ptr args);
-
-            /**
-             * Return a list of class types this script supports.
-             */
-            virtual const QStringList& getClassNames();
-
-            /**
-             * Create and return a new class instance.
-             */
-            virtual Kross::Object::Ptr classInstance(const QString& name);
-#endif
+            virtual QVariant evaluate(const QByteArray& code);
 
         private:
             /// Private d-pointer class.

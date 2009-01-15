@@ -156,13 +156,61 @@ namespace Kross {
         * The constructor which will initialize the Ruby "Script" class
         * if not already done before.
         */
-        RubyScriptPrivate() : m_script(0), m_hasBeenSuccessFullyExecuted(false)
+        RubyScriptPrivate(RubyScript* q) : q(q), m_script(0), m_hasBeenSuccessFullyExecuted(false)
         {
             if(RubyScriptPrivate::s_krossScript == 0) {
                 RubyScriptPrivate::s_krossScript = rb_define_class_under(RubyInterpreter::krossModule(), "Script", rb_cModule);
                 rb_define_method(RubyScriptPrivate::s_krossScript, "action", (VALUE (*)(...))RubyScriptPrivate::action_instance, 0);
                 rb_define_method(RubyScriptPrivate::s_krossScript, "method_added", (VALUE (*)(...))RubyScriptPrivate::method_added, 1);
             }
+        }
+
+        VALUE execute(VALUE code)
+        {
+            VALUE fileName = RubyType<QString>::toVALUE( q->action()->file() );
+            StringValue(fileName);
+
+            // needed to prevent infinitive loops ifour scripting call uses e.g. callFunction
+            m_hasBeenSuccessFullyExecuted = true;
+
+            const int critical = rb_thread_critical;
+            rb_thread_critical = Qtrue;
+
+            ruby_nerrs = 0;
+            ruby_errinfo = Qnil;
+
+            VALUE args = rb_ary_new2(3);
+            rb_ary_store(args, 0, m_script); //self
+            rb_ary_store(args, 1, code);
+            rb_ary_store(args, 2, fileName);
+
+            /* makes no sense to init the stack here since we share one stack anyway and it's handled in the interpreter already
+            if (ruby_in_eval == 0) {
+                #ifdef RUBY_INIT_STACK
+                        RUBY_INIT_STACK
+                #endif
+            }
+            */
+
+            ruby_in_eval++;
+            VALUE result = rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, m_script, rb_eException, 0);
+            ruby_in_eval--;
+
+            if (ruby_nerrs != 0) {
+                //#ifdef KROSS_RUBY_SCRIPT_EXECUTE_DEBUG
+                    krossdebug( QString("Compilation has failed. errorMessage=%1 errorTrace=\n%2\n").arg(q->errorMessage()).arg(q->errorTrace()) );
+                //#endif
+                m_hasBeenSuccessFullyExecuted = false;
+            } else {
+                m_hasBeenSuccessFullyExecuted = true;
+            }
+
+            #ifdef KROSS_RUBY_EXPLICIT_GC
+                rb_gc();
+            #endif
+
+            rb_thread_critical = critical;
+            return result;
         }
 
         /**
@@ -194,6 +242,7 @@ namespace Kross {
             }
         }
 
+        RubyScript* q;
         /// The Ruby class instance that wraps a \a RubyScript instances.
         VALUE m_script;
         /// The extension that wraps our \a Kross::Action instance.
@@ -227,7 +276,7 @@ namespace Kross {
 VALUE RubyScriptPrivate::s_krossScript = 0;
 
 RubyScript::RubyScript(Kross::Interpreter* interpreter, Kross::Action* action)
-    : Kross::Script(interpreter, action), d(new RubyScriptPrivate())
+    : Kross::Script(interpreter, action), d(new RubyScriptPrivate(this))
 {
     #ifdef KROSS_RUBY_SCRIPT_CTORDTOR_DEBUG
         d->debuginfo = QString("name=%1 text=%2").arg(action->objectName()).arg(action->text());
@@ -284,51 +333,9 @@ void RubyScript::execute()
         krossdebug( "RubyScript::execute()" );
     #endif
 
-    // needed to prevent infinitive loops ifour scripting call uses e.g. callFunction
-    d->m_hasBeenSuccessFullyExecuted = true;
-
-    const int critical = rb_thread_critical;
-    rb_thread_critical = Qtrue;
-
-    ruby_nerrs = 0;
-    ruby_errinfo = Qnil;
-
-    VALUE src = RubyType<QString>::toVALUE( action()->code() );
-    StringValue(src);
-    VALUE fileName = RubyType<QString>::toVALUE( action()->file() );
-    StringValue(fileName);
-
-    VALUE args = rb_ary_new2(3);
-    rb_ary_store(args, 0, d->m_script); //self
-    rb_ary_store(args, 1, src);
-    rb_ary_store(args, 2, fileName);
-
-    /* makes no sense to init the stack here since we share one stack anyway and it's handled in the interpreter already
-    if (ruby_in_eval == 0) {
-        #ifdef RUBY_INIT_STACK
-                RUBY_INIT_STACK
-        #endif
-    }
-    */
-
-    ruby_in_eval++;
-    rb_rescue2((VALUE(*)(...))callExecute, args, (VALUE(*)(...))callExecuteException, d->m_script, rb_eException, 0);
-    ruby_in_eval--;
-
-    if (ruby_nerrs != 0) {
-        //#ifdef KROSS_RUBY_SCRIPT_EXECUTE_DEBUG
-            krossdebug( QString("Compilation has failed. errorMessage=%1 errorTrace=\n%2\n").arg(errorMessage()).arg(errorTrace()) );
-        //#endif
-        d->m_hasBeenSuccessFullyExecuted = false;
-    } else {
-        d->m_hasBeenSuccessFullyExecuted = true;
-    }
-
-    #ifdef KROSS_RUBY_EXPLICIT_GC
-        rb_gc();
-    #endif
-
-    rb_thread_critical = critical;
+    VALUE code = RubyType<QString>::toVALUE( action()->code() );
+    StringValue(code);
+    d->execute(code);
 }
 
 QStringList RubyScript::functionNames()
@@ -410,6 +417,14 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     rb_thread_critical = critical;
 
     return result;
+}
+
+QVariant RubyScript::evaluate(const QByteArray& code)
+{
+    VALUE v = RubyType<QString>::toVALUE( code );
+    StringValue(v);
+    VALUE result = d->execute(v);
+    return RubyType<QVariant>::toVariant(result);
 }
 
 RubyFunction* RubyScript::connectFunction(QObject* sender, const QByteArray& signature, VALUE method)

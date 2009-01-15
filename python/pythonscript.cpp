@@ -493,6 +493,26 @@ QVariant PythonScript::callFunction(const QString& name, const QVariantList& arg
     return QVariant();
 }
 
+QVariant PythonScript::evaluate(const QByteArray& code)
+{
+    if(! d->m_module) { // initialize if not already done before.
+        if(! initialize())
+            return QVariant();
+    }
+
+    Py::Dict moduledict( d->m_module->getDict().ptr() );
+
+    // Acquire interpreter lock
+    PyGILState_STATE gilstate = PyGILState_Ensure();
+    // Evaluate the code
+    PyObject* r = PyRun_String(code.data(), Py_eval_input, moduledict.ptr(), moduledict.ptr());
+    // Free interpreter lock
+    PyGILState_Release(gilstate);
+
+    Py::Object pyresult(r, true /* owner */);
+    return PythonType<QVariant>::toVariant(pyresult);
+}
+
 #if 0
 const QStringList& PythonScript::getClassNames()
 {
