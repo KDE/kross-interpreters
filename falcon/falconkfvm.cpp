@@ -1399,7 +1399,7 @@ static void init_reflect_object_func( Falcon::VMachine *vm )
     Falcon::ExtFuncDef *def = vm->currentSymbol()->getExtFuncDef();
     
     // The dynamic type manager has recorded the meta type here.
-    int metaType = (int) def->extra();
+    long metaType = (long) def->extra();
     if ( metaType == 0 )
     {
         vm->raiseModError( new Falcon::CodeError( 
