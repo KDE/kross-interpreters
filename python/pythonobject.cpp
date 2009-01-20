@@ -43,7 +43,7 @@ PythonObject::PythonObject(const Py::Object& object)
     : Kross::Object()
     , d(new Private(object))
 {
-    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+    #ifdef KROSS_PYTHON_FUNCTION_DEBUG
         krossdebug( QString("PythonObject::PythonObject() constructor") );
     #endif
 
@@ -56,7 +56,7 @@ PythonObject::PythonObject(const Py::Object& object)
         //if(! m_pyobject.hasAttr( (*i).str() )) continue;
         Py::Object o = d->m_pyobject.getAttr(s);
 
-        #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+        #ifdef KROSS_PYTHON_FUNCTION_DEBUG
             QString t;
             if(o.isCallable()) t += "isCallable ";
             if(o.isDict()) t += "isDict ";
@@ -76,7 +76,7 @@ PythonObject::PythonObject(const Py::Object& object)
 
 PythonObject::~PythonObject()
 {
-    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+    #ifdef KROSS_PYTHON_FUNCTION_DEBUG
         krossdebug( QString("PythonObject::~PythonObject() destructor") );
     #endif
     delete d;
@@ -84,7 +84,7 @@ PythonObject::~PythonObject()
 
 QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
 {
-    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+    #ifdef KROSS_PYTHON_FUNCTION_DEBUG
         krossdebug( QString("PythonObject(%1)::call(%2) isInstance=%3").arg(d->m_pyobject.as_string().c_str()).arg(name).arg(d->m_pyobject.isInstance()) );
     #endif
 
@@ -97,7 +97,7 @@ QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
             }
             Py::Object pyresult = method.apply( PythonType<QVariantList,Py::Tuple>::toPyObject(args) );
             QVariant result = PythonType<QVariant>::toVariant(pyresult);
-            #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+            #ifdef KROSS_PYTHON_FUNCTION_DEBUG
                 krossdebug( QString("PythonScript::callFunction() result=%1 variant.toString=%2 variant.typeName=%3").arg(pyresult.as_string().c_str()).arg(result.toString()).arg(result.typeName()) );
             #endif
             return result;
@@ -115,6 +115,7 @@ QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
             PyErr_Print();
         }
     //}
+
     return QVariant();
 }
 
