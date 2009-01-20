@@ -43,7 +43,9 @@ PythonObject::PythonObject(const Py::Object& object)
     : Kross::Object()
     , d(new Private(object))
 {
-    krossdebug( QString("PythonObject::PythonObject() constructor") );
+    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+        krossdebug( QString("PythonObject::PythonObject() constructor") );
+    #endif
 
     Py::List x( object.dir() );
     for(Py::Sequence::iterator i= x.begin(); i != x.end(); ++i) {
@@ -74,6 +76,9 @@ PythonObject::PythonObject(const Py::Object& object)
 
 PythonObject::~PythonObject()
 {
+    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+        krossdebug( QString("PythonObject::~PythonObject() destructor") );
+    #endif
     delete d;
 }
 
