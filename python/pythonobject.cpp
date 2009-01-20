@@ -54,16 +54,18 @@ PythonObject::PythonObject(const Py::Object& object)
         //if(! m_pyobject.hasAttr( (*i).str() )) continue;
         Py::Object o = d->m_pyobject.getAttr(s);
 
-        QString t;
-        if(o.isCallable()) t += "isCallable ";
-        if(o.isDict()) t += "isDict ";
-        if(o.isList()) t += "isList ";
-        if(o.isMapping()) t += "isMapping ";
-        if(o.isNumeric()) t += "isNumeric ";
-        if(o.isSequence()) t += "isSequence ";
-        if(o.isTrue()) t += "isTrue ";
-        if(o.isInstance()) t += "isInstance ";
-        krossdebug( QString("PythonObject::PythonObject() method '%1' (%2)").arg( (*i).str().as_string().c_str() ).arg(t) );
+        #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+            QString t;
+            if(o.isCallable()) t += "isCallable ";
+            if(o.isDict()) t += "isDict ";
+            if(o.isList()) t += "isList ";
+            if(o.isMapping()) t += "isMapping ";
+            if(o.isNumeric()) t += "isNumeric ";
+            if(o.isSequence()) t += "isSequence ";
+            if(o.isTrue()) t += "isTrue ";
+            if(o.isInstance()) t += "isInstance ";
+            krossdebug( QString("PythonObject::PythonObject() method '%1' (%2)").arg( (*i).str().as_string().c_str() ).arg(t) );
+        #endif
 
         if(o.isCallable())
             d->m_calls.append( (*i).str().as_string().c_str() );
@@ -77,9 +79,11 @@ PythonObject::~PythonObject()
 
 QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
 {
-    krossdebug( QString("PythonObject::call(%1)").arg(name) );
+    #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+        krossdebug( QString("PythonObject(%1)::call(%2) isInstance=%3").arg(d->m_pyobject.as_string().c_str()).arg(name).arg(d->m_pyobject.isInstance()) );
+    #endif
 
-    if(d->m_pyobject.isInstance()) {
+    //if(d->m_pyobject.isInstance()) { // if it inherits a PyQt4 QObject/QWidget then it's not counted as instance
         try {
             Py::Callable method = d->m_pyobject.getAttr(name.toLatin1().data());
             if (!method.isCallable()) {
@@ -94,9 +98,9 @@ QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
             return result;
         }
         catch(Py::Exception& e) {
-            #ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
+            //#ifdef KROSS_PYTHON_SCRIPT_CALLFUNC_DEBUG
                 krosswarning( QString("PythonScript::callFunction() Exception: %1").arg(Py::value(e).as_string().c_str()) );
-            #endif
+            //#endif
             Py::Object err = Py::value(e);
             if(err.ptr() == Py_None) err = Py::type(e); // e.g. string-exceptions have there errormessage in the type-object
             QStringList trace;
@@ -105,7 +109,7 @@ QVariant PythonObject::callMethod(const QString& name, const QVariantList& args)
             setError(err.as_string().c_str(), trace.join("\n"), lineno);
             PyErr_Print();
         }
-    }
+    //}
     return QVariant();
 }
 
