@@ -115,6 +115,21 @@ namespace Kross {
             static VALUE callFindChild(int argc, VALUE *argv, VALUE self);
 
             /**
+             * @return the a list of names of all properties this object provides.
+             */
+            static VALUE propertyNames(VALUE self);
+
+            /**
+             * @return the value of a property.
+             */
+            static VALUE property(int argc, VALUE *argv, VALUE self);
+
+            /**
+             * Set the value of a property.
+             */
+            static VALUE setProperty(int argc, VALUE *argv, VALUE self);
+
+            /**
              * Connect was called. This does connect a signal with
              * a slot or a scripting function.
              */

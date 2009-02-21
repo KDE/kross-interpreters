@@ -198,6 +198,42 @@ VALUE RubyExtension::callFindChild(int argc, VALUE *argv, VALUE self)
     return object ? RubyExtension::toVALUE( new RubyExtension(object), true /*owner*/ ) : Qnil;
 }
 
+VALUE RubyExtension::propertyNames(VALUE self)
+{
+    RubyExtension* extension = toExtension(self);
+    Q_ASSERT(extension);
+    const QMetaObject* metaobject = extension->d->m_object->metaObject();
+    VALUE list = rb_ary_new();
+    for(int i = 0; i < metaobject->propertyCount(); ++i)
+        rb_ary_push(list, RubyType<QString>::toVALUE( metaobject->property(i).name() ));
+    return list;
+}
+
+VALUE RubyExtension::property(int argc, VALUE *argv, VALUE self)
+{
+    VALUE name = argc == 1 ? argv[0] : Qnil;
+    if( TYPE(name) != T_STRING ) {
+        rb_raise(rb_eTypeError, "Expected the properties name as argument.");
+        return Qnil;
+    }
+    RubyExtension* extension = toExtension(self);
+    Q_ASSERT(extension);
+    return RubyType<QVariant>::toVALUE( extension->d->m_object->property(STR2CSTR(name)) );
+}
+
+VALUE RubyExtension::setProperty(int argc, VALUE *argv, VALUE self)
+{
+    VALUE name = argc >= 2 ? argv[0] : Qnil;
+    VALUE value = argc >= 2 ? argv[1] : Qnil;
+    if( TYPE(name) != T_STRING || argc < 2 ) {
+        rb_raise(rb_eTypeError, "Expected the properties name and value as arguments.");
+        return Qnil;
+    }
+    RubyExtension* extension = toExtension(self);
+    Q_ASSERT(extension && extension->d->m_object);
+    return RubyType<bool>::toVALUE( extension->d->m_object->setProperty(STR2CSTR(name), RubyType<QVariant>::toVariant(value)) );
+}
+
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
 {
     #ifdef KROSS_RUBY_EXTENSION_CALLCONNECT_DEBUG
@@ -450,10 +486,10 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
         return RubyType<int>::toVALUE( extension->d->m_enumerations[name] );
     }
 
-    // look if it's a dynamic property
-    if( extension->d->m_object->dynamicPropertyNames().contains(name) ) {
-        return RubyType<QVariant>::toVALUE( extension->d->m_object->property(name) );
-    }
+//     // look if it's a dynamic property
+//     if( extension->d->m_object->dynamicPropertyNames().contains(name) ) {
+//         return RubyType<QVariant>::toVALUE( extension->d->m_object->property(name) );
+//     }
 
     // look if the name refers to a child object
     QObject* object = extension->d->m_object->findChild<QObject*>(name);
@@ -558,9 +594,12 @@ void RubyExtension::init()
     RubyExtensionPrivate::s_krossObject = rb_define_class_under(RubyInterpreter::krossModule(), "Object", rb_cObject);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "method_missing",  (VALUE (*)(...))RubyExtension::method_missing, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "clone", (VALUE (*)(...))RubyExtension::clone, 0);
-    rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "findChild", (VALUE (*)(...))RubyExtension::callFindChild, -1);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "propertyNames", (VALUE (*)(...))RubyExtension::propertyNames, 0);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "property", (VALUE (*)(...))RubyExtension::property, -1);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "setProperty", (VALUE (*)(...))RubyExtension::setProperty, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "connect", (VALUE (*)(...))RubyExtension::callConnect, -1);
     rb_define_method(RubyExtensionPrivate::s_krossObject, "disconnect", (VALUE (*)(...))RubyExtension::callDisconnect, -1);
+    rb_define_method(RubyExtensionPrivate::s_krossObject, "toVoidPtr", (VALUE (*)(...))RubyExtension::toVoidPtr, 0);
     rb_define_module_function(RubyExtensionPrivate::s_krossObject, "fromVoidPtr", (VALUE (*)(...))RubyExtension::fromVoidPtr, 1);
 }
