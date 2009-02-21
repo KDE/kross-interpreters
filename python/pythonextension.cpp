@@ -239,6 +239,11 @@ Py::Object PythonExtension::getattr(const char* n)
         return Py::Int(d->enumerations[n]);
     }
 
+    // look if it's a dynamic property
+    if(d->object && d->object->dynamicPropertyNames().contains(n)) {
+        return PythonType<QVariant>::toPyObject( d->object->property(n) );
+    }
+
     // finally redirect the unhandled attribute-request...
     //return Py::PythonExtension<PythonExtension>::getattr_methods(n);
     return Py::PythonExtension<PythonExtension>::getattr(n);

@@ -450,6 +450,11 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
         return RubyType<int>::toVALUE( extension->d->m_enumerations[name] );
     }
 
+    // look if it's a dynamic property
+    if( extension->d->m_object->dynamicPropertyNames().contains(name) ) {
+        return RubyType<QVariant>::toVALUE( extension->d->m_object->property(name) );
+    }
+
     // look if the name refers to a child object
     QObject* object = extension->d->m_object->findChild<QObject*>(name);
     if( object ) {
