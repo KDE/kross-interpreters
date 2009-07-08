@@ -191,7 +191,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
 #endif
         "           if mod != None:\n"
         //"               print \"3===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
-        "               if globals != None:\n"
+        "               if globals != None and (not fromlist or len(fromlist)==0 or '*' in fromlist):\n"
         "                   globals[name] = mod\n"
         "           return mod\n"
         //"       except ImportError:\n"
