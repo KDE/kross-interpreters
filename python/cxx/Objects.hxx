@@ -49,6 +49,7 @@
 #include <iterator>
 #include <utility>
 #include <typeinfo>
+#include <algorithm>
 
 namespace Py
 {
