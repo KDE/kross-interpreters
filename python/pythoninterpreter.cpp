@@ -183,7 +183,8 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         "           if mod == None:\n"
         "               if name == 'qt':\n"
         "                   raise ImportError('Import of the PyQt3 module is not allowed. Please use PyQt4 instead.')\n"
-        //"               print \"2===========> _Importer name=%s fromlist=%s\" % (name,fromlist)\n"
+        "               if name == 'dcop':\n"
+        "                   raise ImportError('Import of the KDE3 DCOP module is not allowed. Please use PyQt4 DBUS instead.')\n"
 #if PY_MAJOR_VERSION >= 3 || (PY_MAJOR_VERSION >= 2 && PY_MINOR_VERSION >= 5)
         "               mod = self.realImporter(name, globals, locals, fromlist, level)\n"
 #else
