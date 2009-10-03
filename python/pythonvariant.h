@@ -227,7 +227,7 @@ namespace Kross {
                 }
             #endif
             if( obj.isString() )
-                return Py::String(obj).as_string().c_str();
+                return QString::fromUtf8(Py::String(obj).as_string().c_str());
             if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtCore.QString'>") == 0 )
                 return PythonType<QString>::toVariant( Py::Callable(obj.getAttr("__str__")).apply() );
             return QString();
