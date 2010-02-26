@@ -1,4 +1,4 @@
-include_directories( ${RUBY_INCLUDE_PATH} )
+include_directories( ${RUBY_INCLUDE_DIRS} )
 
 set(krossruby_PART_SRCS
    rubyvariant.cpp
