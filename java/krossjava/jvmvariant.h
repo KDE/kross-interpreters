@@ -30,9 +30,9 @@
 #include <QStringList>
 #include <QVariant>
 #include <QMetaType>
-//#include <QSize>
-//#include <QPoint>
-//#include <QRect>
+#include <QSize>
+#include <QPoint>
+#include <QRect>
 #include <QUrl>
 //#include <QDate>
 //#include <QTime>
