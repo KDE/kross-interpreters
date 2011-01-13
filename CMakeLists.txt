@@ -13,7 +13,7 @@ include(MacroLibrary)
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DQT3_SUPPORT)                                                                                                               
 include_directories (${KDE4_INCLUDES})                                                                                                                                              
                                                                                                                                                                                     
-macro_optional_find_package(PythonLibrary)                                                                                                                                          
+find_package(PythonLibrary)                                                                                                                                          
 
 if(PYTHONLIBRARY_FOUND)
 	macro_optional_add_subdirectory(python)
