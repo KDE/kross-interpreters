@@ -20,10 +20,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}")
 ########### next target ###############
 
 set(libkrosspythoncxx_SRCS
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxsupport.cxx
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxx_extensions.cxx
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/cxxextensions.c
-    ${CMAKE_SOURCE_DIR}/python/krosspython/cxx/IndirectPythonInterface.cxx
+    cxx/cxxsupport.cxx
+    cxx/cxx_extensions.cxx
+    cxx/cxxextensions.c
+    cxx/IndirectPythonInterface.cxx
 )
 
 ########### next target ###############
