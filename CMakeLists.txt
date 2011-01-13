@@ -3,7 +3,7 @@ project(KrossPlugins)
                                                                                                                                                                                     
                                                                                                                                                                                     
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked                                                                                                   
-#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_SOURCE_DIR}/generator/cmake )                                                                  
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules ${CMAKE_SOURCE_DIR}/generator/cmake )                                                                  
                                                                                                                                                                                     
 # search packages used by KDE                                                                                                                                                       
 find_package(KDE4 REQUIRED)                                                                                                                                                         
