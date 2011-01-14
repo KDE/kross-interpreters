@@ -1,7 +1,6 @@
-macro_optional_find_package(Ruby)
+find_package(Ruby)
 
-set(RUBY_COMPILED RUBY_LIBRARY AND RUBY_INCLUDE_DIRS)
-macro_log_feature(RUBY_LIBRARY
+macro_log_feature(RUBY_FOUND
   "Ruby" "Ruby libraries" "http://www.ruby-lang.org" FALSE "" "Needed to compile the Ruby bindings")
 
 set(krossruby_PART_SRCS
@@ -13,7 +12,8 @@ set(krossruby_PART_SRCS
    rubycallcache.cpp
    rubyobject.cpp
    )
-if(RUBY_COMPILED)
+
+if(RUBY_FOUND)
   include_directories(${RUBY_INCLUDE_DIRS})
   kde4_add_plugin(krossruby ${krossruby_PART_SRCS})
   target_link_libraries(krossruby ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${KDE4_KROSSCORE_LIBS} ${RUBY_LIBRARY})
