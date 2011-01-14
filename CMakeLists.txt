@@ -23,7 +23,7 @@ macro_log_feature(PYTHONLIBRARY_FOUND "Python" "Python is a programming language
 if(FALCON_FOUND)
 	macro_optional_add_subdirectory(falcon)
 endif(FALCON_FOUND)
-macro_log_feature(FALCON_FOUND "FALCON" "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with." "http://www.falconpl.org/" FALSE "2.0" "Kross Falcon support.")
+macro_log_feature(FALCON_FOUND "FALCON" "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with." "http://www.falconpl.org/" FALSE "0.9.6.8" "Kross Falcon support.")
 
 macro_optional_add_subdirectory(ruby)
 macro_optional_add_subdirectory(java)
