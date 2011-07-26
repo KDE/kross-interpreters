@@ -30,6 +30,8 @@
 #include <kglobal.h>
 #include <kstandarddirs.h>
 
+#include <QVarLengthArray>
+
 #ifdef Q_WS_WIN
     #define KROSS_JVM_PATHSEPARATOR ';'
 #else
@@ -54,7 +56,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
     JVMExtension* obj = static_cast<JVMExtension*>(JavaType<void*>::toVariant(p,env));
 
     int numargs = argc;
-    jobject args[numargs];
+    QVarLengthArray<jobject, 8> args(numargs);
 
     switch(numargs) {
         case 10:
@@ -79,7 +81,7 @@ jobject JNICALL callQMethod(JNIEnv *env, jobject self, jlong p, jstring method,
             args[0] = arg0;
     }
 
-    return obj->callQMethod(env, method, numargs, args);
+    return obj->callQMethod(env, method, numargs, args.data());
 }
 
 jboolean JNICALL callConnect(JNIEnv *env, jobject self, jlong jvmsender, jstring signal, jobject receiver, jobject method)

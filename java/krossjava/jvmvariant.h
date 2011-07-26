@@ -34,6 +34,7 @@
 #include <QPoint>
 #include <QRect>
 #include <QUrl>
+#include <QVarLengthArray>
 //#include <QDate>
 //#include <QTime>
 //#include <QDateTime>
@@ -122,19 +123,19 @@ namespace Kross {
             const int count = array.count();
             jbyteArray bytearray = env->NewByteArray(count);
             //TODO: there has to be a better way...
-            jbyte bytes[count];
+            QVarLengthArray<jbyte, 1024> bytes(count);
             for(int i = 0; i < count; ++i)
                 bytes[i] = array[i];
-            env->SetByteArrayRegion(bytearray, 0, count, bytes);
+            env->SetByteArrayRegion(bytearray, 0, count, bytes.constData());
             return bytearray;
         }
         inline static QByteArray toVariant(jobject value, JNIEnv* env) {
             jbyteArray bytearray = static_cast<jbyteArray>(value);
             jsize len = env->GetArrayLength(bytearray);
             int count = len;
-            char bytes[count];
-            env->GetByteArrayRegion(bytearray, 0, len, (jbyte*)bytes);
-            return QByteArray(bytes, count);
+            QVarLengthArray<char, 1024> bytes(count);
+            env->GetByteArrayRegion(bytearray, 0, len, (jbyte*)bytes.data());
+            return QByteArray(bytes.constData(), count);
         }
     };
 
