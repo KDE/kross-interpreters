@@ -1,6 +1,5 @@
 PROJECT(KROSSPYTHON)
 
-find_package(PythonLibrary REQUIRED)
 include(PythonMacros)
 
 include_directories(

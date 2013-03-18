@@ -12,7 +12,19 @@ include(MacroLibrary)
 add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DQT3_SUPPORT)
 include_directories (${KDE4_INCLUDES})
 
-find_package(PythonLibrary)
+# TODO: PYTHON3 Port: Use "find_package(PythonLibs 2 REQUIRED)" (CMAKE MODULE not KDELIBS)
+find_package(PythonLibrary 2 REQUIRED QUIET)
+if(PYTHONLIBRARY_FOUND)
+    if(PYTHON_VERSION_MAJOR EQUAL 3)
+        message(STATUS "Found Python: ${PYTHON_EXECUTABLE} (found version \"${PYTHON_VERSION_STRING}\") but only 2.x supported")
+        set(PYTHONINTERP_FOUND False)
+        set(PYTHONLIBRARY_FOUND False)
+    else()
+        message(STATUS "Found Python: ${PYTHON_EXECUTABLE} (found version \"${PYTHON_VERSION_STRING}\")")
+    endif()
+endif()
+
+
 find_package(FALCON)
 
 if(PYTHONLIBRARY_FOUND)
