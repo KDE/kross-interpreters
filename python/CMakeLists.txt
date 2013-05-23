@@ -3,7 +3,7 @@ PROJECT(KROSSPYTHON)
 include(PythonMacros)
 
 include_directories(
-    ${PYTHON_INCLUDE_PATH}
+    ${PYTHON_INCLUDE_DIRS}
     ${QT_INCLUDE_DIR}
     ${QT_QT_INCLUDE_DIR}
     ${QT_QTCORE_INCLUDE_DIR}
