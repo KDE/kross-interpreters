@@ -124,7 +124,7 @@ namespace Kross {
                 case T_BIGNUM:
                     return rb_big2int(value);
                 case T_FLOAT:
-                    return (int)(RFLOAT(value)->value);
+                    return (int)(RFLOAT_VALUE(value));
                 default:
                     break;
             }
@@ -147,7 +147,7 @@ namespace Kross {
                 case T_BIGNUM:
                     return rb_big2uint(value);
                 case T_FLOAT:
-                    return (uint)(RFLOAT(value)->value);
+                    return (uint)(RFLOAT_VALUE(value));
                 default:
                     break;
             }
@@ -226,10 +226,10 @@ namespace Kross {
                 //return STR2CSTR( rb_inspect(value) );
                 return QByteArray("");
             }
-            long length = LONG2NUM( RSTRING(value)->len );
+            long length = LONG2NUM( RSTRING_LEN(value) );
             if( length < 0 )
                 return QByteArray("");
-            char* ca = rb_str2cstr(value, &length);
+            char* ca = RSTRING_PTR(StringValue(value));
             return QByteArray(ca, length);
         }
     };
@@ -246,7 +246,7 @@ namespace Kross {
                 rb_raise(rb_eTypeError, "QString must be a string");
                 return QString();
             }
-            return STR2CSTR(value);
+            return StringValuePtr(value);
         }
     };
 
@@ -261,7 +261,7 @@ namespace Kross {
             return l;
         }
         inline static QSize toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 2 ) {
                 rb_raise(rb_eTypeError, "QSize must be an array with 2 elements");
                 return QSize();
             }
@@ -280,7 +280,7 @@ namespace Kross {
             return l;
         }
         inline static QSizeF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 2 ) {
                 rb_raise(rb_eTypeError, "QSizeF must be an array with 2 elements");
                 return QSizeF();
             }
@@ -300,7 +300,7 @@ namespace Kross {
             return l;
         }
         inline static QPoint toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 2 ) {
                 rb_raise(rb_eTypeError, "QPoint must be an array with 2 elements");
                 return QPoint();
             }
@@ -319,7 +319,7 @@ namespace Kross {
             return l;
         }
         inline static QPointF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 2 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 2 ) {
                 rb_raise(rb_eTypeError, "QPointF must be an array with 2 elements");
                 return QPointF();
             }
@@ -340,7 +340,7 @@ namespace Kross {
             return l;
         }
         inline static QRect toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 4 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 4 ) {
                 rb_raise(rb_eTypeError, "QRect must be an array with 4 elements");
                 return QRect();
             }
@@ -362,7 +362,7 @@ namespace Kross {
             return l;
         }
         inline static QRectF toVariant(VALUE value) {
-            if( TYPE(value) != T_ARRAY || RARRAY(value)->len != 4 ) {
+            if( TYPE(value) != T_ARRAY || RARRAY_LEN(value) != 4 ) {
                 rb_raise(rb_eTypeError, "QRectF must be an array with 4 elements");
                 return QRectF();
             }
@@ -447,7 +447,7 @@ namespace Kross {
                 return QStringList();
             }
             QStringList l;
-            for(int i = 0; i < RARRAY(value)->len; i++)
+            for(int i = 0; i < RARRAY_LEN(value); i++)
                 l.append( RubyType<QString>::toVariant( rb_ary_entry(value, i) ) );
             return l;
         }
@@ -469,7 +469,7 @@ namespace Kross {
                 return QVariantList();
             }
             QVariantList l;
-            for(int i = 0; i < RARRAY(value)->len; i++)
+            for(int i = 0; i < RARRAY_LEN(value); i++)
                 l.append( RubyType<QVariant>::toVariant( rb_ary_entry(value, i) ) );
             return l;
         }
@@ -490,7 +490,7 @@ namespace Kross {
             QVariantMap* map; 
             Data_Get_Struct(vmap, QVariantMap, map);
             if (key != Qundef)
-                map->insert(STR2CSTR(key), RubyType<QVariant>::toVariant(value));
+                map->insert(StringValuePtr(key), RubyType<QVariant>::toVariant(value));
             return ST_CONTINUE;
         }
         inline static QVariantMap toVariant(VALUE value) {

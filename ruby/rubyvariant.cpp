@@ -487,7 +487,7 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
                 #endif
                 QList<void*> list;
                 if( TYPE(value) == T_ARRAY ) {
-                    for(int i = 0; i < RARRAY(value)->len; i++)
+                    for(int i = 0; i < RARRAY_LEN(value); i++)
                         if( void *ptr = VoidList::extractVoidStar(rb_ary_entry(value, i)) )
                             list << ptr;
                 }
