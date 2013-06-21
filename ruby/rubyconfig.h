@@ -21,12 +21,10 @@
 #define KROSS_RUBY_CONFIG_H
 
 #include <ruby.h>
-#include <env.h>
-#include <rubysig.h>
-#include <node.h>
-#include <version.h>
+#include <ruby/backward/rubysig.h>
+#include <ruby/version.h>
 
-#include <st.h>
+#include <ruby/st.h>
 //#include <typeinfo>
 
 #include <kross/core/krossconfig.h>

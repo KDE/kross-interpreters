@@ -34,25 +34,26 @@ static VALUE callExecuteException(VALUE self, VALUE error)
 
     VALUE info = rb_gv_get("$!");
     VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
-    VALUE message = RARRAY(bt)->ptr[0];
+    VALUE message = RARRAY_PTR(bt)[0];
+    VALUE v_info = rb_obj_as_string(info);
 
     QString errormessage = QString("%1: %2 (%3)")
-                            .arg( STR2CSTR(message) )
-                            .arg( STR2CSTR(rb_obj_as_string(info)) )
+                            .arg( StringValuePtr(message) )
+                            .arg( StringValuePtr(v_info) )
                             .arg( rb_class2name(CLASS_OF(info)) );
     fprintf(stderr, "%s\n", errormessage.toLatin1().data());
 
     QString tracemessage;
-    for(int i = 1; i < RARRAY(bt)->len; ++i) {
-        if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING ) {
-            QString s = QString("%1\n").arg( STR2CSTR(RARRAY(bt)->ptr[i]) );
+    for(int i = 1; i < RARRAY_LEN(bt); ++i) {
+        if( TYPE(RARRAY_PTR(bt)[i]) == T_STRING ) {
+            VALUE v = RARRAY_PTR(bt)[i];
+            QString s = QString("%1\n").arg( StringValuePtr(v) );
             Q_ASSERT( ! s.isNull() );
             tracemessage += s;
             fprintf(stderr, "\t%s", s.toLatin1().data());
         }
     }
 
-    ruby_nerrs++;
 /*
     VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
     RubyScript* rubyscript;
@@ -66,7 +67,8 @@ static VALUE callExecuteException(VALUE self, VALUE error)
 static VALUE callFunction2(VALUE args)
 {
     #ifdef KROSS_RUBY_OBJECT_DEBUG
-        krossdebug( QString("RubyObject::callFunction2 args=%1").arg( STR2CSTR(rb_inspect(args)) ) );
+        VALUE v_args = rb_inspect(args);
+        krossdebug( QString("RubyObject::callFunction2 args=%1").arg( StringValuePtr(v_args) ) );
     #endif
     Q_ASSERT( TYPE(args) == T_ARRAY );
     VALUE self = rb_ary_entry(args, 0);
@@ -74,7 +76,7 @@ static VALUE callFunction2(VALUE args)
     ID functionId = rb_ary_entry(args, 1);
     VALUE arguments = rb_ary_entry(args, 2);
     Q_ASSERT( TYPE(arguments) == T_ARRAY );
-    return rb_funcall2(self, functionId, RARRAY(arguments)->len, RARRAY(arguments)->ptr);
+    return rb_funcall2(self, functionId, RARRAY_LEN(arguments), RARRAY_PTR(arguments));
 }
 
 class RubyObject::Private
@@ -104,7 +106,8 @@ RubyObject::RubyObject(const VALUE& object)
     , d(new Private(object))
 {
     #ifdef KROSS_RUBY_OBJECT_DEBUG
-        d->debug = QString("type=%1 value=%2").arg(TYPE(object)).arg(STR2CSTR(rb_inspect(object)));
+        VALUE v_object = rb_inspect(object);
+        d->debug = QString("type=%1 value=%2").arg(TYPE(object)).arg(StringValuePtr(v_object));
         krossdebug( QString("RubyObject::RubyObject(const VALUE& object) constructor: %1").arg(d->debug) );
     #endif
 
@@ -112,8 +115,8 @@ RubyObject::RubyObject(const VALUE& object)
     VALUE methods;
     const char* method;
     methods = rb_class_instance_methods(1, args, CLASS_OF(object));
-    for (int i = 0; i < RARRAY(methods)->len; i++) {
-        method = StringValuePtr(RARRAY(methods)->ptr[i]);
+    for (int i = 0; i < RARRAY_LEN(methods); i++) {
+        method = StringValuePtr(RARRAY_PTR(methods)[i]);
         krossdebug( QString("RubyObject::RubyObject() method=%1").arg( method ));
         d->calls << method;
     }

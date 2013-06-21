@@ -218,7 +218,7 @@ VALUE RubyExtension::property(int argc, VALUE *argv, VALUE self)
     }
     RubyExtension* extension = toExtension(self);
     Q_ASSERT(extension);
-    return RubyType<QVariant>::toVALUE( extension->d->m_object->property(STR2CSTR(name)) );
+    return RubyType<QVariant>::toVALUE( extension->d->m_object->property(StringValuePtr(name)) );
 }
 
 VALUE RubyExtension::setProperty(int argc, VALUE *argv, VALUE self)
@@ -231,7 +231,7 @@ VALUE RubyExtension::setProperty(int argc, VALUE *argv, VALUE self)
     }
     RubyExtension* extension = toExtension(self);
     Q_ASSERT(extension && extension->d->m_object);
-    return RubyType<bool>::toVALUE( extension->d->m_object->setProperty(STR2CSTR(name), RubyType<QVariant>::toVariant(value)) );
+    return RubyType<bool>::toVALUE( extension->d->m_object->setProperty(StringValuePtr(name), RubyType<QVariant>::toVariant(value)) );
 }
 
 VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
@@ -291,7 +291,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
     QObject* receiver = 0; // the receiver object
     QByteArray receiverslot; // the receiver slot
     if( TYPE(argv[idx]) == T_DATA ) {
-#if(RUBY_VERSION_MAJOR==1 && RUBY_VERSION_MINOR==8 && RUBY_VERSION_TEENY==4)
+#if(RUBY_API_VERSION_MAJOR==1 && RUBY_API_VERSION_MINOR==8 && RUBY_API_VERSION_TEENY==4)
         //Ruby sucks sometimes; http://blade.nagaokaut.ac.jp/cgi-bin/scat.rb/ruby/ruby-talk/201285
         { // just always assume the user provides a method here for now...
 #else
@@ -308,7 +308,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
             receiver = receiverextension->object();
         }
         */
-#if(!(RUBY_VERSION_MAJOR==1 && RUBY_VERSION_MINOR==8 && RUBY_VERSION_TEENY==4))
+#if(!(RUBY_API_VERSION_MAJOR==1 && RUBY_API_VERSION_MINOR==8 && RUBY_API_VERSION_TEENY==4))
         else {
             rb_raise(rb_eTypeError, ::QString("The argument number %1 is invalid.").arg(idx).toLatin1().constData());
             return Qfalse;

@@ -56,7 +56,7 @@ namespace Kross {
                     m_debuginfo = QString("sender=%1 signature=%2 method=%3")
                         .arg( sender ? QString("%1 (%2)").arg(sender->objectName()).arg(sender->metaObject()->className()) : "NULL" )
                         .arg( signal.data() )
-                        .arg( STR2CSTR(rb_inspect(method)) );
+                        .arg( StringValuePtr(rb_inspect(method)) );
                     krossdebug( QString("RubyFunction Ctor %1").arg(m_debuginfo) );
                 #endif
                 rb_gc_register_address(&m_method);
@@ -80,19 +80,22 @@ namespace Kross {
             static VALUE callFunctionException(VALUE args, VALUE error)
             {
                 //#ifdef KROSS_RUBY_FUNCTION_DEBUG
+                    VALUE v_args = rb_inspect(args);
+                    VALUE v_error = rb_inspect(error);
                     krossdebug( QString("RubyFunction callFunctionException args=%1 error=%2")
-                                .arg( STR2CSTR(rb_inspect(args)) ).arg( STR2CSTR(rb_inspect(error)) ) );
+                                .arg( StringValuePtr(v_args) ).arg( StringValuePtr(v_error) ) );
                 //#else
                 //    Q_UNUSED(args);
                 //    Q_UNUSED(error);
                 //#endif
                 VALUE info = rb_gv_get("$!");
                 VALUE bt = rb_funcall(info, rb_intern("backtrace"), 0);
-                VALUE message = RARRAY(bt)->ptr[0];
-                fprintf(stderr,"%s: %s (%s)\n", STR2CSTR(message), STR2CSTR(rb_obj_as_string(info)), rb_class2name(CLASS_OF(info)));
-                for(int i = 1; i < RARRAY(bt)->len; ++i)
-                    if( TYPE(RARRAY(bt)->ptr[i]) == T_STRING )
-                        fprintf(stderr,"\tfrom %s\n", STR2CSTR(RARRAY(bt)->ptr[i]));
+                VALUE message = RARRAY_PTR(bt)[0];
+                VALUE v_info = rb_obj_as_string(info);
+                fprintf(stderr,"%s: %s (%s)\n", StringValuePtr(message), StringValuePtr(v_info), rb_class2name(CLASS_OF(info)));
+                for(int i = 1; i < RARRAY_LEN(bt); ++i)
+                    if( TYPE(RARRAY_PTR(bt)[i]) == T_STRING )
+                        fprintf(stderr,"\tfrom %s\n", StringValuePtr(RARRAY_PTR(bt)[i]));
                 //ruby_nerrs++;
                 return Qnil;
             }
@@ -105,7 +108,7 @@ namespace Kross {
             static VALUE callFunction(VALUE args)
             {
                 #ifdef KROSS_RUBY_FUNCTION_DEBUG
-                    krossdebug( QString("RubyFunction callFunction args=%1").arg(STR2CSTR(rb_inspect(args))) );
+                    krossdebug( QString("RubyFunction callFunction args=%1").arg(StringValuePtr(rb_inspect(args))) );
                 #endif
                 Q_ASSERT( TYPE(args) == T_ARRAY );
                 VALUE self = rb_ary_entry(args, 0);
@@ -116,9 +119,9 @@ namespace Kross {
                 {
                     argumentsP[idx] = rb_ary_entry(arguments, idx+1);
                 }
-                //krossdebug(QString("RubyScript::callExecute script=%1").arg(STR2CSTR( rb_inspect(script) )));
-                //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(STR2CSTR( rb_inspect(fileName) )));
-                //krossdebug(QString("RubyScript::callExecute src=%1").arg(STR2CSTR( rb_inspect(src) )));
+                //krossdebug(QString("RubyScript::callExecute script=%1").arg(StringValuePtr( rb_inspect(script) )));
+                //krossdebug(QString("RubyScript::callExecute fileName=%1").arg(StringValuePtr( rb_inspect(fileName) )));
+                //krossdebug(QString("RubyScript::callExecute src=%1").arg(StringValuePtr( rb_inspect(src) )));
                 VALUE result = rb_funcall2(self, rb_intern("call"), argsize, argumentsP);
                 delete[] argumentsP;
                 return result;
@@ -198,19 +201,19 @@ namespace Kross {
                             //VALUE result = rb_funcall2(m_method, rb_intern("call"), argsize, args);
 
                             //TODO optimize
-                            ruby_in_eval++;
+                            //ruby_in_eval++
                             VALUE argarray = rb_ary_new2(3);
                             rb_ary_store(argarray, 0, m_method); //self
                             rb_ary_store(argarray, 1, INT2FIX(argsize));
                             rb_ary_store(argarray, 2, args);
                             VALUE result = rb_rescue2((VALUE(*)(...))callFunction, argarray, (VALUE(*)(...))callFunctionException, Qnil, rb_eException, 0);
-                            ruby_in_eval--;
+                            //ruby_in_eval--;
 
                             // finally set the returnvalue
                             m_tmpResult = RubyType<QVariant>::toVariant(result);
                             #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                 QObject* sender = QObject::sender();
-                                krossdebug( QString("RubyFunction::qt_metacall sender.objectName=%1 sender.className=%2 result=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(STR2CSTR(rb_inspect(result))).arg(m_tmpResult.toString()) );
+                                krossdebug( QString("RubyFunction::qt_metacall sender.objectName=%1 sender.className=%2 result=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(StringValuePtr(rb_inspect(result))).arg(m_tmpResult.toString()) );
                             #endif
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);
