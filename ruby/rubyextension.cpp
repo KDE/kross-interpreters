@@ -278,7 +278,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
             sendersignal = RubyType<QByteArray>::toVariant(argv[1]);
             idx = 2;
             if( argc <= idx ) {
-                rb_raise(rb_eTypeError, ::QString("Expected at least %1 arguments.").arg(idx+1).toLatin1().constData());
+                rb_raise(rb_eTypeError, "Expected at least %d arguments.", idx+1);
                 return Qfalse;
             }
         } break;
@@ -310,7 +310,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
         */
 #if(!(RUBY_API_VERSION_MAJOR==1 && RUBY_API_VERSION_MINOR==8 && RUBY_API_VERSION_TEENY==4))
         else {
-            rb_raise(rb_eTypeError, ::QString("The argument number %1 is invalid.").arg(idx).toLatin1().constData());
+            rb_raise(rb_eTypeError, "The argument number %d is invalid.", idx);
             return Qfalse;
         }
 #endif
@@ -462,19 +462,19 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
         QMetaProperty property = metaobject->property( extension->d->m_properties[name] );
         if( name.endsWith('=') ) { // setter
             if(argc < 2) {
-                rb_raise(rb_eNameError, QString("Expected value-argument for \"%1\" setter.").arg(name.constData()).toLatin1().constData());
+                rb_raise(rb_eNameError, "Expected value-argument for \"%s\" setter.", name.constData());
                 return Qnil;
             }
             QVariant v = RubyType<QVariant>::toVariant(argv[1]);
             if(! property.write(extension->d->m_object, v)) {
-                rb_raise(rb_eNameError, QString("Setting attribute \"%1\" failed.").arg(name.constData()).toLatin1().constData());
+                rb_raise(rb_eNameError, "Setting attribute \"%s\" failed.", name.constData());
                 return Qnil;
             }
             return Qnil;
         }
         else { // getter
             if(! property.isReadable()) {
-                rb_raise(rb_eNameError, QString("Attribute \"%1\" is not readable.").arg(name.constData()).toLatin1().constData());
+                rb_raise(rb_eNameError, "Attribute \"%s\" is not readable.", name.constData());
                 return Qnil;
             }
             return RubyType<QVariant>::toVALUE( property.read(extension->d->m_object) );
@@ -497,7 +497,7 @@ VALUE RubyExtension::call_method_missing(RubyExtension* extension, int argc, VAL
         return RubyExtension::toVALUE( new RubyExtension(object), true /*owner*/ );
     }
 
-    rb_raise(rb_eNameError, QString("No such method or variable \"%1\".").arg(name.constData()).toLatin1().constData());
+    rb_raise(rb_eNameError, "No such method or variable \"%s\".", name.constData());
     return Qnil;
 }
 
