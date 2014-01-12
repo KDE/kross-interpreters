@@ -9,7 +9,7 @@ find_package(KDE4 REQUIRED)
 include(KDE4Defaults)
 include(MacroLibrary)
 
-add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS} -DQT3_SUPPORT)
+add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
 include_directories (${KDE4_INCLUDES})
 
 # TODO: PYTHON3 Port: Use "find_package(PythonLibs 2 REQUIRED)" (CMAKE MODULE not KDELIBS)
