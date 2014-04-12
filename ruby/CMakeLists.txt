@@ -1,9 +1,6 @@
 find_package(Ruby 1.9 QUIET)
 
-if( RUBY_VERSION VERSION_GREATER "1.10" )
-    message(STATUS "Found Ruby: ${RUBY_EXECUTABLE} (found version \"${RUBY_VERSION}\") but only 1.9.x supported")
-    set(RUBY_FOUND False)
-else()
+if(RUBY_FOUND)
     message(STATUS "Found Ruby: ${RUBY_EXECUTABLE} (found version \"${RUBY_VERSION}\")")
 endif()
 
