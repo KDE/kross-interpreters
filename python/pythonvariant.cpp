@@ -481,12 +481,6 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonMetaTypeFactory::create Py::Object is typeName=%1 metaid=%2").arg(typeName).arg(metaid) );
                 #endif
-
-                // this is a dirty hack to downcast KUrl's to QUrl's
-                // without the need to link against kdelibs.
-                if( strcmp(typeName,"KUrl") == 0 ) {
-                    return new PythonMetaTypeVariant<QUrl>(object);
-                }
             }
 
             // handle custom types within a QList by converting the list of pointers into a QList<void*>
