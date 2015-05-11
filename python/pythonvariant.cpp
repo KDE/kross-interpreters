@@ -282,7 +282,7 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
     //return new PythonType(object);
     QVariant result;
     Kross::Object::Ptr p;
-    p.attach(new Kross::PythonObject(obj));
+    p = new Kross::PythonObject(obj);
     result.setValue(p);
     return result;
 }
