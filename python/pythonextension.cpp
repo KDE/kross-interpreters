@@ -22,10 +22,10 @@
 #include "pythonvariant.h"
 #include "pythonfunction.h"
 
-#include <QWidget>
-#include <QMetaMethod>
-#include <QSignalSpy>
-#include <QVarLengthArray>
+#include <QtWidgets/QWidget>
+#include <QtCore/QMetaMethod>
+#include <QtTest/QSignalSpy>
+#include <QtCore/QVarLengthArray>
 
 namespace Kross {
 

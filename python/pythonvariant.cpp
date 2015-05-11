@@ -23,7 +23,7 @@
 #include <kross/core/manager.h>
 #include <kross/core/wrapperinterface.h>
 
-#include <QWidget>
+#include <QtWidgets/QWidget>
 
 using namespace Kross;
 
