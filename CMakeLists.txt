@@ -38,19 +38,19 @@ set_package_properties(PythonLibrary PROPERTIES
     TYPE        OPTIONAL
     PURPOSE     "Kross Python support.")
 
-find_package(FALCON)
-if(FALCON_FOUND)
-    ecm_optional_add_subdirectory(falcon)
-endif(FALCON_FOUND)
-
-set_package_properties(Falcon PROPERTIES
-    DESCRIPTION "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with."
-    URL         "http://www.falconpl.org/"
-    TYPE        OPTIONAL
-    PURPOSE     "Kross Falcon support.")
+### Falcon support disabled because it does not work with most modern falcon-0.9.x
+# find_package(FALCON)
+# if(FALCON_FOUND)
+#     ecm_optional_add_subdirectory(falcon)
+# endif(FALCON_FOUND)
+#
+# set_package_properties(Falcon PROPERTIES
+#     DESCRIPTION "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with."
+#     URL         "http://www.falconpl.org/"
+#     TYPE        OPTIONAL
+#     PURPOSE     "Kross Falcon support.")
 
 # ecm_optional_add_subdirectory(ruby)
 # ecm_optional_add_subdirectory(java)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
-
