@@ -1,4 +1,4 @@
-PROJECT(KROSSPYTHON)
+project(KROSSPYTHON)
 
 include(PythonMacros)
 
