@@ -360,24 +360,24 @@ void PythonScript::execute()
             for(int i = 0; i < count; ++i) {
                 QMetaMethod metamethod = metaobject->method(i);
                 if( metamethod.methodType() == QMetaMethod::Signal ) {
-                    const QString signature = metamethod.signature();
-                    const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+                    const QByteArray name = metamethod.name();
+                    const QByteArray signature = metamethod.methodSignature();
 
                     PyObject* pyfunc = PyDict_GetItemString(moduledict.ptr(), name.constData());
                     if( pyfunc ) {
                         Py::Callable callable(pyfunc);
-                        PythonFunction* function = new PythonFunction(obj, metamethod.signature(), callable);
-                        QByteArray sendersignal = QString("2%1").arg(signature).toLatin1();
-                        QByteArray receiverslot = QString("1%1").arg(signature).toLatin1();
+                        PythonFunction* function = new PythonFunction(obj, signature, callable);
+                        QByteArray sendersignal = QByteArray("2") + signature;
+                        QByteArray receiverslot = QByteArray("1") + signature;
                         if( QObject::connect(obj, sendersignal, function, receiverslot) ) {
                             #ifdef KROSS_PYTHON_SCRIPT_AUTOCONNECT_DEBUG
-                                krossdebug( QString("PythonScript::execute connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature).arg(name.constData()) );
+                                krossdebug( QString("PythonScript::execute connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature.constData()).arg(name.constData()) );
                             #endif
                             d->m_functions.append(function);
                         }
                         else {
                             #ifdef KROSS_PYTHON_SCRIPT_AUTOCONNECT_DEBUG
-                                krossdebug( QString("PythonScript::execute failed to connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature).arg(name.constData()) );
+                                krossdebug( QString("PythonScript::execute failed to connect object=%1 signal=%2 with pythonfunction=%3").arg(obj->objectName()).arg(signature.constData()).arg(name.constData()) );
                             #endif
                             delete function;
                         }

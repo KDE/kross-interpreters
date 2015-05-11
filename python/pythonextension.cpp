@@ -124,8 +124,7 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
             const int count = metaobject->methodCount();
             for(int i = 0; i < count; ++i) {
                 QMetaMethod member = metaobject->method(i);
-                const QString signature = member.signature();
-                const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+                const QByteArray name = member.name();
                 if(! d->methods.contains(name)) {
                     d->methods.insert(name, Py::Int(i));
                     d->methodnames.append(Py::String(name));
@@ -322,8 +321,9 @@ Py::Object PythonExtension::getSignalNames(const Py::Tuple&)
     const int count = metaobject->methodCount();
     for(int i = 0; i < count; ++i) {
         QMetaMethod m = metaobject->method(i);
+        QByteArray signature = m.methodSignature();
         if( m.methodType() == QMetaMethod::Signal)
-            list.append( Py::String(m.signature()) );
+            list.append( Py::String(signature.constData()) );
     }
     return list;
 }
@@ -335,8 +335,9 @@ Py::Object PythonExtension::getSlotNames(const Py::Tuple&)
     const int count = metaobject->methodCount();
     for(int i = 0; i < count; ++i) {
         QMetaMethod m = metaobject->method(i);
+        QByteArray signature = m.methodSignature();
         if( m.methodType() == QMetaMethod::Slot)
-            list.append( Py::String(m.signature()) );
+            list.append( Py::String(signature.constData()) );
     }
     return list;
 }
@@ -543,8 +544,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
             const int count = self->d->object->metaObject()->methodCount();
             for(++methodindex; methodindex < count; ++methodindex) {
                 metamethod = self->d->object->metaObject()->method( methodindex );
-                const QString signature = metamethod.signature();
-                const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+                const QByteArray name = metamethod.name();
                 if(name == methodname) {
                     if(metamethod.parameterTypes().size() == argssize) {
                         found = true;
