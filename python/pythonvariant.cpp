@@ -23,6 +23,8 @@
 #include <kross/core/manager.h>
 #include <kross/core/wrapperinterface.h>
 
+#include <QtCore/QMetaType>
+#include <QtCore/QVariant>
 #include <QtWidgets/QWidget>
 
 using namespace Kross;
@@ -39,7 +41,7 @@ namespace Kross {
             static void* extractVoidStar(const Py::Object& object)
             {
                 QVariant v = PythonType<QVariant>::toVariant(object);
-                if( QObject* obj = qVariantCanConvert< QWidget* >(v) ? qvariant_cast< QWidget* >(v) : qVariantCanConvert< QObject* >(v) ? qvariant_cast< QObject* >(v) : 0 ) {
+                if( QObject* obj = v.canConvert<QWidget*>() ? qvariant_cast< QWidget* >(v) : v.canConvert(QMetaType::QObjectStar) ? qvariant_cast< QObject* >(v) : 0 ) {
                     if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
                         return wrapper->wrappedObject();
                     return obj;
@@ -152,7 +154,7 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return PythonType<QVariantList>::toPyObject(l);
             }
 
-            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+            if (v.canConvert<Kross::Object::Ptr>()) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif
@@ -167,7 +169,7 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return pyobj->pyObject();
             }
 
-            if( qVariantCanConvert< QWidget* >(v) ) {
+            if (v.canConvert<QWidget*>()) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to QWidget").arg(v.typeName()) );
                 #endif
@@ -181,7 +183,7 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return Py::asObject(new PythonExtension(widget));
             }
 
-            if( qVariantCanConvert< QObject* >(v) ) {
+            if (v.canConvert(QMetaType::QObjectStar)) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to QObject").arg(v.typeName()) );
                 #endif
@@ -195,7 +197,7 @@ Py::Object PythonType<QVariant>::toPyObject(const QVariant& v)
                 return Py::asObject(new PythonExtension(obj));
             }
 
-            if( qVariantCanConvert< void* >(v) ) {
+            if (v.canConvert(QMetaType::VoidStar)) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to VoidStar").arg(v.typeName()) );
                 #endif
