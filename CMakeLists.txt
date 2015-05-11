@@ -1,16 +1,20 @@
-cmake_minimum_required(VERSION 2.6)
+cmake_minimum_required(VERSION 2.8.12)
 project(KrossPlugins)
 
-# where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules )
+# Include KF5 cmake modules
+find_package(ECM 0.0.10 REQUIRED CONFIG)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ECM_MODULE_PATH})
+include(KDEInstallDirs)
+include(KDECompilerSettings)
+include(KDECMakeSettings)
+include(FeatureSummary)
+include(ECMOptionalAddSubdirectory)
 
-# search packages used by KDE
-find_package(KDE4 REQUIRED)
-include(KDE4Defaults)
-include(MacroLibrary)
+# Where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
 
-add_definitions (${QT_DEFINITIONS} ${KDE4_DEFINITIONS})
-include_directories (${KDE4_INCLUDES})
+find_package(Qt5 5.2.0 CONFIG REQUIRED Core Gui Widgets Test)
+find_package(KF5 REQUIRED Kross KDELibs4Support)
 
 # TODO: PYTHON3 Port: Use "find_package(PythonLibs 2 REQUIRED)" (CMAKE MODULE not KDELIBS)
 find_package(PythonLibrary 2 REQUIRED QUIET)
@@ -24,20 +28,29 @@ if(PYTHONLIBRARY_FOUND)
     endif()
 endif()
 
+if(PYTHONLIBRARY_FOUND)
+    ecm_optional_add_subdirectory(python)
+endif(PYTHONLIBRARY_FOUND)
+
+set_package_properties(PythonLibrary PROPERTIES
+    DESCRIPTION "Python is a programming language that lets you work more quickly and integrate your systems more effectively."
+    URL         "http://python.org"
+    TYPE        OPTIONAL
+    PURPOSE     "Kross Python support.")
 
 find_package(FALCON)
-
-if(PYTHONLIBRARY_FOUND)
-    macro_optional_add_subdirectory(python)
-endif(PYTHONLIBRARY_FOUND)
-macro_log_feature(PYTHONLIBRARY_FOUND "Python" "Python is a programming language that lets you work more quickly and integrate your systems more effectively." "http://python.org" FALSE "2.0" "Kross Python support.")
-
 if(FALCON_FOUND)
-    macro_optional_add_subdirectory(falcon)
+    ecm_optional_add_subdirectory(falcon)
 endif(FALCON_FOUND)
-macro_log_feature(FALCON_FOUND "FALCON" "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with." "http://www.falconpl.org/" FALSE "0.9.6.8" "Kross Falcon support.")
 
-macro_optional_add_subdirectory(ruby)
-macro_optional_add_subdirectory(java)
-macro_display_feature_log()
+set_package_properties(Falcon PROPERTIES
+    DESCRIPTION "Falcon is an Open Source, simple, fast and powerful programming language, easy to learn and to feel comfortable with."
+    URL         "http://www.falconpl.org/"
+    TYPE        OPTIONAL
+    PURPOSE     "Kross Falcon support.")
+
+# ecm_optional_add_subdirectory(ruby)
+# ecm_optional_add_subdirectory(java)
+
+feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
 

@@ -2,19 +2,9 @@ project(KROSSPYTHON)
 
 include(PythonMacros)
 
-include_directories(
-    ${PYTHON_INCLUDE_DIRS}
-    ${QT_INCLUDE_DIR}
-    ${QT_QT_INCLUDE_DIR}
-    ${QT_QTCORE_INCLUDE_DIR}
-    ${QT_QTGUI_INCLUDE_DIR}
-    #${QT_QTNETWORK_INCLUDE_DIR}
-    #${QT_QTXML_INCLUDE_DIR}
-    ${KDE4_INCLUDE_DIR}
-    ${KDE4_INCLUDE_DIR}/kross
-)
+include_directories(${PYTHON_INCLUDE_PATH})
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${KDE4_ENABLE_EXCEPTIONS}")
+kde_enable_exceptions()
 
 ########### next target ###############
 
@@ -36,12 +26,17 @@ set(krosspython_PART_SRCS ${libkrosspythoncxx_SRCS}
    pythonobject.cpp
 )
 
-kde4_add_plugin(krosspython ${krosspython_PART_SRCS})
+add_library(krosspython MODULE ${krosspython_PART_SRCS})
 
 # -ldl seems to be needed (on Linux at least).
 # see http://lists.kde.org/?l=koffice-devel&m=116333261328694&w=2
 # and http://websvn.kde.org/branches/work/kwin_composite/CMakeLists.txt?rev=603677&r1=603384&r2=603677
-target_link_libraries(krosspython ${QT_QTCORE_LIBRARY} ${QT_QTGUI_LIBRARY} ${KDE4_KPTY_LIBS} ${KDE4_KROSSCORE_LIBS} ${PYTHON_LIBRARIES} ${CMAKE_DL_LIBS})
+target_link_libraries(krosspython
+    KF5::KrossCore
+    Qt5::Gui
+    Qt5::Widgets
+    ${PYTHON_LIBRARIES}
+    ${CMAKE_DL_LIBS}
+)
 
-install(TARGETS krosspython  DESTINATION ${PLUGIN_INSTALL_DIR})
-
+install(TARGETS krosspython DESTINATION ${KDE_INSTALL_PLUGINDIR})
