@@ -421,7 +421,7 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
             /*
             //if( metaid == QMetaType::QObjectStar )
-            if( metaid == QMetaType::QWidgetStar ) {
+            if( metaid == qMetaTypeId<QWidget*>() ) {
                 if( qVariantCanConvert< QWidget* >(v) ) {
                     QWidget* widget = qvariant_cast< QWidget* >(v);
                     return new MetaTypeVoidStar( metaid, widget, false );
@@ -431,58 +431,49 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
             int metaid = QMetaType::type(typeName);
             if( metaid > 0 ) {
-                switch(metaid) {
-                    case QMetaType::QObjectStar: // fall through
-                    case QMetaType::QWidgetStar: {
-                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                            Py::Object pyobjtype( PyObject_Type(object.ptr()), true /* owner */ );
-                            const QString pyobjtypename( pyobjtype.repr().as_string().c_str() );
-                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object is %1").arg(pyobjtypename) );
-                        #endif
-                        if( object.hasAttr("metaObject") ) {
-                            // It seems the best way to determinate a PyQt4/PyKDE4 QObject/QWidget is by
-                            // just looking if the passed in PyObject has a metaObject-attribute. That
-                            // way we are sure to also catch classes that inheritate from such PyQt
-                            // widgets. So, if the PyObject has such an attribute we try to use the
-                            // with PyQt together delivered sip.unwrapinstance() function to fetch
-                            // the QObject/QWidget-pointer.
-                            try {
-                                Py::Module mainmod( PyImport_AddModule( (char*)"sip" ) );
-                                Py::Callable func = mainmod.getDict().getItem("unwrapinstance");
-                                Py::Tuple arguments(1);
-                                arguments[0] = object; //pyqtobject pointer
-                                Py::Object result = func.apply(arguments); // call the sip.unwrapinstance function
-                                void* ptr = PyLong_AsVoidPtr( result.ptr() ); // the result is a void* pointer to our QObject/QWidget instance
-                                QObject* obj = 0;
-                                switch(metaid) {
-                                    case QMetaType::QObjectStar: {
-                                        obj = static_cast<QObject*>(ptr);
-                                    } break;
-                                    case QMetaType::QWidgetStar: {
-                                        obj = static_cast<QWidget*>(ptr);
-                                    } break;
-                                    default:
-                                        break;
-                                }
-                                #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                                    krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(obj ? obj->metaObject()->className() : "NULL").arg(long(ptr)));
-                                #endif
-                                return new MetaTypeVoidStar( metaid, obj, false /*owner*/ );
+                if (metaid == QMetaType::QObjectStar || metaid == qMetaTypeId<QWidget*>()) {
+                    #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                        Py::Object pyobjtype( PyObject_Type(object.ptr()), true /* owner */ );
+                        const QString pyobjtypename( pyobjtype.repr().as_string().c_str() );
+                        krossdebug( QString("PythonMetaTypeFactory::create Py::Object is %1").arg(pyobjtypename) );
+                    #endif
+                    if( object.hasAttr("metaObject") ) {
+                        // It seems the best way to determinate a PyQt4/PyKDE4 QObject/QWidget is by
+                        // just looking if the passed in PyObject has a metaObject-attribute. That
+                        // way we are sure to also catch classes that inheritate from such PyQt
+                        // widgets. So, if the PyObject has such an attribute we try to use the
+                        // with PyQt together delivered sip.unwrapinstance() function to fetch
+                        // the QObject/QWidget-pointer.
+                        try {
+                            Py::Module mainmod( PyImport_AddModule( (char*)"sip" ) );
+                            Py::Callable func = mainmod.getDict().getItem("unwrapinstance");
+                            Py::Tuple arguments(1);
+                            arguments[0] = object; //pyqtobject pointer
+                            Py::Object result = func.apply(arguments); // call the sip.unwrapinstance function
+                            void* ptr = PyLong_AsVoidPtr( result.ptr() ); // the result is a void* pointer to our QObject/QWidget instance
+                            QObject* obj = 0;
+                            if (metaid == QMetaType::QObjectStar) {
+                                obj = static_cast<QObject*>(ptr);
+                            } else if (metaid == qMetaTypeId<QWidget*>()) {
+                                obj = static_cast<QWidget*>(ptr);
                             }
-                            catch(Py::Exception& e) {
-                                #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                                    krossdebug(QString("PythonMetaTypeFactory::create EXCEPTION %1").arg(Py::value(e).as_string().c_str()));
-                                #endif
-                            }
+
+                            #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                krossdebug(QString("PythonMetaTypeFactory::create class=%1 ptr=%2").arg(obj ? obj->metaObject()->className() : "NULL").arg(long(ptr)));
+                            #endif
+                            return new MetaTypeVoidStar( metaid, obj, false /*owner*/ );
                         }
-                        #ifdef KROSS_PYTHON_VARIANT_DEBUG
-                            krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
-                        #endif
-                        void* ptr = 0; //QMetaType::construct(metaid, 0);
-                        return new MetaTypeVoidStar( metaid, ptr, false /*owner*/ );
-                    } break;
-                    default:
-                        break;
+                        catch(Py::Exception& e) {
+                            #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                                krossdebug(QString("PythonMetaTypeFactory::create EXCEPTION %1").arg(Py::value(e).as_string().c_str()));
+                            #endif
+                        }
+                    }
+                    #ifdef KROSS_PYTHON_VARIANT_DEBUG
+                        krossdebug( QString("PythonMetaTypeFactory::create Py::Object isNone. Create empty type '%1'").arg(metaid) );
+                    #endif
+                    void* ptr = 0; //QMetaType::construct(metaid, 0);
+                    return new MetaTypeVoidStar( metaid, ptr, false /*owner*/ );
                 }
 
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
