@@ -14,7 +14,7 @@ include(ECMOptionalAddSubdirectory)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake/modules)
 
 find_package(Qt5 5.2.0 CONFIG REQUIRED Core Gui Widgets Test)
-find_package(KF5 REQUIRED Kross KDELibs4Support)
+find_package(KF5 5.11.0 REQUIRED Kross KDELibs4Support)
 
 # ========================= Find Python 2 =========================
 
