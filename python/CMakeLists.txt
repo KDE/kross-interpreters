@@ -2,7 +2,7 @@ project(KROSSPYTHON)
 
 include(PythonMacros)
 
-include_directories(${PYTHON_INCLUDE_PATH})
+include_directories(${PYTHON2_INCLUDE_DIRS})
 
 kde_enable_exceptions()
 
@@ -35,7 +35,7 @@ target_link_libraries(krosspython
     KF5::KrossCore
     Qt5::Gui
     Qt5::Widgets
-    ${PYTHON_LIBRARIES}
+    ${PYTHON2_LIBRARIES}
     ${CMAKE_DL_LIBS}
 )
 
