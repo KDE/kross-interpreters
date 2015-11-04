@@ -52,7 +52,7 @@ RubyModule::RubyModule(QObject* parent, QObject* object, const QString & modname
     #endif
 
     d->extension = new RubyExtension(object);
-    VALUE rmodule = rb_define_module(d->modulename.toAscii());
+    VALUE rmodule = rb_define_module(d->modulename.toLatin1());
     rb_define_module_function(rmodule,"method_missing",  (VALUE (*)(...))RubyModule::method_missing, -1);
     VALUE extension = RubyExtension::toVALUE(d->extension, /*owner*/ false);
     rb_define_const(rmodule, "MODULEOBJ", extension);

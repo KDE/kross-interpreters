@@ -42,7 +42,7 @@ namespace Kross {
             static void* extractVoidStar(const VALUE& object)
             {
                 QVariant v = RubyType<QVariant>::toVariant(object);
-                if( QObject* obj = qVariantCanConvert< QWidget* >(v) ? qvariant_cast< QWidget* >(v) : qVariantCanConvert< QObject* >(v) ? qvariant_cast< QObject* >(v) : 0 ) {
+                if( QObject* obj = v.canConvert< QWidget* >() ? qvariant_cast< QWidget* >(v) : v.canConvert< QObject* >() ? qvariant_cast< QObject* >(v) : 0 ) {
                     if( WrapperInterface* wrapper = dynamic_cast<WrapperInterface*>(obj) )
                         return wrapper->wrappedObject();
                     return obj;
@@ -154,7 +154,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                 return RubyType<QVariantList>::toVALUE(l);
             }
 
-            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+            if( v.canConvert< Kross::Object::Ptr >() ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif
@@ -169,7 +169,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                 return rbobj->rbObject();
             }
 
-            if( qVariantCanConvert< QWidget* >(v) ) {
+            if( v.canConvert< QWidget* >() ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyType<QVariant>::toVALUE Casting '%1' to QWidget").arg(v.typeName()) );
                 #endif
@@ -183,7 +183,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                 return RubyExtension::toVALUE( new RubyExtension(widget), true /*owner*/ );
             }
 
-            if( qVariantCanConvert< QObject* >(v) ) {
+            if( v.canConvert< QObject* >() ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyType<QVariant>::toVALUE Casting '%1' to QObject*").arg(v.typeName()) );
                 #endif
@@ -197,7 +197,7 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
                 return RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ );
             }
             
-            if( qVariantCanConvert< void* >(v) ) {
+            if( v.canConvert< void* >() ) {
               return Data_Wrap_Struct( rb_cObject, 0, 0, qvariant_cast<void*>(v));
             }
 
@@ -482,7 +482,7 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
             }
 
             QVariant v = RubyType<QVariant>::toVariant(value);
-            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+            if( v.canConvert< Kross::Object::Ptr >() ) {
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                     krossdebug( QString("RubyMetaTypeFactory::create Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif

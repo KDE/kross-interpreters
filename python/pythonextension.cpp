@@ -24,7 +24,6 @@
 
 #include <QtWidgets/QWidget>
 #include <QtCore/QMetaMethod>
-#include <QtTest/QSignalSpy>
 #include <QtCore/QVarLengthArray>
 
 namespace Kross {

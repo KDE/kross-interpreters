@@ -508,7 +508,7 @@ MetaType* PythonMetaTypeFactory::create(const char* typeName, const Py::Object& 
 
             // still no success. So, let's try to guess the content...
             QVariant v = PythonType<QVariant>::toVariant(object);
-            if( qVariantCanConvert< Kross::Object::Ptr >(v) ) {
+            if( v.canConvert<Kross::Object::Ptr>() ) {
                 #ifdef KROSS_PYTHON_VARIANT_DEBUG
                     krossdebug( QString("PythonType<QVariant>::toPyObject Casting '%1' to Kross::Object::Ptr").arg(v.typeName()) );
                 #endif
