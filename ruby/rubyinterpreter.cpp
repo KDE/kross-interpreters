@@ -94,9 +94,7 @@ void RubyInterpreter::initRuby()
     #endif
 
     d = new RubyInterpreterPrivate();
-#ifdef RUBY_INIT_STACK
     RUBY_INIT_STACK
-#endif
     ruby_init();
     ruby_init_loadpath();
     rb_define_global_function("require", (VALUE (*)(...))RubyInterpreter::require, 1);
