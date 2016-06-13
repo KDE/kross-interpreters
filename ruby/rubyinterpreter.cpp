@@ -118,6 +118,13 @@ void RubyInterpreter::finalizeRuby()
         krossdebug( QString("RubyInterpreter::finalizeRuby()") );
     #endif
 
+    // We call ruby_finalize() before cleaning up the modules,
+    // because Ruby code may execute in ruby_finalize(),
+    // e.g. when using Minitest's autorun.
+    #ifdef KROSS_RUBY_FINALIZE
+        ruby_finalize();
+    #endif
+
     if(d) {
         for(QHash<QString, QPointer<RubyModule> >::Iterator it = d->modules.begin(); it != d->modules.end(); ++it)
             delete it.value();
@@ -125,10 +132,6 @@ void RubyInterpreter::finalizeRuby()
     }
     delete d;
     d = 0;
-
-    #ifdef KROSS_RUBY_FINALIZE
-        ruby_finalize();
-    #endif
 }
 
 VALUE RubyInterpreter::require (VALUE self, VALUE name)
