@@ -216,7 +216,10 @@ VALUE RubyType<QVariant>::toVALUE(const QVariant& v)
 QVariant RubyType<QVariant>::toVariant(VALUE value)
 {
     #ifdef KROSS_RUBY_VARIANT_DEBUG
-        krossdebug(QString("RubyType<QVariant>::toVariant of type=%1 inspect=%2").arg(TYPE(value)).arg(STR2CSTR(rb_inspect(value))));
+        VALUE inspectValue = rb_inspect(value);
+        krossdebug(QString("RubyType<QVariant>::toVariant of type=%1 inspect=%2")
+            .arg(TYPE(value))
+            .arg(StringValuePtr(inspectValue)));
     #endif
 
     switch( TYPE(value) )
@@ -418,25 +421,32 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
 
             if( metaTypeId > 0 ) {
                 //if( TYPE(value) == T_NIL ) {
-                    switch(metaTypeId) {
-                        case QMetaType::QObjectStar: // fall through
-                        case QMetaType::QWidgetStar: {
+                    if (metaTypeId == QMetaType::QObjectStar ||
+                        metaTypeId == qMetaTypeId<QWidget*>()) {
                             if( TYPE(value) == T_DATA ) {
                                 #ifdef KROSS_RUBY_VARIANT_DEBUG
                                     QByteArray clazzname = rb_class2name(CLASS_OF(value));
-                                    krossdebug( QString("RubyMetaTypeFactory::create VALUE is class='%1' inspect='%2'").arg(clazzname.constData()).arg(STR2CSTR(rb_inspect(value))) );
+                                    VALUE inspectValue = rb_inspect(value);
+                                    krossdebug(QString("RubyMetaTypeFactory::create VALUE is class='%1' inspect='%2'")
+                                        .arg(clazzname.constData())
+                                        .arg(StringValuePtr(inspectValue)));
                                 #endif
 
                                 VALUE qt_module = rb_define_module("Qt");
                                 VALUE qt_base_class = rb_define_class_under(qt_module, "Base", rb_cObject);
 
                                 if ( rb_funcall(value, rb_intern("kind_of?"), 1, qt_base_class) == Qtrue ) {
-                                    if ( metaTypeId == QMetaType::QWidgetStar ) {
+                                    if (metaTypeId == qMetaTypeId<QWidget*>()) {
                                         QWidget** wobj = 0;
                                         Data_Get_Struct(value, QWidget*, wobj);
                                         #ifdef KROSS_RUBY_VARIANT_DEBUG
                                             //krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(value))).arg(STR2CSTR(rb_inspect(CLASS_OF(value)))).arg(wobj ? *wobj->objectName() : "NULL").arg(*wobj ? *wobj->metaObject()->className() : "NULL") );
-                                            krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2]").arg(STR2CSTR(rb_inspect(value))).arg(STR2CSTR(rb_inspect(CLASS_OF(value)))) );
+
+                                            VALUE inspectValue = rb_inspect(value);
+                                            VALUE inspectValueClass = rb_inspect(CLASS_OF(value));
+                                            krossdebug(QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2]")
+                                                .arg(StringValuePtr(inspectValue))
+                                                .arg(StringValuePtr(inspectValueClass)));
                                         #endif
                                         return new MetaTypeVoidStar( metaTypeId, *wobj, false /*owner*/ );
                                     } else if ( metaTypeId == QMetaType::QObjectStar ) {
@@ -444,7 +454,12 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
                                         Data_Get_Struct(value, QObject*, qobj);
                                         #ifdef KROSS_RUBY_VARIANT_DEBUG
                                             //krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2] obj=%3 [%4]").arg(STR2CSTR(rb_inspect(value))).arg(STR2CSTR(rb_inspect(CLASS_OF(value)))).arg(qobj ? *qobj->objectName() : "NULL").arg(*qobj ? *qobj->metaObject()->className() : "NULL") );
-                                            krossdebug( QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2]").arg(STR2CSTR(rb_inspect(value))).arg(STR2CSTR(rb_inspect(CLASS_OF(value)))) );
+
+                                            VALUE inspectValue = rb_inspect(value);
+                                            VALUE inspectValueClass = rb_inspect(CLASS_OF(value));
+                                            krossdebug(QString("RubyMetaTypeFactory::create QtRuby result=%1 [%2]")
+                                                .arg(StringValuePtr(inspectValue))
+                                                .arg(StringValuePtr(inspectValueClass)));
                                         #endif
                                         return new MetaTypeVoidStar( metaTypeId, *qobj, false /*owner*/ );
                                     }
@@ -456,9 +471,6 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
                             #endif
                             void* ptr = 0; //QMetaType::construct( metaTypeId, 0 );
                             return new MetaTypeVoidStar( metaTypeId, ptr, false /* owner */ );
-                        } break;
-                        default:
-                            break;
                     }
                 //}
 
@@ -483,7 +495,11 @@ MetaType* RubyMetaTypeFactory::create(const char* typeName, int typeId, int meta
             if( tn.startsWith("QList<") && tn.endsWith("*>") ) {
                 QByteArray itemTypeName = tn.mid(6, tn.length()-7);
                 #ifdef KROSS_RUBY_VARIANT_DEBUG
-                    krosswarning( QString("RubyMetaTypeFactory::create Convert VALUE '%1' to QList<void*> with typeName='%2' and itemTypeName='%3'").arg(STR2CSTR(rb_inspect(value))).arg(typeName).arg(itemTypeName.constData()) );
+                    VALUE inspectValue = rb_inspect(value);
+                    krosswarning( QString("RubyMetaTypeFactory::create Convert VALUE '%1' to QList<void*> with typeName='%2' and itemTypeName='%3'")
+                        .arg(StringValuePtr(inspectValue))
+                        .arg(typeName)
+                        .arg(itemTypeName.constData()));
                 #endif
                 QList<void*> list;
                 if( TYPE(value) == T_ARRAY ) {

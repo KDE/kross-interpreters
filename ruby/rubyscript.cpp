@@ -78,7 +78,8 @@ static VALUE callExecuteException(VALUE self, VALUE error)
 static VALUE callExecute(VALUE args)
 {
     #ifdef KROSS_RUBY_SCRIPT_DEBUG
-        krossdebug( QString("RubyScript::callExecute args=%1").arg( StringValuePtr(rb_inspect(args)) ) );
+        VALUE inspectArgs = rb_inspect(args);
+        krossdebug(QString("RubyScript::callExecute args=%1").arg(StringValuePtr(inspectArgs)));
     #endif
     Q_ASSERT( TYPE(args) == T_ARRAY );
     VALUE self = rb_ary_entry(args, 0);
@@ -123,7 +124,12 @@ namespace Kross {
 
             const char *methodname = rb_id2name(SYM2ID(unit));
             #ifdef KROSS_RUBY_SCRIPT_METHODADDED_DEBUG
-                krossdebug(QString("RubyScriptPrivate::method_added methodname=%1 self=%2 module=%3").arg(methodname).arg(StringValuePtr( rb_inspect(self) )).arg(StringValuePtr( rb_inspect(module) )));
+                VALUE inspectSelf = rb_inspect(self);
+                VALUE inspectModule = rb_inspect(module);
+                krossdebug(QString("RubyScriptPrivate::method_added methodname=%1 self=%2 module=%3")
+                    .arg(methodname)
+                    .arg(StringValuePtr(inspectSelf))
+                    .arg(StringValuePtr(inspectModule)));
             #endif
 
             VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
@@ -137,14 +143,16 @@ namespace Kross {
             rubyscript->d->m_functionnames.append(methodname);
 
             if( rubyscript->d->m_functions.contains(methodname) ) {
-                QPair< QObject* , QString > f = rubyscript->d->m_functions[methodname];
+                QPair<QObject *, QByteArray> f = rubyscript->d->m_functions[methodname];
 
                 VALUE method = rb_funcall(self, rb_intern("method"), 1, rb_str_new2(methodname));
                 #ifdef KROSS_RUBY_SCRIPT_METHODADDED_DEBUG
-                    krossdebug(QString("RubyScriptPrivate::method_added method=%1").arg(StringValuePtr( rb_inspect(method) )));
+                    VALUE inspectMethod = rb_inspect(method);
+                    krossdebug(QString("RubyScriptPrivate::method_added method=%1")
+                        .arg(StringValuePtr(inspectMethod)));
                 #endif
 
-                RubyFunction* function = rubyscript->connectFunction(f.first, f.second.toLatin1(), method);
+                RubyFunction* function = rubyscript->connectFunction(f.first, f.second, method);
                 Q_UNUSED(function);
             }
 
@@ -227,9 +235,9 @@ namespace Kross {
                         for(int i = 0; i < count; ++i) {
                             QMetaMethod metamethod = metaobject->method(i);
                             if( metamethod.methodType() == QMetaMethod::Signal ) {
-                                const QString signature = metamethod.signature();
-                                const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
-                                m_functions.insert( name, QPair< QObject* , QString >(sender, signature) );
+                                const QByteArray signature = metamethod.methodSignature();
+                                const QByteArray name = metamethod.name();
+                                m_functions.insert( name, QPair< QObject* , QByteArray >(sender, signature) );
                             }
                         }
                     }
@@ -251,7 +259,7 @@ namespace Kross {
         /// A hash for faster signal=>function access.
         QHash< QByteArray, // the signalname, e.g. "mySignal"
                 QPair< QObject* , // the QObject the signal belongs to
-                       QString > // the signature, e.g. "mySignal(QString,int)"
+                       QByteArray> // the signature, e.g. "mySignal(QString,int)"
              > m_functions;
         /// List of \a RubyFunction instances the \a RubyScript is owner of.
         //QList< RubyFunction* > m_rubyfunctions;
@@ -348,7 +356,9 @@ QStringList RubyScript::functionNames()
 static VALUE callFunction2(VALUE args)
 {
     #ifdef KROSS_RUBY_SCRIPT_DEBUG
-        krossdebug( QString("RubyScript::callFunction2 args=%1").arg( StringValuePtr(rb_inspect(args)) ) );
+        VALUE inspectArgs = rb_inspect(args);
+        krossdebug(QString("RubyScript::callFunction2 args=%1")
+            .arg(StringValuePtr(inspectArgs)));
     #endif
     Q_ASSERT( TYPE(args) == T_ARRAY );
     VALUE self = rb_ary_entry(args, 0);
@@ -434,7 +444,11 @@ RubyFunction* RubyScript::connectFunction(QObject* sender, const QByteArray& sig
         return 0;
     }
     #ifdef KROSS_RUBY_SCRIPT_CONNECTFUNCTION_DEBUG
-        krossdebug( QString("RubyScript::method_added connected object='%1' signal='%2' method='%3'").arg(sender->objectName()).arg(signature.data()).arg(StringValuePtr(rb_inspect(method))) );
+        VALUE inspectMethod = rb_inspect(method);
+        krossdebug(QString("RubyScript::method_added connected object='%1' signal='%2' method='%3'")
+            .arg(sender->objectName())
+            .arg(signature.data())
+            .arg(StringValuePtr(inspectMethod)));
     #endif
     d->m_rubyfunctions.append( function );
     return function;

@@ -57,7 +57,11 @@ namespace Kross {
         Q_ASSERT(object);
         d->metamethod = d->object->metaObject()->method(d->methodindex);
         #ifdef KROSS_RUBY_CALLCACHE_CTORDTOR_DEBUG
-            d->debuginfo = QString("name=%1 class=%2 methodindex=%3 signature=%4").arg(object->objectName()).arg(object->metaObject()->className()).arg(d->methodindex).arg(d->metamethod.signature());
+            d->debuginfo = QString("name=%1 class=%2 methodindex=%3 signature=%4")
+                .arg(object->objectName())
+                .arg(object->metaObject()->className())
+                .arg(d->methodindex)
+                .arg(QString::fromLatin1(d->metamethod.methodSignature()));
             krossdebug( QString("RubyCallCache Ctor %1 ").arg(d->debuginfo) );
         #endif
     }
@@ -77,7 +81,11 @@ namespace Kross {
         QVarLengthArray<void*> voidstarargs( typelistcount );
 
         #ifdef KROSS_RUBY_CALLCACHE_DEBUG
-            krossdebug( QString("RubyCallCache::execfunction signature=%1 typeName=%2 argc=%3 typelistcount=%4").arg(d->metamethod.signature()).arg(d->metamethod.typeName()).arg(argc).arg(typelistcount) );
+            krossdebug(QString("RubyCallCache::execfunction signature=%1 typeName=%2 argc=%3 typelistcount=%4")
+                .arg(QString::fromLatin1(d->metamethod.methodSignature()))
+                .arg(d->metamethod.typeName())
+                .arg(argc)
+                .arg(typelistcount));
             for(int i = 0; i < d->types.count(); ++i)
                 krossdebug( QString("  argument index=%1 typeId=%2 typeName=%3 metaTypeId=%4").arg(i).arg(d->types[i]).arg(QVariant::typeToName( (QVariant::Type)d->types[i] )).arg(d->metatypes[i]) );
         #endif
@@ -104,7 +112,12 @@ namespace Kross {
         for(int idx = 1; idx < typelistcount; ++idx)
         {
             #ifdef KROSS_RUBY_CALLCACHE_DEBUG
-                krossdebug( QString("RubyCallCache::execfunction param idx=%1 inspect=%2 QVariantType=%3 QMetaType=%4").arg(idx).arg(STR2CSTR(rb_inspect(argv[idx]))).arg(QVariant::typeToName((QVariant::Type)d->types[idx])).arg(QMetaType::typeName(d->metatypes[idx])) );
+                VALUE inspectArg = rb_inspect(argv[idx]);
+                krossdebug(QString("RubyCallCache::execfunction param idx=%1 inspect=%2 QVariantType=%3 QMetaType=%4")
+                    .arg(idx)
+                    .arg(StringValuePtr(inspectArg))
+                    .arg(QVariant::typeToName((QVariant::Type)d->types[idx]))
+                    .arg(QMetaType::typeName(d->metatypes[idx])) );
             #endif
 
             MetaType* metatype = RubyMetaTypeFactory::create( typelist[idx-1], d->types[idx], d->metatypes[idx], argv[idx] );

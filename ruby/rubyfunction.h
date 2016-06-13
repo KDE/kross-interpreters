@@ -53,10 +53,14 @@ namespace Kross {
                 : MetaFunction(sender, signal), m_method(method)
             {
                 #ifdef KROSS_RUBY_FUNCTION_CTORDTOR_DEBUG
+                    VALUE inspectMethod = rb_inspect(method);
                     m_debuginfo = QString("sender=%1 signature=%2 method=%3")
-                        .arg( sender ? QString("%1 (%2)").arg(sender->objectName()).arg(sender->metaObject()->className()) : "NULL" )
-                        .arg( signal.data() )
-                        .arg( StringValuePtr(rb_inspect(method)) );
+                        .arg(sender
+                            ? QString("%1 (%2)").arg(sender->objectName())
+                                .arg(sender->metaObject()->className())
+                            : "NULL")
+                        .arg(signal.data())
+                        .arg(StringValuePtr(inspectMethod));
                     krossdebug( QString("RubyFunction Ctor %1").arg(m_debuginfo) );
                 #endif
                 rb_gc_register_address(&m_method);
@@ -108,7 +112,9 @@ namespace Kross {
             static VALUE callFunction(VALUE args)
             {
                 #ifdef KROSS_RUBY_FUNCTION_DEBUG
-                    krossdebug( QString("RubyFunction callFunction args=%1").arg(StringValuePtr(rb_inspect(args))) );
+                    VALUE inspectArgs = rb_inspect(args);
+                    krossdebug(QString("RubyFunction callFunction args=%1")
+                        .arg(StringValuePtr(inspectArgs)));
                 #endif
                 Q_ASSERT( TYPE(args) == T_ARRAY );
                 VALUE self = rb_ary_entry(args, 0);
@@ -155,18 +161,14 @@ namespace Kross {
                                         #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                             krossdebug( QString("RubyFunction::qt_metacall: metatypeId=%1").arg(tp) );
                                         #endif
-                                        switch( tp ) {
-                                            case QMetaType::QObjectStar: {
-                                                QObject* obj = (*reinterpret_cast< QObject*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ ) );
-                                            } break;
-                                            case QMetaType::QWidgetStar: {
-                                                QWidget* obj = (*reinterpret_cast< QWidget*(*)>( _a[idx] ));
-                                                rb_ary_store(args, idx, RubyExtension::toVALUE( new RubyExtension(obj), true /*owner*/ ) );
-                                            } break;
-                                            default: {
-                                                rb_ary_store(args, idx, Qnil);
-                                            } break;
+                                        if (tp == QMetaType::QObjectStar) {
+                                            QObject *obj = (*reinterpret_cast<QObject*(*)>(_a[idx]));
+                                            rb_ary_store(args, idx, RubyExtension::toVALUE(new RubyExtension(obj), true /*owner*/));
+                                        } else if (tp == qMetaTypeId<QWidget*>()) {
+                                            QWidget *obj = (*reinterpret_cast<QWidget*(*)>(_a[idx]));
+                                            rb_ary_store(args, idx, RubyExtension::toVALUE(new RubyExtension(obj), true /*owner*/));
+                                        } else {
+                                            rb_ary_store(args, idx, Qnil);
                                         }
                                     } break;
                                     default: {
@@ -213,7 +215,14 @@ namespace Kross {
                             m_tmpResult = RubyType<QVariant>::toVariant(result);
                             #ifdef KROSS_RUBY_FUNCTION_DEBUG
                                 QObject* sender = QObject::sender();
-                                krossdebug( QString("RubyFunction::qt_metacall sender.objectName=%1 sender.className=%2 result=%3 variantresult=%4").arg(sender->objectName()).arg(sender->metaObject()->className()).arg(StringValuePtr(rb_inspect(result))).arg(m_tmpResult.toString()) );
+                                VALUE inspectResult = rb_inspect(result);
+                                krossdebug(QString(
+                                    "RubyFunction::qt_metacall sender.objectName=%1 "
+                                    "sender.className=%2 result=%3 variantresult=%4")
+                                    .arg(sender->objectName())
+                                    .arg(sender->metaObject()->className())
+                                    .arg(StringValuePtr(inspectResult))
+                                    .arg(m_tmpResult.toString()));
                             #endif
                             //_a[0] = Kross::MetaTypeVariant<QVariant>(d->tmpResult).toVoidStar();
                             _a[0] = &(m_tmpResult);

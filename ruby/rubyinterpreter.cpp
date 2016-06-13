@@ -44,7 +44,7 @@ namespace Kross {
 
     /// \internal
     class RubyInterpreterPrivate {
-        friend class RubyInterpreter;
+    public:
         QHash<QString, QPointer<RubyModule> > modules;
         static VALUE s_krossModule;
     };
@@ -136,7 +136,11 @@ void RubyInterpreter::finalizeRuby()
 VALUE RubyInterpreter::require (VALUE self, VALUE name)
 {
     #ifdef KROSS_RUBY_INTERPRETER_DEBUG
-        krossdebug( QString("RubyInterpreter::require self=%1 name=%2").arg(STR2CSTR(rb_inspect(self))).arg(STR2CSTR(rb_inspect(name))) );
+        VALUE inspectSelf = rb_inspect(self);
+        VALUE inspectName = rb_inspect(name);
+        krossdebug(QString("RubyInterpreter::require self=%1 name=%2")
+            .arg(StringValuePtr(inspectSelf))
+            .arg(StringValuePtr(inspectName)));
     #endif
 
     QString modname = StringValuePtr(name);
@@ -200,7 +204,10 @@ VALUE RubyInterpreter::require (VALUE self, VALUE name)
         }
         return val;
     }
-    
+
     // We don't know about a module with such a name. So, let Ruby handle it...
+    #ifdef KROSS_RUBY_INTERPRETER_DEBUG
+        krossdebug(QString("Using ruby's require on %1").arg(StringValuePtr(inspectName)));
+    #endif
     return rb_f_require(self, name);
 }

@@ -70,7 +70,7 @@ endif(PYTHON2_LIBS_FOUND)
 #     ecm_optional_add_subdirectory(falcon)
 # endif(FALCON_FOUND)
 
-# ecm_optional_add_subdirectory(ruby)
+ecm_optional_add_subdirectory(ruby)
 # ecm_optional_add_subdirectory(java)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

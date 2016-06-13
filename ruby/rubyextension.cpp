@@ -91,8 +91,7 @@ RubyExtension::RubyExtension(QObject* object)
             const int count = metaobject->methodCount();
             for(int i = 0; i < count; ++i) {
                 QMetaMethod member = metaobject->method(i);
-                const QString signature = member.signature();
-                const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+                const QByteArray name = member.name();
                 if(! d->m_methods.contains(name))
                     d->m_methods.insert(name, i);
             }
@@ -369,8 +368,7 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
         const int count = object->metaObject()->methodCount();
         for(++methodindex; methodindex < count; ++methodindex) {
             metamethod = object->metaObject()->method( methodindex );
-            const QString signature = metamethod.signature();
-            const QByteArray name = signature.left(signature.indexOf('(')).toLatin1();
+            const QByteArray name = metamethod.name();
             if(name == funcname && metamethod.parameterTypes().size() == argumentcount) {
                 found = true;
                 break;
@@ -383,7 +381,11 @@ VALUE RubyExtension::callMetaMethod(const QByteArray& funcname, int argc, VALUE 
     }
 
     #ifdef KROSS_RUBY_EXTENSION_DEBUG
-        krossdebug( QString("QMetaMethod idx=%1 sig=%2 tag=%3 type=%4").arg(methodindex).arg(metamethod.signature()).arg(metamethod.tag()).arg(metamethod.typeName()) );
+        krossdebug(QString("QMetaMethod idx=%1 sig=%2 tag=%3 type=%4")
+            .arg(methodindex)
+            .arg(QString::fromLatin1(metamethod.methodSignature()))
+            .arg(metamethod.tag())
+            .arg(metamethod.typeName()));
     #endif
 
     QList<QByteArray> typelist = metamethod.parameterTypes();
