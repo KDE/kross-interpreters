@@ -148,6 +148,11 @@ Q_SIGNALS:
 
 public Q_SLOTS:
 
+    QVariant returnEmptyMap()
+    {
+        return QVariantMap();
+    }
+
     QObject *myself()
     {
         return this;

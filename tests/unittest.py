@@ -26,6 +26,9 @@ class TestKross(unittest.TestCase):
 		self.object1 = TestObject1
 		self.object2 = TestObject2
 
+	def testEmptyMap(self):
+		self.object1.returnEmptyMap()
+
 	def testBool(self):
 		self.assert_( self.object1.func_bool_bool(True) == True )
 		self.assert_( self.object1.func_bool_bool(False) == False )
