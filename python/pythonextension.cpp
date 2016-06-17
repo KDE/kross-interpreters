@@ -580,9 +580,9 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
             bool hasreturnvalue = strcmp(metamethod.typeName(),"") != 0;
 
             // exact 1 returnvalue + 0..9 arguments
-            Q_ASSERT(typelistcount <= 10);
-            QVarLengthArray<MetaType*> variantargs( typelistcount + 1 );
-            QVarLengthArray<void*> voidstarargs( typelistcount + 1 );
+            Q_ASSERT(typelistcount <= 9);
+            QVarLengthArray<MetaType*, 10> variantargs(typelistcount + 1);
+            QVarLengthArray<void*, 10> voidstarargs(typelistcount + 1);
 
             // set the return value
             if(hasreturnvalue) {
