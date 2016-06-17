@@ -97,7 +97,11 @@ void RubyInterpreter::initRuby()
     RUBY_INIT_STACK
     ruby_init();
     ruby_init_loadpath();
+
     rb_define_global_function("require", (VALUE (*)(...))RubyInterpreter::require, 1);
+
+    rb_f_require(rb_mKernel, rb_str_new2("rubygems"));
+
     if( ! RubyInterpreterPrivate::s_krossModule )
     {
       RubyInterpreterPrivate::s_krossModule = rb_define_module("Kross");
@@ -146,7 +150,7 @@ VALUE RubyInterpreter::require (VALUE self, VALUE name)
 
     QString modname = StringValuePtr(name);
 
-    if( RubyScript::isRubyScript(self) ) {
+    if (d->s_krossModule && RubyScript::isRubyScript(self)) {
         VALUE rubyscriptvalue = rb_funcall(self, rb_intern("const_get"), 1, ID2SYM(rb_intern("RUBYSCRIPTOBJ")));
         RubyScript* rubyscript;
         Data_Get_Struct(rubyscriptvalue, RubyScript, rubyscript);
