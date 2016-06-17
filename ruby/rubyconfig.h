@@ -21,7 +21,6 @@
 #define KROSS_RUBY_CONFIG_H
 
 #include <ruby.h>
-#include <ruby/backward/rubysig.h>
 #include <ruby/version.h>
 
 #include <ruby/st.h>
