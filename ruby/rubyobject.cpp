@@ -119,7 +119,16 @@ RubyObject::RubyObject(const VALUE& object)
     const char* method;
     methods = rb_class_instance_methods(1, args, CLASS_OF(object));
     for (int i = 0; i < RARRAY_LEN(methods); i++) {
-        method = StringValuePtr(RARRAY_PTR(methods)[i]);
+        VALUE v = RARRAY_PTR(methods)[i];
+        krossdebug(QString("type: %1").arg(TYPE(v)));
+        if (TYPE(v) == T_SYMBOL) {
+            // In Ruby 1.9+ "methods" returns an array of symbols
+            method = rb_id2name(SYM2ID(v));
+        } else {
+            krosswarning(QString(
+                "RubyObject::RubyObject(): Unexpected type in the methods array: ").arg(TYPE(v)));
+        }
+
         krossdebug( QString("RubyObject::RubyObject() method=%1").arg( method ));
         d->calls << method;
     }
