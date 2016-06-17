@@ -108,15 +108,13 @@ int runScriptFile(const QString &scriptfile)
     action->trigger();
     std::cout << "Execution of scriptfile " << scriptfile.toLatin1().data() << " done" << std::endl;
 
-    /*
-    if(action->hadException()) {
+    if (action->hadError()) {
         // We had an exception.
-        QString errormessage = action->getException()->getError();
-        QString tracedetails = action->getException()->getTrace();
+        QString errormessage = action->errorMessage();
+        QString tracedetails = action->errorTrace();
         std::cerr << QString("%2\n%1").arg(tracedetails).arg(errormessage).toLatin1().data() << std::endl;
         return ERROR_EXCEPTION;
     }
-    */
 
     delete action;
     return ERROR_OK;
