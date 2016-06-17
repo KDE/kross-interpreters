@@ -15,3 +15,5 @@ add_test(NAME kross-guiqt-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testg
 add_test(NAME kross-guitk-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testguitk.py)
 add_test(NAME kross-test-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testkross.py)
 add_test(NAME kross-unittest-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/unittest.py)
+
+add_test(NAME kross-unittest-rb COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/unittest.rb)
