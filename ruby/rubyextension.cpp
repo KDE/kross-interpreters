@@ -267,7 +267,7 @@ VALUE RubyExtension::callConnect(int argc, VALUE *argv, VALUE self)
                 rb_raise(rb_eTypeError, "First argument needs to be a signalname or a sender-object.");
                 return Qfalse;
             }
-            if( ! TYPE(argv[1]) != T_STRING ) {
+            if( TYPE(argv[1]) != T_STRING ) {
                 rb_raise(rb_eTypeError, "Second argument needs to be a signalname.");
                 return Qfalse;
             }
