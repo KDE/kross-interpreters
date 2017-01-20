@@ -1,8 +1,8 @@
-find_package(Ruby 1.9 QUIET)
-
-if(RUBY_FOUND)
-    message(STATUS "Found Ruby: ${RUBY_EXECUTABLE} (found version \"${RUBY_VERSION}\")")
-endif()
+unset(RUBY_VERSION_MAJOR CACHE)
+unset(RUBY_INCLUDE_DIR CACHE)
+unset(RUBY_CONFIG_INCLUDE_DIR CACHE)
+unset(RUBY_LIBRARY CACHE)
+find_package(Ruby 1.9)
 
 set(krossruby_PART_SRCS
     rubyvariant.cpp
