@@ -180,7 +180,7 @@ namespace Kross {
             // needed to prevent infinitive loops ifour scripting call uses e.g. callFunction
             m_hasBeenSuccessFullyExecuted = true;
 
-            VALUE mutex;
+            VALUE mutex = rb_mutex_new();
             rb_mutex_lock(mutex);
 
             VALUE args = rb_ary_new2(3);
@@ -377,7 +377,7 @@ QVariant RubyScript::callFunction(const QString& name, const QVariantList& args)
     #endif
 
     //ruby_current_node
-    VALUE mutex;
+    VALUE mutex = rb_mutex_new();
     rb_mutex_lock(mutex);
 
 
