@@ -28,7 +28,7 @@ unset(PYTHON_LIBRARY_DEBUG CACHE)
 # Unset variables set by find_package(PythonInterp) which is called by KI18n
 unset(PYTHON_VERSION_MAJOR)
 unset(PYTHON_VERSION_MINOR)
-find_package(PythonLibs 2 EXACT REQUIRED)
+find_package(PythonLibs 2 EXACT)
 
 set(PYTHON2_LIBS_FOUND ${PYTHONLIBS_FOUND})
 set(PYTHON2_LIBRARIES ${PYTHON_LIBRARIES})
