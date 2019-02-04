@@ -1,7 +1,5 @@
 project(KROSSPYTHON)
 
-include(PythonMacros)
-
 include_directories(${PYTHON2_INCLUDE_DIRS})
 
 kde_enable_exceptions()
