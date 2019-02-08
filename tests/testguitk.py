@@ -1,5 +1,6 @@
 #!/usr/bin/env kross
 
+
 class TkTest:
     def __init__(self):
         import Tkinter
@@ -28,5 +29,6 @@ class TkTest:
     def callback2(self):
         import tkMessageBox
         tkMessageBox.showinfo("Callback2", "Callback2 called.")
+
 
 TkTest()

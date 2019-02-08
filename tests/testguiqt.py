@@ -89,10 +89,12 @@
 from PyQt5 import QtWidgets
 import TestObject1, TestObject2
 
+
 class OwnWidget(QtWidgets.QLabel):
     def __init__(self):
         QtWidgets.QLabel.__init__(self)
         self.setObjectName("MyLabelObjectName")
+
 
 def test():
     #label = QtGui.QLabel()
@@ -102,5 +104,6 @@ def test():
     label = OwnWidget()
     obj = TestObject1.func_qwidget_qwidget(label)
     print "test() ===========> label=%s object=%s" % (label, obj)
+
 
 test()

@@ -12,12 +12,15 @@ from TestObject2 import *
 
 KrossAction = self
 
+
 def testFunction(*args):
     return args
+
 
 def testFunctionException(*args):
     raise Exception()
     return args
+
 
 class TestKross(unittest.TestCase):
     """ Testcases to test the Kross python functionality for regressions. """
@@ -316,6 +319,7 @@ class TestKross(unittest.TestCase):
         class MyClass:
             def __init__(self, result):
                 self.result = result
+
             def myMethod(self):
                 return self.result
         s = "my string"
@@ -339,6 +343,7 @@ class TestKross(unittest.TestCase):
     def testEvaluation(self):
         self.assert_(KrossAction.evaluate("1+2") == 3)
         self.assert_(KrossAction.evaluate("testFunction(None, 99)") == [None, 99])
+
 
 print "__name__ = %s" % __name__
 #print "__main__ = %s %s" % (__main__, dir(__main__))
