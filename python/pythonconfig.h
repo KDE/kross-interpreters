@@ -46,10 +46,10 @@ See also http://bugs.kde.org/show_bug.cgi?id=156950 */
 #include <kross/core/krossconfig.h>
 
 // Include the PyCXX stuff.
-#include "cxx/Config.hxx"
-#include "cxx/Objects.hxx"
-#include "cxx/Extensions.hxx"
-#include "cxx/Exception.hxx"
+#include "CXX/Config.hxx"
+#include "CXX/Objects.hxx"
+#include "CXX/Extensions.hxx"
+#include "CXX/Exception.hxx"
 
 // The version of this python plugin. This will be exported
 // to the scripting code. That way we're able to write

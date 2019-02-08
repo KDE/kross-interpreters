@@ -38,7 +38,7 @@
 #ifndef __CXX_INDIRECT_PYTHON_INTERFACE__HXX__
 #define __CXX_INDIRECT_PYTHON_INTERFACE__HXX__
 
-#include "WrapPython.h"
+#include "CXX/WrapPython.h"
 
 namespace Py
 {
@@ -47,51 +47,21 @@ bool InitialisePythonIndirectInterface();
 //
 //    Wrap Exception variables as function calls
 //
-PyObject * _Exc_Exception();
-PyObject * _Exc_StandardError();
-PyObject * _Exc_ArithmeticError();
-PyObject * _Exc_LookupError();
+PyObject * _Exc_BaseException();
 
-PyObject * _Exc_AssertionError();
-PyObject * _Exc_AttributeError();
-PyObject * _Exc_EOFError();
-PyObject * _Exc_FloatingPointError();
-PyObject * _Exc_EnvironmentError();
-PyObject * _Exc_IOError();
-PyObject * _Exc_OSError();
-PyObject * _Exc_ImportError();
-PyObject * _Exc_IndexError();
-PyObject * _Exc_KeyError();
-PyObject * _Exc_KeyboardInterrupt();
-PyObject * _Exc_MemoryError();
-PyObject * _Exc_NameError();
-PyObject * _Exc_OverflowError();
-PyObject * _Exc_RuntimeError();
-PyObject * _Exc_NotImplementedError();
-PyObject * _Exc_SyntaxError();
-PyObject * _Exc_SystemError();
-PyObject * _Exc_SystemExit();
-PyObject * _Exc_TypeError();
-PyObject * _Exc_ValueError();
-PyObject * _Exc_ZeroDivisionError();
-#ifdef MS_WINDOWS
-PyObject * _Exc_WindowsError();
-#endif
+#define PYCXX_STANDARD_EXCEPTION( eclass, bclass ) \
+    PyObject * _Exc_##eclass();
 
-PyObject * _Exc_MemoryErrorInst();
-
-#if PY_MAJOR_VERSION >= 2
-PyObject * _Exc_IndentationError();
-PyObject * _Exc_TabError();
-PyObject * _Exc_UnboundLocalError();
-PyObject * _Exc_UnicodeError();
-#endif
+#include "CXX/Python2/cxx_standard_exceptions.hxx"
+#undef PYCXX_STANDARD_EXCEPTION
 
 //
 //    Wrap Object variables as function calls
 //
 PyObject * _None();
 
+PyObject * _False();
+PyObject * _True();
 
 //
 //    Wrap Type variables as function calls
@@ -132,6 +102,9 @@ bool _Frame_Check( PyObject *op );
 PyTypeObject * _Function_Type();
 bool _Function_Check( PyObject *op );
 
+PyTypeObject * _Bool_Type();
+bool _Boolean_Check( PyObject *op );
+
 PyTypeObject * _Int_Type();
 bool _Int_Check( PyObject *op );
 
@@ -159,9 +132,6 @@ bool _Slice_Check( PyObject *op );
 PyTypeObject * _String_Type();
 bool _String_Check( PyObject *op );
 
-PyTypeObject * _Unicode_Type();
-bool _Unicode_Check( PyObject *op );
-
 PyTypeObject * _TraceBack_Type();
 bool _TraceBack_Check( PyObject *v );
 
@@ -180,14 +150,12 @@ int &_Py_NoSiteFlag();
 int &_Py_TabcheckFlag();
 int &_Py_VerboseFlag();
 
-#if PY_MAJOR_VERSION >= 2
-int &_Py_UnicodeFlag();
-#endif
-
 void _XINCREF( PyObject *op );
 void _XDECREF( PyObject *op );
 
+# if PY_MAJOR_VERSION == 2 || !defined( Py_LIMITED_API )
 char *__Py_PackageContext();
+#endif
 }
 
 #endif    // __CXX_INDIRECT_PYTHON_INTERFACE__HXX__

@@ -114,7 +114,7 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
 
     d->proxymethod = new Py::MethodDefExt<PythonExtension>(
         "", // methodname, not needed cause we use the method only internaly.
-        0, // method that should handle the callback, not needed cause proxyhandler will handle it.
+        Py::MethodDefExt<PythonExtension>::method_varargs_function_t( 0 ), // method that should handle the callback, not needed cause proxyhandler will handle it.
         Py::method_varargs_call_handler_t( proxyhandler ), // callback handler
         "" // documentation
     );
@@ -672,7 +672,7 @@ PyObject* PythonExtension::proxyhandler(PyObject *_self_and_name_tuple, PyObject
     return Py_None;
 }
 
-int PythonExtension::sequence_length()
+PyCxx_ssize_t PythonExtension::sequence_length()
 {
     return d->object->children().count();
 }
@@ -720,7 +720,7 @@ int PythonExtension::sequence_ass_slice(Py_ssize_t from, Py_ssize_t to, const Py
     throw Py::RuntimeError( QString("Unsupported: PythonExtension::sequence_ass_slice %1 %2 %3").arg(from).arg(to).arg(obj.as_string().c_str()).toLatin1().constData() );
 }
 
-int PythonExtension::mapping_length()
+PyCxx_ssize_t PythonExtension::mapping_length()
 {
     return d->object->children().count();
 }

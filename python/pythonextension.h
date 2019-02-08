@@ -102,7 +102,7 @@ namespace Kross {
             virtual long hash();
 
             // Sequence
-            virtual int sequence_length();
+            virtual PyCxx_ssize_t sequence_length();
             virtual Py::Object sequence_concat(const Py::Object&);
             virtual Py::Object sequence_repeat(Py_ssize_t);
             virtual Py::Object sequence_item(Py_ssize_t);
@@ -111,7 +111,7 @@ namespace Kross {
             virtual int sequence_ass_slice(Py_ssize_t, Py_ssize_t, const Py::Object&);
 
             // Mapping
-            virtual int mapping_length();
+            virtual PyCxx_ssize_t mapping_length();
             virtual Py::Object mapping_subscript(const Py::Object&);
             virtual int mapping_ass_subscript(const Py::Object&, const Py::Object&);
 
