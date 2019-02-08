@@ -119,11 +119,8 @@ class TestKross(unittest.TestCase):
     def testVariantMap(self):
 
         def doTestVariantMap(vmap):
-            rmap = self.object1.func_qvariantmap_qvariantmap(vmap)
-            self.assertEqual(len(rmap), len(vmap))
-            for k in vmap:
-                #self.assertTrue(rmap.has_key(k))
-                self.assertEqual(rmap[k], vmap[k])
+            self.assertEqual(self.object1.func_qvariantmap_qvariantmap(vmap),
+                             vmap)
 
         doTestVariantMap({})
         doTestVariantMap({"3": -837, "1": 73682, "2": 285})
