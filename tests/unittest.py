@@ -22,6 +22,15 @@ def testFunctionException(*args):
     return args
 
 
+def skipUnlessHasModule(module):
+    try:
+        import importlib
+        importlib.import_module(module)
+    except ImportError:
+        return unittest.skip("%s not available" % module)
+    return lambda func: func
+
+
 class TestKross(unittest.TestCase):
     """ Testcases to test the Kross python functionality for regressions. """
 
@@ -352,13 +361,9 @@ class TestKross(unittest.TestCase):
         #qo = sip.wrapinstance (qobj, QObject)
         #print ">>>>>>>>>>>>>>>>>>> %s" % qo
 
+    @skipUnlessHasModule("PyQt5")
     def testPyQtSignal(self):
-        try:
-            from PyQt5 import QtCore, Qt
-            import string
-        except:
-            print "PyQt5 wasn't found, skipping test"
-            return
+        from PyQt5 import QtCore, Qt
 
         class PyQtObject(Qt.QObject):
             customSignal = QtCore.pyqtSignal()
@@ -370,13 +375,9 @@ class TestKross(unittest.TestCase):
 
         self.assertEqual(self.object1.testFunctionReturnedValue(), [42])
 
+    @skipUnlessHasModule("PyQt5")
     def testPyQtSignalException(self):
-        try:
-            from PyQt5 import QtCore, Qt
-            import string
-        except:
-            print "PyQt5 wasn't found, skipping test"
-            return
+        from PyQt5 import QtCore, Qt
 
         class PyQtObject(Qt.QObject):
             customSignal = QtCore.pyqtSignal()
