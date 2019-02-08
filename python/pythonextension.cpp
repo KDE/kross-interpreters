@@ -66,18 +66,8 @@ namespace Kross {
 
 using namespace Kross;
 
-PythonExtension::PythonExtension(QObject* object, bool owner)
-    : Py::PythonExtension<PythonExtension>()
-    , d( new Private() )
+void PythonExtension::init_type()
 {
-    d->object = object;
-    d->owner = owner;
-
-    #ifdef KROSS_PYTHON_EXTENSION_CTORDTOR_DEBUG
-        d->debuginfo = object ? QString("%1 (%2)").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
-        krossdebug( QString("PythonExtension::Constructor object=%1").arg(d->debuginfo) );
-    #endif
-
     behaviors().name("KrossPythonExtension");
     behaviors().doc("The KrossPythonExtension object wraps a QObject into the world of python.");
     //behaviors().supportPrint();
@@ -108,6 +98,19 @@ PythonExtension::PythonExtension(QObject* object, bool owner)
     //add_varargs_method("__fromPointer__", &PythonExtension::fromPointer, "Set the QObject* to the passed void* pointer.");
     add_varargs_method("connect", &PythonExtension::doConnect, "Connect signal, slots or python functions together.");
     add_varargs_method("disconnect", &PythonExtension::doDisconnect, "Disconnect signal, slots or python functions that are connected together.");
+}
+
+PythonExtension::PythonExtension(QObject* object, bool owner)
+    : Py::PythonExtension<PythonExtension>()
+    , d( new Private() )
+{
+    d->object = object;
+    d->owner = owner;
+
+    #ifdef KROSS_PYTHON_EXTENSION_CTORDTOR_DEBUG
+        d->debuginfo = object ? QString("%1 (%2)").arg(object->objectName()).arg(object->metaObject()->className()) : "NULL";
+        krossdebug( QString("PythonExtension::Constructor object=%1").arg(d->debuginfo) );
+    #endif
 
     d->proxymethod = new Py::MethodDefExt<PythonExtension>(
         "", // methodname, not needed cause we use the method only internaly.

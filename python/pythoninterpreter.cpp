@@ -272,6 +272,9 @@ void PythonInterpreter::initialize()
     // Work done, release the lock.
     PyEval_ReleaseLock();
     */
+
+    // Initialize our stuff.
+    PythonExtension::init_type();
 }
 
 void PythonInterpreter::finalize()

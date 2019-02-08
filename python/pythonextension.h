@@ -45,6 +45,12 @@ namespace Kross {
         public:
 
             /**
+             * Initialize the class details (methods, etc).
+             * To be called only once.
+             */
+            static void init_type();
+
+            /**
              * Constructor.
              *
              * \param object The QObject this extension instance wraps.
