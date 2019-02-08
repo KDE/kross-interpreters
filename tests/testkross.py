@@ -17,6 +17,6 @@ import Kross
 kjsaction = Kross.action("MyKjsScript")
 #print dir(kjsaction)
 kjsaction.setInterpreter("javascript")
-kjsaction.setCode( "println(\"Hello world from Kjs\");" )
+kjsaction.setCode("println(\"Hello world from Kjs\");")
 print "-----------------------> trigger"
 kjsaction.trigger()
