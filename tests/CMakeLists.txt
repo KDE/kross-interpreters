@@ -11,6 +11,7 @@ target_link_libraries(krosstest
 
 add_test(NAME kross-unittest-es COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/unittest.es)
 
+add_test(NAME kross-guiform-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testguiform.py)
 add_test(NAME kross-guiqt-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testguiqt.py)
 add_test(NAME kross-guitk-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testguitk.py)
 add_test(NAME kross-test-py COMMAND krosstest ${CMAKE_CURRENT_SOURCE_DIR}/testkross.py)
