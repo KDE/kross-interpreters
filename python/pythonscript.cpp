@@ -331,7 +331,7 @@ void PythonScript::execute()
 
         // Evaluate the already compiled code.
         PyObject* pyresult = PyEval_EvalCode(
-            (PyCodeObject*)d->m_code->ptr(),
+            d->m_code->ptr(),
             moduledict.ptr(), //mainmoduledict.ptr(),
             moduledict.ptr()
         );
