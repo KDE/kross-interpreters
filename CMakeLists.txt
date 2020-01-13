@@ -22,13 +22,13 @@ find_package(KF5 5.11.0 REQUIRED Kross)
 # following hack find_package(PythonLibs 3) would find the previously found
 # version 2.7. Due to this hack one cannot predefine PYTHON_LIBRARY and/or
 # PYTHON_INCLUDE_DIR by editing CMakeCache.txt.
-unset(PYTHON_INCLUDE_DIR CACHE)
-unset(PYTHON_LIBRARY CACHE)
-unset(PYTHON_LIBRARY_DEBUG CACHE)
-# Unset variables set by find_package(PythonInterp) which is called by KI18n
-unset(PYTHON_VERSION_MAJOR)
-unset(PYTHON_VERSION_MINOR)
-find_package(PythonLibs 2 EXACT)
+# unset(PYTHON_INCLUDE_DIR CACHE)
+# unset(PYTHON_LIBRARY CACHE)
+# unset(PYTHON_LIBRARY_DEBUG CACHE)
+# # Unset variables set by find_package(PythonInterp) which is called by KI18n
+# unset(PYTHON_VERSION_MAJOR)
+# unset(PYTHON_VERSION_MINOR)
+find_package(PythonLibs 3 EXACT)
 
 set(PYTHON2_LIBS_FOUND ${PYTHONLIBS_FOUND})
 set(PYTHON2_LIBRARIES ${PYTHON_LIBRARIES})
