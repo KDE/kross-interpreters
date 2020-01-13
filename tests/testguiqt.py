@@ -103,7 +103,7 @@ def test():
     #print "test() ===========> label=%s object=%s" % (label, obj)
     label = OwnWidget()
     obj = TestObject1.func_qwidget_qwidget(label)
-    print "test() ===========> label=%s object=%s" % (label, obj)
+    print("test() ===========> label=%s object=%s" % (label, obj))
 
 
 test()

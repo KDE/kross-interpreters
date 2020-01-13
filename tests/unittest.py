@@ -89,10 +89,10 @@ class TestKross(unittest.TestCase):
         self.assertEqual(self.object1.func_qstring_qstring(" Another \n\r Test!   $%&\" "),
                          " Another \n\r Test!   $%&\" ")
         self.assertEqual(self.object1.func_qstring_qstring("áêïòñα"), "áêïòñα")
-        self.assertEqual(self.object1.func_qstring_qstring(unicode("abcdef")),
+        self.assertEqual(self.object1.func_qstring_qstring(str("abcdef")),
                          "abcdef")
-        self.assertEqual(self.object1.func_qstring_qstring(u"\u03B1"),
-                         u"\u03B1".encode('utf8'))
+        self.assertEqual(self.object1.func_qstring_qstring("\u03B1"),
+                         "\u03B1".encode('utf8'))
 
     def testStringList(self):
         self.assertEqual(self.object1.func_qstringlist_qstringlist([]), [])
@@ -421,7 +421,7 @@ class TestKross(unittest.TestCase):
                          [None, 99])
 
 
-print "__name__ = %s" % __name__
+print("__name__ = %s" % __name__)
 #print "__main__ = %s %s" % (__main__, dir(__main__))
 #print "TestObject3.name = %s" % TestObject3.name()
 

@@ -5,7 +5,7 @@
   within python scripts.
 """
 
-print "__name__ = %s" % __name__
+print("__name__ = %s" % __name__)
 #print "__main__ = %s %s" % (__main__,dir(__main__))
 
 #import TestObject1, TestObject2
@@ -18,5 +18,5 @@ kjsaction = Kross.action("MyKjsScript")
 #print dir(kjsaction)
 kjsaction.setInterpreter("javascript")
 kjsaction.setCode("println(\"Hello world from Kjs\");")
-print "-----------------------> trigger"
+print("-----------------------> trigger")
 kjsaction.trigger()
