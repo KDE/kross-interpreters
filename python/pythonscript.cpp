@@ -46,7 +46,7 @@ namespace Kross {
 
             /**
             * The PyCodeObject object representing the
-            * compiled python code. Internaly we first
+            * compiled python code. Internally we first
             * compile the python code and later execute
             * it.
             */
