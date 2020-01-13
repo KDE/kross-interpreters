@@ -312,7 +312,7 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
 
     PyObject *type, *value, *traceback;
     PyErr_Fetch(&type, &value, &traceback);
-    Py_FlushLine();
+//     Py_FlushLine();
     PyErr_NormalizeException(&type, &value, &traceback);
     if(traceback) {
         Py::List tblist;
