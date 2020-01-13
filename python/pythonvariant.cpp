@@ -229,7 +229,7 @@ QVariant PythonType<QVariant>::toVariant(const Py::Object& obj)
     Q_ASSERT(pyobj);
 
     // check for some basic buildin types
-    if( PyObject_TypeCheck(pyobj, &PyInt_Type) )
+    if( PyObject_TypeCheck(pyobj, &PyLong_Type) )
         return PythonType<int>::toVariant(obj);
     if( PyObject_TypeCheck(pyobj, &PyLong_Type) )
         return PythonType<qlonglong>::toVariant(obj);

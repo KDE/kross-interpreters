@@ -156,7 +156,7 @@ namespace Kross {
             return Py::Int(b);
         }
         inline static bool toVariant(const Py::Object& obj) {
-            return bool(Py::Int(obj));
+            return Py::Int(obj) != Py::Long( (long)0 );
         }
     };
 

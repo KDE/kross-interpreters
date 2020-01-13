@@ -340,12 +340,12 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
             PyFrameObject *frame = (PyFrameObject*)PyObject_GetAttrString(traceback, const_cast< char* >("tb_frame"));
             {
                 PyObject *getobj = PyObject_GetAttrString(traceback, const_cast< char* >("tb_lineno") );
-                lineno = PyInt_AsLong(getobj);
+                lineno = PyLong_AsLong(getobj);
                 Py_DECREF(getobj);
             }
             if(Py_OptimizeFlag) {
                 PyObject *getobj = PyObject_GetAttrString(traceback, const_cast< char* >("tb_lasti") );
-                int lasti = PyInt_AsLong(getobj);
+                int lasti = PyLong_AsLong(getobj);
                 Py_DECREF(getobj);
                 lineno = PyCode_Addr2Line(frame->f_code, lasti);
             }
@@ -365,7 +365,7 @@ void PythonInterpreter::extractException(QStringList& errorlist, int& lineno)
     if(lineno < 0 && value && PyObject_HasAttrString(value, const_cast< char* >("lineno"))) {
         PyObject *getobj = PyObject_GetAttrString(value, const_cast< char* >("lineno") );
         if(getobj) {
-            lineno = PyInt_AsLong(getobj);
+            lineno = PyLong_AsLong(getobj);
             Py_DECREF(getobj);
         }
     }
