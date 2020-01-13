@@ -192,9 +192,11 @@ namespace Kross {
             return Py::String(ba.constData(), ba.size());
         }
         inline static QByteArray toVariant(const Py::Object& obj) {
-            int size = PyString_Size(obj.ptr());
-            if( size >= 0 )
-                return QByteArray(PyString_AS_STRING(obj.ptr()), size);
+            Py_ssize_t size;
+            const char* encoded;
+            encoded = PyUnicode_AsUTF8AndSize(obj.ptr(), &size);
+            if( encoded )
+                return QByteArray(encoded, size);
             if( strcmp(Py::Object(PyObject_Type(obj.ptr()),true).repr().as_string().c_str(),"<class 'PyQt4.QtCore.QByteArray'>") == 0 )
                 return PythonType<QByteArray>::toVariant( Py::Callable(obj.getAttr("data")).apply() );
             return QByteArray();

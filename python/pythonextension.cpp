@@ -777,5 +777,5 @@ Py::Object PythonExtension::number_hex()
         krossdebug("PythonExtension::number_hex");
     #endif
     void* ptr = (QObject*) d->object;
-    return Py::Object(PyString_FromFormat("%p",ptr),true);
+    return Py::Object(PyUnicode_FromFormat("%p",ptr),true);
 }

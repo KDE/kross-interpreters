@@ -59,7 +59,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
     initialize();
 
     // Set name of the program.
-    Py_SetProgramName(const_cast<char*>("Kross"));
+    Py_SetProgramName(const_cast<wchar_t*>(L"Kross"));
 
     /*
     // Set arguments.
@@ -86,7 +86,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
         }
     }
     else
-        path = Py_GetPath();
+        path = QString::fromWCharArray(Py_GetPath());
 
 #if 0
     // Determinate additional module-paths we like to add.
@@ -101,7 +101,7 @@ PythonInterpreter::PythonInterpreter(Kross::InterpreterInfo* info)
 #endif
 
     // Set the extended sys.path.
-    PySys_SetPath( (char*) path.toLatin1().data() );
+    PySys_SetPath( path.toStdWString().c_str() );
 
     #ifdef KROSS_PYTHON_INTERPRETER_DEBUG
         krossdebug(QString("Python ProgramName: %1").arg(Py_GetProgramName()));
