@@ -1,24 +1,16 @@
 project(KROSSPYTHON)
 
-include_directories(${PYTHON_INCLUDE_DIRS} cxx)
+include_directories(${PYTHON_INCLUDE_DIRS})
 
 kde_enable_exceptions()
 
 add_definitions(-DPYCXX_PYTHON_2TO3)
 
-########### next target ###############
-
-set(libkrosspythoncxx_SRCS
-    cxx/Src/cxxsupport.cxx
-    cxx/Src/cxx_extensions.cxx
-    cxx/Src/cxxextensions.c
-    cxx/Src/IndirectPythonInterface.cxx
-    cxx/Src/cxx_exceptions.cxx
-)
+find_package(PyCXX REQUIRED)
 
 ########### next target ###############
 
-set(krosspython_PART_SRCS ${libkrosspythoncxx_SRCS}
+set(krosspython_PART_SRCS ${PYCXX_SOURCES} #${libkrosspythoncxx_SRCS}
    pythonvariant.cpp
    pythonextension.cpp
    pythonmodule.cpp
