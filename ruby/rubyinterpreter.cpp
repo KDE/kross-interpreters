@@ -64,9 +64,6 @@ RubyInterpreter::RubyInterpreter(Kross::InterpreterInfo* info)
     {
         initRuby();
     }
-
-    const int defaultsafelevel = 4; // per default use the maximum safelevel
-    rb_set_safe_level( info->optionValue("safelevel", defaultsafelevel).toInt() );
 }
 
 RubyInterpreter::~RubyInterpreter()
